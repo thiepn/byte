@@ -17,7 +17,7 @@ pub struct AppState {
 impl AppState {
     pub fn new(config: ConfigStore) -> Self {
         Self {
-            snapshot: RwLock::new(SystemSnapshot::development_default()),
+            snapshot: RwLock::new(SystemSnapshot::unavailable()),
             config: Mutex::new(config),
             lifecycle: LifecycleCoordinator::default(),
             telemetry_worker: Mutex::new(None),

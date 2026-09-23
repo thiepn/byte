@@ -25,6 +25,10 @@
       : Math.round(value.storage.available) + " GB free";
   }
 
+  function snapshotReady(value: SystemSnapshot): boolean {
+    return value.cpu.state !== "UNKNOWN" || value.memory.state !== "UNKNOWN";
+  }
+
   onMount(() => void load());
 </script>
 
@@ -46,13 +50,13 @@
     {:else if view === "overview"}
       <section class="page">
         <p class="eyebrow">Live local telemetry</p>
-        <h1>{snapshot ? statusPresentation(snapshot.overall_status).title : "Checking your PC…"}</h1>
+        <h1>{snapshot && snapshotReady(snapshot) ? statusPresentation(snapshot.overall_status).title : "Checking your PC…"}</h1>
         <p class="lede">
-          {snapshot
+          {snapshot && snapshotReady(snapshot)
             ? statusPresentation(snapshot.overall_status).description
-            : "Byte is loading the latest cached system snapshot."}
+            : "Byte is waiting for its first real system sample."}
         </p>
-        {#if snapshot}
+        {#if snapshot && snapshotReady(snapshot)}
           <div class="metric-grid">
             <article class="metric-card"><span>Processor</span><strong>{Math.round(snapshot.cpu.value)}{snapshot.cpu.unit}</strong><small>{snapshot.cpu.state.toLowerCase()}</small></article>
             <article class="metric-card"><span>Memory</span><strong>{Math.round(snapshot.memory.value)}{snapshot.memory.unit}</strong><small>{snapshot.memory.available == null ? "availability unknown" : snapshot.memory.state.toLowerCase()}</small></article>

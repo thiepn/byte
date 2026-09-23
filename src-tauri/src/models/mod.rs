@@ -95,6 +95,32 @@ pub struct SystemSnapshot {
 }
 
 impl SystemSnapshot {
+    pub fn unavailable() -> Self {
+        let unknown = || ResourceSummary {
+            value: 0.0,
+            unit: "%".into(),
+            state: ResourceState::Unknown,
+            available: None,
+            available_unit: None,
+        };
+
+        Self {
+            timestamp_epoch_ms: now_epoch_ms(),
+            overall_status: SystemStatus::Calm,
+            cpu: unknown(),
+            memory: unknown(),
+            storage: unknown(),
+            battery: None,
+            network: NetworkSummary {
+                download_mbps: 0.0,
+                upload_mbps: 0.0,
+            },
+            thermal: None,
+            primary_issue: None,
+            secondary_issue_count: 0,
+        }
+    }
+
     pub fn development_default() -> Self {
         Self {
             timestamp_epoch_ms: now_epoch_ms(),

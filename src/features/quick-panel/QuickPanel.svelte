@@ -13,6 +13,10 @@
       : Math.round(value.storage.available) + " GB free";
   }
 
+  function snapshotReady(value: SystemSnapshot): boolean {
+    return value.cpu.state !== "UNKNOWN" || value.memory.state !== "UNKNOWN";
+  }
+
   onMount(() => {
     void getSnapshot()
       .then((value) => (snapshot = value))
@@ -28,7 +32,7 @@
 
   {#if errorMessage}
     <div class="message">{errorMessage}</div>
-  {:else if snapshot}
+  {:else if snapshot && snapshotReady(snapshot)}
     <section class="status">
       <span class="dot" aria-hidden="true"></span>
       <div>
