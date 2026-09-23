@@ -1,0 +1,9 @@
+{
+  "id": "byte",
+  "name": "Byte",
+  "nativeSize": 48,
+  "animationCanvas": 64,
+  "animations": ["idle", "blink", "sleep", "wake", "move_left", "move_right", "typing_left", "typing_right", "typing_fast", "mouse_click", "scroll", "pet", "happy", "busy", "stressed", "hot", "memory_pressure", "low_battery", "charging", "network_activity", "needs_attention"],
+  "anchors": ["head", "face", "body", "back", "left_hand", "right_hand", "ground"],
+  "status": "placeholder"
+}

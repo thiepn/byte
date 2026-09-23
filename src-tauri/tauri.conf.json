@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Byte",
+  "version": "0.1.0",
+  "identifier": "io.github.thiepn.byte",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "companion",
+        "title": "Byte",
+        "url": "index.html?surface=companion",
+        "width": 240,
+        "height": 240,
+        "transparent": true,
+        "decorations": false,
+        "resizable": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "shadow": false
+      },
+      {
+        "label": "quick-panel",
+        "title": "Byte",
+        "url": "index.html?surface=quick-panel",
+        "width": 340,
+        "height": 390,
+        "visible": false,
+        "decorations": false,
+        "resizable": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true
+      },
+      {
+        "label": "main",
+        "title": "Byte",
+        "url": "index.html?surface=main",
+        "width": 980,
+        "height": 700,
+        "minWidth": 760,
+        "minHeight": 560,
+        "visible": false,
+        "center": true,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' asset: data:; style-src 'self' 'unsafe-inline'; connect-src 'self' ipc: http://ipc.localhost"
+    }
+  },
+  "bundle": {
+    "active": false,
+    "icon": ["icons/icon.png"]
+  }
+}

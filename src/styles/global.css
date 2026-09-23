@@ -1,0 +1,45 @@
+html,
+body,
+#app {
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 100%;
+}
+
+html,
+body {
+  overflow: hidden;
+  background: transparent;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+button,
+a { -webkit-tap-highlight-color: transparent; }
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "id": "meadow",
+  "name": "Meadow",
+  "layers": ["background", "rear_scenery", "ground", "foreground", "effects"],
+  "decorationSlots": ["large_background", "wall_or_sky", "surface_left", "surface_right", "small_prop", "ambient"],
+  "status": "placeholder"
+}
