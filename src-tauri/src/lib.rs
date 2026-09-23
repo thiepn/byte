@@ -43,7 +43,7 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         "quit" => {
             app.state::<AppState>().lifecycle.cancel();
             app.exit(0);
-        },
+        }
         _ => {}
     })
     .build(app)?;
