@@ -39,9 +39,8 @@ impl WindowsTelemetrySource {
             .with_memory(MemoryRefreshKind::nothing().with_ram());
 
         let system = System::new_with_specifics(refreshes);
-        let disks = Disks::new_with_refreshed_list_specifics(
-            DiskRefreshKind::nothing().with_storage(),
-        );
+        let disks =
+            Disks::new_with_refreshed_list_specifics(DiskRefreshKind::nothing().with_storage());
         let networks = Networks::new_with_refreshed_list();
         let components = Components::new_with_refreshed_list();
 
@@ -49,6 +48,7 @@ impl WindowsTelemetrySource {
         let cached_battery = read_battery();
         let cached_thermal_celsius = read_hottest_temperature(&components);
 
+        let network_started_at = Instant::now();
         thread::sleep(MINIMUM_CPU_UPDATE_INTERVAL);
 
         let now = Instant::now();
@@ -57,7 +57,7 @@ impl WindowsTelemetrySource {
             disks,
             networks,
             components,
-            last_network_refresh: now,
+            last_network_refresh: network_started_at,
             last_storage_refresh: now,
             last_battery_refresh: now,
             last_thermal_refresh: now,
@@ -69,10 +69,8 @@ impl WindowsTelemetrySource {
 
     fn refresh_slow_signals(&mut self) {
         if self.last_storage_refresh.elapsed() >= STORAGE_REFRESH_INTERVAL {
-            self.disks.refresh_specifics(
-                true,
-                DiskRefreshKind::nothing().with_storage(),
-            );
+            self.disks
+                .refresh_specifics(true, DiskRefreshKind::nothing().with_storage());
             self.cached_storage = read_system_storage(&self.disks);
             self.last_storage_refresh = Instant::now();
         }
@@ -105,11 +103,9 @@ impl TelemetrySource for WindowsTelemetrySource {
             .list()
             .values()
             .fold(0_u64, |total, data| total.saturating_add(data.received()));
-        let transmitted_bytes = self
-            .networks
-            .list()
-            .values()
-            .fold(0_u64, |total, data| total.saturating_add(data.transmitted()));
+        let transmitted_bytes = self.networks.list().values().fold(0_u64, |total, data| {
+            total.saturating_add(data.transmitted())
+        });
 
         self.refresh_slow_signals();
 

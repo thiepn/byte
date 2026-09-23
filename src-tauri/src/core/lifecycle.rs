@@ -100,9 +100,7 @@ impl LifecycleCoordinator {
 fn is_sampling_suspended(state: LifecycleState) -> bool {
     matches!(
         state,
-        LifecycleState::DisplaySleep
-            | LifecycleState::SystemSleep
-            | LifecycleState::ShuttingDown
+        LifecycleState::DisplaySleep | LifecycleState::SystemSleep | LifecycleState::ShuttingDown
     )
 }
 
