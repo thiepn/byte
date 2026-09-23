@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Phase 4 architecture baseline
 
-The repository now starts from a canonical Tauri 2 + Svelte 5 architecture. Phase 4 intentionally uses a development placeholder companion and mock snapshot so production telemetry, artwork, habitats, and UX can be added without prototype debt.
+The repository starts from a canonical Tauri 2 + Svelte 5 architecture. Phase 4 intentionally uses a development placeholder companion and mock snapshot so production telemetry, artwork, habitats, and UX can be added without prototype debt.
 
 - Rust owns authoritative state, versioned preferences, lifecycle ownership, and the telemetry-source boundary.
 - Svelte owns presentation and companion rendering.
@@ -15,7 +15,7 @@ The repository now starts from a canonical Tauri 2 + Svelte 5 architecture. Phas
 
 ## Development
 
-Prerequisites: Node.js 22+, Rust stable, Windows 11 recommended, and normal Tauri/WebView2 Windows prerequisites.
+Prerequisites: Node.js 24+, Rust stable, Windows 11 recommended, and normal Tauri/WebView2 Windows prerequisites.
 
 ```bash
 npm install
