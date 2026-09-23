@@ -40,7 +40,10 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     tray.on_menu_event(|app, event| match event.id().as_ref() {
         "open" => show_window(app, "main", true),
         "toggle" => show_window(app, "companion", false),
-        "quit" => app.exit(0),
+        "quit" => {
+            app.state::<AppState>().lifecycle.cancel();
+            app.exit(0);
+        },
         _ => {}
     })
     .build(app)?;
