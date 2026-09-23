@@ -68,6 +68,21 @@ pub enum Confidence {
     High,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum RecommendedActionKind {
+    OpenTaskManager,
+    OpenStorageSettings,
+    OpenBatterySettings,
+    ViewDetails,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RecommendedAction {
+    pub kind: RecommendedActionKind,
+    pub label: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SystemIssue {
     pub id: String,
@@ -77,6 +92,8 @@ pub struct SystemIssue {
     pub explanation: String,
     pub culprit: Option<ProcessSummary>,
     pub confidence: Confidence,
+    pub culprit_confidence: Option<Confidence>,
+    pub recommended_action: Option<RecommendedAction>,
     pub started_at_epoch_ms: u64,
 }
 

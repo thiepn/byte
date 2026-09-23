@@ -40,6 +40,16 @@
         <p>{statusPresentation(snapshot.overall_status).description}</p>
       </div>
     </section>
+    {#if snapshot.primary_issue}
+      <section class="issue">
+        <strong>{snapshot.primary_issue.headline}</strong>
+        <p>{snapshot.primary_issue.explanation}</p>
+        {#if snapshot.primary_issue.recommended_action}
+          <span>{snapshot.primary_issue.recommended_action.label}</span>
+        {/if}
+      </section>
+    {/if}
+
     <div class="rows">
       <div><span>Processor</span><strong>{Math.round(snapshot.cpu.value)}{snapshot.cpu.unit}</strong></div>
       <div><span>Memory</span><strong>{Math.round(snapshot.memory.value)}{snapshot.memory.unit}</strong></div>
@@ -80,6 +90,24 @@
   .dot {
     width: 10px; height: 10px; flex: 0 0 auto; margin-top: 4px;
     border-radius: 50%; background: var(--status-normal);
+  }
+  .issue {
+    margin-top: var(--space-12);
+    padding: var(--space-12);
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-default);
+    background: var(--surface-raised);
+  }
+  .issue p {
+    margin: 5px 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .issue span {
+    color: var(--accent-primary);
+    font-size: 11px;
+    font-weight: 700;
   }
   .rows {
     margin: var(--space-12) 0; display: grid; gap: 1px; overflow: hidden;

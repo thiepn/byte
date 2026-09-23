@@ -28,6 +28,18 @@ export interface ProcessSummary {
   memory_mb: number | null;
 }
 
+export type Confidence = "LOW" | "MEDIUM" | "HIGH";
+export type RecommendedActionKind =
+  | "OPEN_TASK_MANAGER"
+  | "OPEN_STORAGE_SETTINGS"
+  | "OPEN_BATTERY_SETTINGS"
+  | "VIEW_DETAILS";
+
+export interface RecommendedAction {
+  kind: RecommendedActionKind;
+  label: string;
+}
+
 export interface SystemIssue {
   id: string;
   category: IssueCategory;
@@ -35,7 +47,9 @@ export interface SystemIssue {
   headline: string;
   explanation: string;
   culprit: ProcessSummary | null;
-  confidence: "LOW" | "MEDIUM" | "HIGH";
+  confidence: Confidence;
+  culprit_confidence: Confidence | null;
+  recommended_action: RecommendedAction | null;
   started_at_epoch_ms: number;
 }
 

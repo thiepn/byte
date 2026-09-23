@@ -56,6 +56,18 @@
             ? statusPresentation(snapshot.overall_status).description
             : "Byte is waiting for its first real system sample."}
         </p>
+        {#if snapshot?.primary_issue}
+          <article class="issue-card">
+            <div>
+              <strong>{snapshot.primary_issue.headline}</strong>
+              <p>{snapshot.primary_issue.explanation}</p>
+            </div>
+            {#if snapshot.primary_issue.recommended_action}
+              <span>{snapshot.primary_issue.recommended_action.label}</span>
+            {/if}
+          </article>
+        {/if}
+
         {#if snapshot && snapshotReady(snapshot)}
           <div class="metric-grid">
             <article class="metric-card"><span>Processor</span><strong>{Math.round(snapshot.cpu.value)}{snapshot.cpu.unit}</strong><small>{snapshot.cpu.state.toLowerCase()}</small></article>
@@ -112,6 +124,28 @@
   }
   h1 { margin: 0; font-size: 28px; line-height: 1.15; }
   .lede { max-width: 650px; margin: var(--space-12) 0 var(--space-32); color: var(--text-secondary); font-size: 15px; line-height: 1.65; }
+  .issue-card {
+    margin-bottom: var(--space-16);
+    padding: var(--space-16);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-card);
+    background: var(--surface-raised);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-16);
+  }
+  .issue-card p {
+    margin: 6px 0 0;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .issue-card span {
+    flex: 0 0 auto;
+    color: var(--accent-primary);
+    font-size: 12px;
+    font-weight: 700;
+  }
   .metric-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-12); }
   .metric-card, .notice {
     padding: var(--space-16); border-radius: var(--radius-card); border: 1px solid var(--border-default); background: var(--surface-raised);

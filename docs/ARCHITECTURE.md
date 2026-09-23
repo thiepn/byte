@@ -33,9 +33,17 @@ LifecycleCoordinator owns ACTIVE, FULLSCREEN_REDUCED, LOCKED, DISPLAY_SLEEP, SYS
 
 The telemetry worker is owned by AppState and joined during explicit quit.
 
-## Diagnostic boundary
+## Human-friendly diagnostics
 
-Phase 5 reports measurements, not judgments. SystemSnapshot remains diagnostically neutral until Phase 6 applies sustained-state logic, culprit attribution, severity, cooldowns, and plain-language explanations.
+Phase 6 adds a stateful DiagnosticEngine after telemetry normalization and before the snapshot cache.
+
+The pipeline is now:
+
+Windows telemetry source → normalized/smoothed snapshot → diagnostic engine → cached SystemSnapshot → frontend.
+
+The diagnostic engine owns sustained-condition timing, hysteresis, recovery, issue priority, process culprit attribution, confidence, and safe recommendations. It never performs destructive system actions.
+
+Process scanning is lazy and only runs while CPU or memory is in a high candidate state or has an active issue. Diagnostic thresholds and behavior are documented in [DIAGNOSTICS.md](DIAGNOSTICS.md).
 
 ## Input privacy
 

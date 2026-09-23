@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–5 are implemented.
+Phases 1–6 are implemented.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -15,6 +15,9 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Volatile telemetry is smoothed without startup bias.
 - Battery, thermal, and storage are optional/cached where appropriate.
 - The telemetry worker is lifecycle-aware and joined on explicit shutdown.
+- Human-friendly diagnostics distinguish CALM, BUSY, STRESSED, and NEEDS_ATTENTION.
+- CPU/memory process attribution is lazy and only names a culprit when confidence is meaningful.
+- Issues use sustained timing, hysteresis, recovery, priority, and safe recommended actions.
 - Global-input types represent anonymous activity only.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
 
@@ -44,5 +47,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Visual contract](docs/DESIGN_SYSTEM.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Telemetry engine](docs/TELEMETRY.md)
+- [System intelligence](docs/DIAGNOSTICS.md)
 
-Next: Phase 6 — Human-Friendly System Intelligence.
+Next: Phase 7 — Desktop Windowing & Native Shell.

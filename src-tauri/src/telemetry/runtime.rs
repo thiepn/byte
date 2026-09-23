@@ -1,5 +1,7 @@
 use super::engine::TelemetryEngine;
-use crate::{core::error::ByteError, core::state::AppState};
+use crate::{
+    core::{diagnostics::DiagnosticEngine, error::ByteError, state::AppState},
+};
 use std::{thread, time::Duration};
 use tauri::{AppHandle, Manager};
 
@@ -21,7 +23,8 @@ pub fn start(app: AppHandle) -> Result<(), ByteError> {
 
 #[cfg(target_os = "windows")]
 fn run_worker(app: AppHandle) {
-    let mut engine = TelemetryEngine::new(WindowsTelemetrySource::new());
+    let mut telemetry = TelemetryEngine::new(WindowsTelemetrySource::new());
+    let mut diagnostics = DiagnosticEngine::new();
 
     loop {
         let state = app.state::<AppState>();
@@ -29,8 +32,8 @@ fn run_worker(app: AppHandle) {
             break;
         }
 
-        if let Ok(snapshot) = engine.sample_snapshot() {
-            state.replace_snapshot(snapshot);
+        if let Ok(snapshot) = telemetry.sample_snapshot() {
+            state.replace_snapshot(diagnostics.evaluate(snapshot));
         }
 
         if !state.lifecycle.wait_for_change_or_timeout(SAMPLE_INTERVAL) {
