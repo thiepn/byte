@@ -1,4 +1,7 @@
-use crate::{core::{config::ConfigStore, lifecycle::LifecycleCoordinator}, models::SystemSnapshot};
+use crate::{
+    core::{config::ConfigStore, lifecycle::LifecycleCoordinator},
+    models::SystemSnapshot,
+};
 use std::sync::{Mutex, RwLock};
 
 pub struct AppState {

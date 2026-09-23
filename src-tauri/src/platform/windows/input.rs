@@ -2,7 +2,12 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum InputActivityKind { KeyboardActivity, MouseLeft, MouseRight, Scroll }
+pub enum InputActivityKind {
+    KeyboardActivity,
+    MouseLeft,
+    MouseRight,
+    Scroll,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InputActivityEvent {
@@ -12,7 +17,10 @@ pub struct InputActivityEvent {
 
 /// Privacy boundary: there is deliberately no field for key identity or typed content.
 pub fn anonymous_keyboard_activity(timestamp_epoch_ms: u64) -> InputActivityEvent {
-    InputActivityEvent { kind: InputActivityKind::KeyboardActivity, timestamp_epoch_ms }
+    InputActivityEvent {
+        kind: InputActivityKind::KeyboardActivity,
+        timestamp_epoch_ms,
+    }
 }
 
 #[cfg(test)]

@@ -15,9 +15,13 @@ pub enum ByteError {
 }
 
 impl From<std::io::Error> for ByteError {
-    fn from(value: std::io::Error) -> Self { Self::Io(value.to_string()) }
+    fn from(value: std::io::Error) -> Self {
+        Self::Io(value.to_string())
+    }
 }
 
 impl From<serde_json::Error> for ByteError {
-    fn from(value: serde_json::Error) -> Self { Self::Config(value.to_string()) }
+    fn from(value: serde_json::Error) -> Self {
+        Self::Config(value.to_string())
+    }
 }

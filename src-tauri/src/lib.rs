@@ -24,7 +24,9 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let open = MenuItemBuilder::with_id("open", "Open Byte").build(app)?;
     let toggle = MenuItemBuilder::with_id("toggle", "Show Companion").build(app)?;
     let quit = MenuItemBuilder::with_id("quit", "Quit Byte").build(app)?;
-    let menu = MenuBuilder::new(app).items(&[&open, &toggle, &quit]).build()?;
+    let menu = MenuBuilder::new(app)
+        .items(&[&open, &toggle, &quit])
+        .build()?;
 
     let mut tray = TrayIconBuilder::new()
         .menu(&menu)

@@ -4,15 +4,24 @@ pub trait TelemetrySource: Send {
     fn sample(&mut self) -> Result<SystemSnapshot, ByteError>;
 }
 
-pub struct MockTelemetrySource { snapshot: SystemSnapshot }
+pub struct MockTelemetrySource {
+    snapshot: SystemSnapshot,
+}
 
 impl MockTelemetrySource {
-    pub fn new(snapshot: SystemSnapshot) -> Self { Self { snapshot } }
-    pub fn healthy() -> Self { Self::new(SystemSnapshot::development_default()) }
+    pub fn new(snapshot: SystemSnapshot) -> Self {
+        Self { snapshot }
+    }
+
+    pub fn healthy() -> Self {
+        Self::new(SystemSnapshot::development_default())
+    }
 }
 
 impl TelemetrySource for MockTelemetrySource {
-    fn sample(&mut self) -> Result<SystemSnapshot, ByteError> { Ok(self.snapshot.clone()) }
+    fn sample(&mut self) -> Result<SystemSnapshot, ByteError> {
+        Ok(self.snapshot.clone())
+    }
 }
 
 #[cfg(test)]

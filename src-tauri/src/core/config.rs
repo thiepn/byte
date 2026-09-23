@@ -1,5 +1,12 @@
-use crate::{core::error::ByteError, models::{ByteConfig, CompanionPreferences}};
-use std::{fs, io::Write, path::{Path, PathBuf}};
+use crate::{
+    core::error::ByteError,
+    models::{ByteConfig, CompanionPreferences},
+};
+use std::{
+    fs,
+    io::Write,
+    path::{Path, PathBuf},
+};
 use tempfile::NamedTempFile;
 
 pub const CURRENT_SCHEMA_VERSION: u32 = 1;
@@ -11,7 +18,9 @@ pub struct ConfigStore {
 
 impl ConfigStore {
     pub fn load(path: PathBuf) -> Result<Self, ByteError> {
-        if let Some(parent) = path.parent() { fs::create_dir_all(parent)?; }
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
 
         let config = match fs::read_to_string(&path) {
             Ok(raw) => match serde_json::from_str::<ByteConfig>(&raw) {
@@ -30,9 +39,14 @@ impl ConfigStore {
         Ok(store)
     }
 
-    pub fn snapshot(&self) -> ByteConfig { self.config.clone() }
+    pub fn snapshot(&self) -> ByteConfig {
+        self.config.clone()
+    }
 
-    pub fn update_companion(&mut self, preferences: CompanionPreferences) -> Result<ByteConfig, ByteError> {
+    pub fn update_companion(
+        &mut self,
+        preferences: CompanionPreferences,
+    ) -> Result<ByteConfig, ByteError> {
         self.config.companion = preferences;
         self.save()?;
         Ok(self.config.clone())
@@ -45,13 +59,16 @@ impl ConfigStore {
         let mut temp = NamedTempFile::new_in(parent)?;
         temp.write_all(&payload)?;
         temp.as_file_mut().sync_all()?;
-        temp.persist(&self.path).map_err(|error| ByteError::Io(error.error.to_string()))?;
+        temp.persist(&self.path)
+            .map_err(|error| ByteError::Io(error.error.to_string()))?;
         Ok(())
     }
 }
 
 fn quarantine_corrupt_config(path: &Path) {
-    if !path.exists() { return; }
+    if !path.exists() {
+        return;
+    }
     let quarantine = path.with_extension("corrupt.json");
     let _ = fs::remove_file(&quarantine);
     let _ = fs::rename(path, quarantine);
@@ -71,7 +88,10 @@ mod tests {
         preferences.display_mode = DisplayMode::Mini;
         store.update_companion(preferences).expect("persist");
         let reloaded = ConfigStore::load(path).expect("reload");
-        assert_eq!(reloaded.snapshot().companion.display_mode, DisplayMode::Mini);
+        assert_eq!(
+            reloaded.snapshot().companion.display_mode,
+            DisplayMode::Mini
+        );
     }
 
     #[test]
