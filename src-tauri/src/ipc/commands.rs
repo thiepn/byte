@@ -6,11 +6,7 @@ use tauri::{AppHandle, Manager, State};
 
 #[tauri::command]
 pub fn get_snapshot(state: State<'_, AppState>) -> SystemSnapshot {
-    state
-        .snapshot
-        .read()
-        .unwrap_or_else(|poisoned| poisoned.into_inner())
-        .clone()
+    state.snapshot()
 }
 
 #[tauri::command]
@@ -87,6 +83,6 @@ pub fn hide_companion(app: AppHandle) -> Result<(), ByteError> {
 
 #[tauri::command]
 pub fn quit_byte(app: AppHandle, state: State<'_, AppState>) {
-    state.lifecycle.cancel();
+    state.stop_telemetry_worker();
     app.exit(0);
 }

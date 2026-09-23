@@ -2,14 +2,19 @@
 
 Byte is a Windows-first, privacy-first desktop companion that makes system health understandable through a cute, customizable character instead of a technical monitoring dashboard.
 
-## Phase 4 architecture baseline
+## Current foundation
 
-The repository starts from a canonical Tauri 2 + Svelte 5 architecture. Phase 4 intentionally uses a development placeholder companion and mock snapshot so production telemetry, artwork, habitats, and UX can be added without prototype debt.
+Phases 1–5 are implemented.
 
-- Rust owns authoritative state, versioned preferences, lifecycle ownership, and the telemetry-source boundary.
+Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
+
+- Rust owns authoritative state, versioned preferences, lifecycle, and system telemetry.
 - Svelte owns presentation and companion rendering.
-- Windows: `companion`, `quick-panel`, and `main`.
-- Browser development falls back to deterministic local mock data.
+- CPU, RAM, storage, network, battery, and best-effort thermal data are collected locally.
+- UI snapshot reads are cache-only; opening a panel never triggers a second hardware poll.
+- Volatile telemetry is smoothed without startup bias.
+- Battery, thermal, and storage are optional/cached where appropriate.
+- The telemetry worker is lifecycle-aware and joined on explicit shutdown.
 - Global-input types represent anonymous activity only.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
 
@@ -38,5 +43,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [UX contract](docs/UX_SPEC.md)
 - [Visual contract](docs/DESIGN_SYSTEM.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Telemetry engine](docs/TELEMETRY.md)
 
-Next: Phase 5 replaces the mock snapshot with Telemetry Engine V2.
+Next: Phase 6 — Human-Friendly System Intelligence.

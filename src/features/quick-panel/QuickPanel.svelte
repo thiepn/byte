@@ -7,6 +7,12 @@
   let snapshot: SystemSnapshot | null = null;
   let errorMessage = "";
 
+  function storageLabel(value: SystemSnapshot): string {
+    return value.storage.available == null
+      ? "Unavailable"
+      : Math.round(value.storage.available) + " GB free";
+  }
+
   onMount(() => {
     void getSnapshot()
       .then((value) => (snapshot = value))
@@ -16,7 +22,7 @@
 
 <div class="panel">
   <header>
-    <div><strong>Byte</strong><span>Phase 4 foundation</span></div>
+    <div><strong>Byte</strong><span>Live local telemetry</span></div>
     <button class="icon-button" aria-label="Close" onclick={() => void hideQuickPanel()}>×</button>
   </header>
 
@@ -33,7 +39,7 @@
     <div class="rows">
       <div><span>Processor</span><strong>{Math.round(snapshot.cpu.value)}{snapshot.cpu.unit}</strong></div>
       <div><span>Memory</span><strong>{Math.round(snapshot.memory.value)}{snapshot.memory.unit}</strong></div>
-      <div><span>Storage</span><strong>{Math.round(snapshot.storage.available ?? 0)} GB free</strong></div>
+      <div><span>Storage</span><strong>{storageLabel(snapshot)}</strong></div>
       {#if snapshot.battery}
         <div><span>Battery</span><strong>{Math.round(snapshot.battery.percent)}%</strong></div>
       {/if}

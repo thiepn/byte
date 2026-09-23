@@ -1,0 +1,20 @@
+{
+  "timestamp_epoch_ms": 1700000000000,
+  "cpu_percent": 18.0,
+  "memory_used_bytes": 8589934592,
+  "memory_total_bytes": 17179869184,
+  "memory_available_bytes": 8589934592,
+  "storage": {
+    "total_bytes": 549755813888,
+    "available_bytes": 308163805184
+  },
+  "battery": {
+    "percent": 82.0,
+    "charging": true
+  },
+  "network": {
+    "download_bytes_per_second": 2500000.0,
+    "upload_bytes_per_second": 125000.0
+  },
+  "thermal_celsius": 47.0
+}

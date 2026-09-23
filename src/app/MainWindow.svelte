@@ -19,6 +19,12 @@
     }
   }
 
+  function storageLabel(value: SystemSnapshot): string {
+    return value.storage.available == null
+      ? "Unavailable"
+      : Math.round(value.storage.available) + " GB free";
+  }
+
   onMount(() => void load());
 </script>
 
@@ -39,18 +45,18 @@
       <div class="notice error">{errorMessage}</div>
     {:else if view === "overview"}
       <section class="page">
-        <p class="eyebrow">Architecture baseline</p>
+        <p class="eyebrow">Live local telemetry</p>
         <h1>{snapshot ? statusPresentation(snapshot.overall_status).title : "Checking your PC…"}</h1>
         <p class="lede">
           {snapshot
             ? statusPresentation(snapshot.overall_status).description
-            : "Byte is loading the latest local snapshot."}
+            : "Byte is loading the latest cached system snapshot."}
         </p>
         {#if snapshot}
           <div class="metric-grid">
             <article class="metric-card"><span>Processor</span><strong>{Math.round(snapshot.cpu.value)}{snapshot.cpu.unit}</strong><small>{snapshot.cpu.state.toLowerCase()}</small></article>
-            <article class="metric-card"><span>Memory</span><strong>{Math.round(snapshot.memory.value)}{snapshot.memory.unit}</strong><small>{snapshot.memory.state.toLowerCase()}</small></article>
-            <article class="metric-card"><span>Storage</span><strong>{Math.round(snapshot.storage.available ?? 0)} GB free</strong><small>{snapshot.storage.state.toLowerCase()}</small></article>
+            <article class="metric-card"><span>Memory</span><strong>{Math.round(snapshot.memory.value)}{snapshot.memory.unit}</strong><small>{snapshot.memory.available == null ? "availability unknown" : snapshot.memory.state.toLowerCase()}</small></article>
+            <article class="metric-card"><span>Storage</span><strong>{storageLabel(snapshot)}</strong><small>{snapshot.storage.state.toLowerCase()}</small></article>
             {#if snapshot.battery}
               <article class="metric-card"><span>Battery</span><strong>{Math.round(snapshot.battery.percent)}%</strong><small>{snapshot.battery.charging ? "charging" : "on battery"}</small></article>
             {/if}
@@ -70,7 +76,7 @@
       <section class="page">
         <p class="eyebrow">Reserved v1 surface</p>
         <h1>{view[0].toUpperCase() + view.slice(1)}</h1>
-        <p class="lede">This surface is intentionally skeletal in Phase 4. Its production behavior belongs to its dedicated roadmap phase.</p>
+        <p class="lede">This surface remains intentionally skeletal until its dedicated roadmap phase.</p>
       </section>
     {/if}
   </main>

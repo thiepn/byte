@@ -41,7 +41,7 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         "open" => show_window(app, "main", true),
         "toggle" => show_window(app, "companion", false),
         "quit" => {
-            app.state::<AppState>().lifecycle.cancel();
+            app.state::<AppState>().stop_telemetry_worker();
             app.exit(0);
         }
         _ => {}
@@ -58,6 +58,7 @@ pub fn run() {
             let config = ConfigStore::load(config_path)?;
             app.manage(AppState::new(config));
 
+            telemetry::runtime::start(app.handle().clone())?;
             setup_tray(app)?;
 
             if let Some(main_window) = app.get_webview_window("main") {
