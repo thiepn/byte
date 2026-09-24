@@ -605,9 +605,7 @@ mod tests {
     #[test]
     fn input_capture_suspends_for_hidden_desktop_states() {
         assert!(!lifecycle_suspends_input(LifecycleState::Active));
-        assert!(lifecycle_suspends_input(
-            LifecycleState::FullscreenReduced
-        ));
+        assert!(lifecycle_suspends_input(LifecycleState::FullscreenReduced));
         assert!(lifecycle_suspends_input(LifecycleState::Locked));
         assert!(lifecycle_suspends_input(LifecycleState::DisplaySleep));
         assert!(lifecycle_suspends_input(LifecycleState::SystemSleep));
