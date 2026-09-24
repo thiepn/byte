@@ -50,7 +50,7 @@ Finishing writes the existing CompanionPreferences and AppPreferences; there is 
 
 ## Migration
 
-ByteConfig schema version is now **6**.
+ByteConfig schema version is now **7**.
 
 Existing schema versions 1–5 gain Phase 20 defaults and are migrated with onboarding marked complete. This prevents an upgrade from interrupting an already configured user with first-run setup.
 

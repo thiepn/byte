@@ -16,7 +16,7 @@ import type {
 } from "../types/domain";
 
 const DEFAULT_CONFIG: ByteConfig = {
-  schema_version: 6,
+  schema_version: 7,
   companion: {
     character: "BYTE",
     palette: "default",
