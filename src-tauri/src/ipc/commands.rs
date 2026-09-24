@@ -3,8 +3,7 @@ use crate::{
         activity::ActivitySnapshot,
         error::ByteError,
         security::{
-            normalize_and_validate_app_preferences, validate_companion_preferences,
-            validate_snooze,
+            normalize_and_validate_app_preferences, validate_companion_preferences, validate_snooze,
         },
         state::AppState,
     },
