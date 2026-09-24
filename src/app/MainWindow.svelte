@@ -63,6 +63,7 @@
     type DecorationSlot,
   } from "../companion/customization/catalog";
   import { PERSONALITY_CHOICES } from "../companion/personality/profiles";
+  import CustomizationStudio from "./customize/CustomizationStudio.svelte";
 
   type View = "overview" | "activity" | "apps" | "customize" | "settings";
   type ActivityFilter = "ALL" | ActivityEventKind;
@@ -626,127 +627,17 @@
       </section>
 
     {:else if view === "customize"}
-      <section class="page customize-page">
-        <div class="page-heading">
-          <div>
-            <p class="eyebrow">Personalize the companion</p>
-            <h1>Customize</h1>
-            <p class="lede">Character, palette, habitat, accessories, props, and fixed-slot decorations are local and persist across restarts.</p>
-          </div>
-          <button class="secondary-button" disabled={saving || !preferences} onclick={() => void resetAccessoriesAndDecor()}>Clear accessories & decor</button>
-        </div>
-
-        {#if customizeError}<div class="notice error compact">{customizeError}</div>{/if}
-
-        {#if preferences}
-          <article class="preview-card">
-            <img src={CHARACTER_CHOICES.find((choice) => choice.id === preferences?.companion.character)?.preview} alt="" />
-            <div>
-              <strong>{CHARACTER_CHOICES.find((choice) => choice.id === preferences?.companion.character)?.name}</strong>
-              <span>{HABITAT_CHOICES.find((choice) => choice.id === preferences?.companion.habitat)?.name} · {preferences.companion.display_mode.toLowerCase()}</span>
-            </div>
-            <small>{saving ? "Saving…" : "Changes apply live"}</small>
-          </article>
-
-          <section class="custom-card">
-            <div class="section-heading"><div><h2>Character</h2><p>Choose one of Byte's four production companions.</p></div></div>
-            <div class="choice-grid characters">
-              {#each CHARACTER_CHOICES as choice}
-                <button class="visual-choice" class:selected={preferences.companion.character === choice.id} disabled={saving} onclick={() => void selectCharacter(choice.id)}>
-                  <img src={choice.preview} alt="" /><span>{choice.name}</span>
-                </button>
-              {/each}
-            </div>
-          </section>
-
-          <section class="custom-card">
-            <div class="section-heading"><div><h2>Palette</h2><p>Each character keeps its own eight authored colorways.</p></div></div>
-            <div class="palette-grid">
-              {#each paletteOptions as palette}
-                <button class="palette-choice" class:selected={preferences.companion.palette === palette.id} disabled={saving} onclick={() => void selectPalette(palette.id)}>
-                  <span class="palette-swatch" style:background={palette.colors.primary ?? Object.values(palette.colors)[0]}></span><span>{palette.name}</span>
-                </button>
-              {/each}
-            </div>
-          </section>
-
-          <section class="custom-card">
-            <div class="section-heading"><div><h2>Habitat</h2><p>Decorations stay assigned to semantic slots when the habitat changes.</p></div></div>
-            <div class="choice-grid habitats">
-              {#each HABITAT_CHOICES as choice}
-                <button class="habitat-choice" class:selected={preferences.companion.habitat === choice.id} disabled={saving} onclick={() => void selectHabitat(choice.id)}>
-                  <span class="habitat-swatch" style:background={choice.tone}></span><span>{choice.name}</span>
-                </button>
-              {/each}
-            </div>
-          </section>
-
-          <section class="custom-card">
-            <div class="section-heading"><div><h2>Personality</h2><p>Personality changes idle pacing, curiosity, wind-down behavior, and ambient life. System warnings remain equally clear.</p></div></div>
-            <div class="personality-grid">
-              {#each PERSONALITY_CHOICES as option}
-                <button class="personality-choice" class:selected={preferences.companion.personality === option.id} disabled={saving} onclick={() => void selectPersonality(option.id)}>
-                  <strong>{option.name}</strong><span>{option.description}</span><small>{option.traits}</small>
-                </button>
-              {/each}
-            </div>
-            <div class="activity-level">
-              <span class="field-label">Interaction level</span>
-              <div class="chip-row">
-                {#each INTERACTION_LEVELS as option}
-                  <button class:selected={preferences.companion.interaction_level === option.id} disabled={saving} onclick={() => void selectInteractionLevel(option.id)}>{option.name}</button>
-                {/each}
-              </div>
-            </div>
-          </section>
-
-          <section class="custom-card">
-            <div class="section-heading"><div><h2>Accessories</h2><p>One item per anchor category.</p></div></div>
-            <div class="option-sections">
-              {#each COSMETIC_CATEGORIES as category}
-                <div class="option-row">
-                  <strong>{COSMETIC_CATEGORY_LABELS[category]}</strong>
-                  <div class="chip-row">
-                    <button class:selected={preferences.companion.customization[category] === "none"} disabled={saving} onclick={() => void selectCosmetic(category, "none")}>None</button>
-                    {#each cosmeticOptions(category) as cosmetic}
-                      <button class="asset-chip" class:selected={preferences.companion.customization[category] === cosmetic.id} disabled={saving} onclick={() => void selectCosmetic(category, cosmetic.id)}>
-                        <img src={cosmetic.src} alt="" /><span>{cosmetic.name}</span>
-                      </button>
-                    {/each}
-                  </div>
-                </div>
-              {/each}
-            </div>
-          </section>
-
-          <section class="custom-card">
-            <div class="section-heading"><div><h2>Habitat decorations</h2><p>Six fixed semantic slots keep scenes intentional.</p></div></div>
-            <div class="option-sections">
-              {#each DECORATION_SLOTS as slot}
-                <div class="option-row">
-                  <div class="slot-label"><strong>{DECORATION_SLOT_LABELS[slot]}</strong><small>{selectedDecorationName(preferences.companion.customization.decorations, slot)}</small></div>
-                  <div class="chip-row">
-                    <button class:selected={preferences.companion.customization.decorations[slot] === "none"} disabled={saving} onclick={() => void selectDecoration(slot, "none")}>None</button>
-                    {#each decorationOptions(slot) as decoration}
-                      <button class="decor-chip" class:selected={preferences.companion.customization.decorations[slot] === decoration.id} disabled={saving} onclick={() => void selectDecoration(slot, decoration.id)}>
-                        <span class="decor-dot" style:background={decoration.previewColor}></span><span>{decoration.name}</span>
-                      </button>
-                    {/each}
-                  </div>
-                </div>
-              {/each}
-            </div>
-          </section>
-
-          <section class="custom-card">
-            <div class="section-heading"><div><h2>Presentation</h2><p>Control the existing companion window modes and size.</p></div></div>
-            <div class="presentation-grid">
-              <div><span class="field-label">Display mode</span><div class="chip-row">{#each DISPLAY_MODES as option}<button class:selected={preferences.companion.display_mode === option.id} disabled={saving} onclick={() => void selectDisplayMode(option.id)}>{option.name}</button>{/each}</div></div>
-              <div><span class="field-label">Size</span><div class="chip-row">{#each SIZES as option}<button class:selected={preferences.companion.size === option.id} disabled={saving} onclick={() => void selectSize(option.id)}>{option.name}</button>{/each}</div></div>
-            </div>
-          </section>
-        {/if}
-      </section>
+      {#if preferences}
+        <section class="studio-page">
+          <CustomizationStudio
+            {preferences}
+            onSaved={(next) => {
+              preferences = next;
+              void refreshPaletteOptions();
+            }}
+          />
+        </section>
+      {/if}
 
     {:else if view === "settings"}
       <section class="page">
@@ -784,6 +675,7 @@
   .settings-link { margin-top: auto; }
   .content { padding: 42px 48px 64px; overflow: auto; }
   .page { max-width: 980px; margin: 0 auto; }
+  .studio-page { max-width: 1180px; margin: 0 auto; }
   .eyebrow { margin: 0 0 8px; color: var(--text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
   h1,h2 { margin: 0; line-height: 1.15; }
   h1 { font-size: 29px; }
