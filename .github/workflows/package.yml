@@ -69,11 +69,10 @@ jobs:
         shell: pwsh
         run: ./scripts/verify-release-artifacts.ps1 -RequireCertification
 
-      - name: Upload packaged build
-        if: always()
+      - name: Upload certified release candidate
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: byte-release-candidate-${{ github.sha }}
           path: release-artifacts/
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14
