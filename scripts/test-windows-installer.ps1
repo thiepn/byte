@@ -47,10 +47,18 @@ function Wait-ForByteInstall {
   throw "Byte did not register as installed."
 }
 
+function Normalize-RegistryPath([string]$Value) {
+  if ([string]::IsNullOrWhiteSpace($Value)) {
+    return ""
+  }
+  return $Value.Trim().Trim('"')
+}
+
 function Find-InstalledByte([object]$Entry) {
   $candidates = @()
   if ($Entry.InstallLocation) {
-    $candidates += Join-Path ([string]$Entry.InstallLocation) "Byte.exe"
+    $installLocation = Normalize-RegistryPath ([string]$Entry.InstallLocation)
+    $candidates += Join-Path $installLocation "Byte.exe"
   }
   $candidates += Join-Path $env:LOCALAPPDATA "Byte\Byte.exe"
 
@@ -65,7 +73,8 @@ function Find-InstalledByte([object]$Entry) {
 
 function Get-UninstallerPath([object]$Entry) {
   if ($Entry.InstallLocation) {
-    $candidate = Join-Path ([string]$Entry.InstallLocation) "uninstall.exe"
+    $installLocation = Normalize-RegistryPath ([string]$Entry.InstallLocation)
+    $candidate = Join-Path $installLocation "uninstall.exe"
     if (Test-Path $candidate) {
       return $candidate
     }
