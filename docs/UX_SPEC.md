@@ -24,6 +24,14 @@ Clicking Byte opens a compact 340×500 explanation-and-action surface. It shows 
 
 The Quick Panel is cache-only and does not trigger hardware sampling. It closes on focus loss and keeps detailed investigation in the full application rather than growing into a Task Manager replacement.
 
+## Full application
+
+The main application keeps exactly five destinations: Overview, Activity, Apps, Customize, and Settings.
+
+Phase 16 makes Overview and Activity production surfaces. Overview shows current state plus CPU, memory, storage, battery, network, and best-effort thermal context with small bounded session trends. Activity stores meaningful events rather than raw telemetry rows.
+
+Apps remains deliberately conservative until its diagnostics phase: it only surfaces the current confidently attributed culprit when one already exists. Settings summarizes current configuration without prematurely adding later system-integration controls.
+
 ## Alerts
 
 Transient spikes do not notify. Sustained meaningful conditions progress from observation to visual reaction to in-app explanation and only then to native notification when justified. Cooldowns and duplicate suppression are mandatory.

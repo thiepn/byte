@@ -68,3 +68,17 @@ Snapshot reads are cache-only. There is no frontend hardware polling, arbitrary 
 ## Validation
 
 Windows CI runs frontend type checks/tests/build plus Rust format/tests/clippy/check. Production habitat tests certify manifest validity, scene density, time-specific art, and semantic reaction coverage.
+
+
+## Main-application activity history
+
+Phase 16 adds a local ActivityStore beside the authoritative SystemSnapshot.
+
+The telemetry worker still samples exactly once. After diagnostics evaluate a snapshot, AppState passes that already-produced snapshot into ActivityStore.
+
+ActivityStore has two deliberately different retention classes:
+
+- meaningful events: issue opened, issue resolved, charging started/stopped; capped at 200 and persisted atomically in activity.json
+- trend points: CPU, memory, storage, battery, aggregate network, and best-effort thermal; sampled at most every 15 seconds, capped at 240, and kept in memory for the current session only
+
+The full application reads these cached structures through get_activity_history. Opening Overview or Activity never creates another hardware sampler or continuous process scan.
