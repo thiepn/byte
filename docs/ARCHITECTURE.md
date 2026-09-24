@@ -130,3 +130,44 @@ Network progress counts at most one moment per 60 seconds while aggregate throug
 Rare idle discovery is reported by the production companion only when an existing `rare_a` or `rare_b` idle occurs naturally. Discovery unlocks replay access in the Studio; it does not remove those rare idles from normal companion behavior.
 
 The backend validates known Phase 19 gated selections before persisting CompanionPreferences. Core Phase 18 items are never gated.
+
+
+## Phase 20 application settings and Windows integration
+
+ByteConfig schema version 6 expands AppPreferences with onboarding, monitoring, notification, and accessibility state.
+
+New installs default to onboarding incomplete. Config versions 1–5 migrate to schema 6 with onboarding marked complete so existing users are not forced through first-run setup.
+
+The `update_app_preferences` command is the single persisted app-settings mutation path. It validates supported text-scale values, applies current-user startup registration when that setting changes, clears the cached system snapshot when monitoring is disabled, and broadcasts `byte://app-preferences-changed` to all Byte windows.
+
+### Startup
+
+Windows startup uses the current-user Run key only:
+
+`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`
+
+No administrator privilege, scheduled task, service, or machine-wide registry entry is used.
+
+### Fullscreen awareness
+
+A lightweight Windows worker checks the foreground window approximately every 750 ms.
+
+It ignores Byte's own windows and treats a foreground window as fullscreen only when its outer rectangle matches the monitor rectangle within a two-pixel tolerance. When fullscreen auto-hide is enabled, Byte hides the companion and Quick Panel, then restores the companion after fullscreen ends. Tray mode is never overridden.
+
+The lifecycle coordinator enters `FULLSCREEN_REDUCED` while a fullscreen foreground window is active.
+
+### Monitoring
+
+The existing telemetry worker remains authoritative. When system monitoring is disabled, it stops sampling the system and publishes an unavailable cached snapshot instead. No second monitoring path is introduced.
+
+### Notifications
+
+The Tauri notification integration may send one native notification when a sustained diagnostic reaches `NEEDS_ATTENTION`. The worker suppresses duplicate notifications for the same active issue and clears the suppression when the system leaves NEEDS_ATTENTION.
+
+Notifications never replace in-app diagnostics and contain only Byte's existing issue headline.
+
+### Accessibility
+
+`byte://app-preferences-changed` applies reduced-motion, high-contrast, and text-scale preferences across every webview. The companion animation runtime combines Byte's explicit Reduce Motion setting with the operating-system media preference.
+
+High-contrast mode changes UI tokens only; semantic health states remain represented by text as well as color.

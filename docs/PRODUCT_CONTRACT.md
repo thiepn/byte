@@ -34,7 +34,7 @@ Byte is not a PC cleaner, RAM optimizer, registry cleaner, driver updater, fan c
 
 ## Privacy
 
-No account, cloud dependency, ads, analytics, behavioral telemetry, key logging, process-name upload, or background network service. Update checks are the expected production network activity.
+No account, cloud dependency, ads, analytics, behavioral telemetry, key logging, process-name upload, or background network service. Native notifications are local OS output. Release/update checks are the expected production network activity.
 
 ## Release platform
 

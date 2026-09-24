@@ -50,3 +50,37 @@ Core characters, habitats, Phase 13 cosmetics/decorations, personalities, palett
 Unlock conditions are based on passive elapsed time or signals Byte already observes for companion reactions. There are no daily-login rewards, streaks, XP bars, currency, shop, battle pass, resource-wasting challenges, or mandatory pet maintenance.
 
 Locked extras remain visible with a plain-language condition. Time, typing, and charging milestones may show simple finite progress. Network and rare-idle discoveries intentionally do not expose grindable numeric targets.
+
+
+## First-run onboarding
+
+Phase 20 introduces a short four-step setup shown only for new installations:
+
+1. Meet Byte and understand the companion-first product.
+2. Review the local-only privacy boundary and optionally disable system monitoring.
+3. Choose character and habitat.
+4. Choose desktop display mode, startup behavior, and fullscreen behavior.
+
+Completing onboarding persists the ordinary companion/app preferences. Existing schema-v5 installations migrate with onboarding marked complete so upgrades do not unexpectedly reopen first-run setup.
+
+## Settings
+
+Settings is now editable rather than a read-only summary.
+
+It contains:
+
+- Windows startup
+- fullscreen auto-hide
+- system monitoring
+- local Activity history
+- Windows notifications
+- sound master switch
+- reduced motion
+- high contrast
+- 100 / 110 / 125% application text scale
+- current application version and fixed GitHub Releases destination
+- Activity-history clearing
+- re-run onboarding
+- handoff to the Customization Studio
+
+There is still no threshold editor, optimizer control panel, generic shell launcher, or advanced sensor configuration.
