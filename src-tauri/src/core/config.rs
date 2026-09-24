@@ -79,7 +79,7 @@ fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
 
     match config.schema_version {
         CURRENT_SCHEMA_VERSION => Ok(config),
-        1 | 2 | 3 => {
+        1..=3 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
             Ok(config)
         }
