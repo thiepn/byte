@@ -92,10 +92,7 @@ fn run(app: AppHandle) {
             window.pump_messages();
         }
 
-        let inspect_foreground_app = !state
-            .app_preferences()
-            .hidden_foreground_apps
-            .is_empty();
+        let inspect_foreground_app = !state.app_preferences().hidden_foreground_apps.is_empty();
         apply_observation(&app, observe(inspect_foreground_app), false);
         thread::sleep(POLL_INTERVAL);
     }
@@ -118,10 +115,9 @@ fn apply_observation(app: &AppHandle, observation: AwarenessObservation, initial
         suppression_reason(&observation, &config.app)
     };
     let visible = windowing::is_companion_visible(app).unwrap_or(false);
-    let visible_foreground_app =
-        (reason == Some(VisibilitySuppressionReason::ExcludedApp))
-            .then(|| observation.foreground_app.clone())
-            .flatten();
+    let visible_foreground_app = (reason == Some(VisibilitySuppressionReason::ExcludedApp))
+        .then(|| observation.foreground_app.clone())
+        .flatten();
     let transition = state.update_desktop_awareness(
         reason,
         visible_foreground_app,
