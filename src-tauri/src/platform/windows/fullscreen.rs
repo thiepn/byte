@@ -7,13 +7,9 @@ use std::{mem::size_of, thread, time::Duration};
 use tauri::{AppHandle, Manager};
 use windows_sys::Win32::{
     Foundation::RECT,
-    Graphics::Gdi::{
-        GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST,
-    },
+    Graphics::Gdi::{GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST},
     System::Threading::GetCurrentProcessId,
-    UI::WindowsAndMessaging::{
-        GetForegroundWindow, GetWindowRect, GetWindowThreadProcessId,
-    },
+    UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowRect, GetWindowThreadProcessId},
 };
 
 const POLL_INTERVAL: Duration = Duration::from_millis(750);

@@ -30,10 +30,7 @@ mod tests {
 
     #[test]
     fn registry_location_is_current_user_run_key() {
-        assert_eq!(
-            RUN_KEY,
-            r"Software\Microsoft\Windows\CurrentVersion\Run"
-        );
+        assert_eq!(RUN_KEY, r"Software\Microsoft\Windows\CurrentVersion\Run");
         assert_eq!(VALUE_NAME, "Byte");
     }
 }
