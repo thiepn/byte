@@ -59,8 +59,11 @@ impl ConfigStore {
         preferences: CompanionPreferences,
     ) -> Result<ByteConfig, ByteError> {
         validate_companion_preferences(&preferences)?;
-        self.config.companion = preferences;
-        self.save()?;
+
+        let mut next = self.config.clone();
+        next.companion = preferences;
+        self.save_config(&next)?;
+        self.config = next;
         Ok(self.config.clone())
     }
 
@@ -68,25 +71,32 @@ impl ConfigStore {
         &mut self,
         update: impl FnOnce(&mut CompanionPreferences),
     ) -> Result<ByteConfig, ByteError> {
-        let mut next = self.config.companion.clone();
-        update(&mut next);
-        validate_companion_preferences(&next)?;
-        self.config.companion = next;
-        self.save()?;
+        let mut next = self.config.clone();
+        update(&mut next.companion);
+        validate_companion_preferences(&next.companion)?;
+        self.save_config(&next)?;
+        self.config = next;
         Ok(self.config.clone())
     }
 
     pub fn update_app(&mut self, mut preferences: AppPreferences) -> Result<ByteConfig, ByteError> {
         normalize_and_validate_app_preferences(&mut preferences)?;
-        self.config.app = preferences;
-        self.save()?;
+
+        let mut next = self.config.clone();
+        next.app = preferences;
+        self.save_config(&next)?;
+        self.config = next;
         Ok(self.config.clone())
     }
 
     pub fn save(&self) -> Result<(), ByteError> {
+        self.save_config(&self.config)
+    }
+
+    fn save_config(&self, config: &ByteConfig) -> Result<(), ByteError> {
         let parent = self.path.parent().unwrap_or_else(|| Path::new("."));
         fs::create_dir_all(parent)?;
-        let payload = serde_json::to_vec_pretty(&self.config)?;
+        let payload = serde_json::to_vec_pretty(config)?;
         let mut temp = NamedTempFile::new_in(parent)?;
         temp.write_all(&payload)?;
         temp.as_file_mut().sync_all()?;
@@ -466,6 +476,20 @@ mod tests {
         assert!(app.hide_in_presentation);
         assert!(app.exclude_from_capture);
         assert!(app.hidden_foreground_apps.is_empty());
+    }
+
+    #[test]
+    fn semantically_invalid_config_is_quarantined_before_defaults_are_restored() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = temp.path().join("config.json");
+        let mut value = serde_json::to_value(ByteConfig::default()).expect("serialize");
+        value["companion"]["character"] = serde_json::Value::String("../../escape".into());
+        fs::write(&path, serde_json::to_vec_pretty(&value).expect("json")).expect("write");
+
+        let store = ConfigStore::load(path.clone()).expect("recover");
+
+        assert_eq!(store.snapshot().companion.character, "BYTE");
+        assert!(path.with_extension("corrupt.json").exists());
     }
 
     #[test]
