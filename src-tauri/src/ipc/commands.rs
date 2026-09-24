@@ -6,7 +6,7 @@ use crate::{
     },
     platform::windows::windowing,
 };
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, State};
 
 #[tauri::command]
 pub fn get_snapshot(state: State<'_, AppState>) -> SystemSnapshot {

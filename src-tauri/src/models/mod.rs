@@ -320,17 +320,9 @@ impl Default for ByteConfig {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct WindowShellState {
     pub move_mode: bool,
     pub click_through: bool,
 }
 
-impl Default for WindowShellState {
-    fn default() -> Self {
-        Self {
-            move_mode: false,
-            click_through: false,
-        }
-    }
-}
