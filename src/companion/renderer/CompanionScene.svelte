@@ -5,6 +5,8 @@
   import { CharacterAnimator } from "../animation/state-machine";
   import { animationScheduler } from "../animation/scheduler";
   import { systemBehaviorForSnapshot } from "../animation/system-behavior";
+  import { applyInputReaction } from "../animation/input-reactions";
+  import type { InputReactionEvent } from "../../lib/types/input";
   import { hashSeed } from "../animation/random";
   import { CharacterCanvasRenderer } from "./CharacterCanvasRenderer";
   import {
@@ -154,6 +156,15 @@
     if (isTauri()) {
       void listen<boolean>("byte://move-mode-changed", (event) => {
         if (!disposed) moveMode = event.payload;
+      }).then((unlisten) => {
+        if (disposed) unlisten();
+        else unlisteners.push(unlisten);
+      });
+
+      void listen<InputReactionEvent>("byte://input-reaction", (event) => {
+        if (!disposed && animator) {
+          applyInputReaction(animator, event.payload);
+        }
       }).then((unlisten) => {
         if (disposed) unlisten();
         else unlisteners.push(unlisten);

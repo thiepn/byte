@@ -45,9 +45,15 @@ The diagnostic engine owns sustained-condition timing, hysteresis, recovery, iss
 
 Process scanning is lazy and only runs while CPU or memory is in a high candidate state or has an active issue. Diagnostic thresholds and behavior are documented in [DIAGNOSTICS.md](DIAGNOSTICS.md).
 
-## Input privacy
+## Global input reactions
 
-The Windows input boundary exposes keyboard activity, left click, right click, and scroll only. Its public event type cannot represent key identity or text.
+Phase 10 turns the input privacy boundary into a production Windows input runtime.
+
+One dedicated low-level hook thread observes keyboard, left/right mouse button, and wheel activity. Hook callbacks only enqueue anonymous activity and immediately return. A separate interpreter worker owns debounce, alternating typing taps, fast-typing detection, and idle detection.
+
+Only semantic reaction events cross into Svelte. No key identity, scan code, typed text, mouse position, or input history crosses the platform boundary.
+
+The runtime is optional at startup and explicitly unhooks/joins on shutdown. See [INPUT_REACTIONS.md](INPUT_REACTIONS.md).
 
 ## Windows shell
 

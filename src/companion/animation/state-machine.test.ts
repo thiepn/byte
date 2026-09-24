@@ -146,6 +146,14 @@ describe("CharacterAnimator", () => {
     expect(animator.currentBehavior()).toBe("idle");
   });
 
+  it("can release a looping transient source back to the base state", () => {
+    const animator = new CharacterAnimator(manifest(), 1);
+    animator.requestBehavior({ behavior: "happy", source: "input" });
+    expect(animator.releaseSource("input")).toBe(true);
+    expect(animator.currentBehavior()).toBe("idle");
+    expect(animator.releaseSource("input")).toBe(false);
+  });
+
   it("uses reduced-motion frames while preserving completion semantics", () => {
     const animator = new CharacterAnimator(manifest(), 1);
     animator.setReducedMotion(true);

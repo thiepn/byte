@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–9 are implemented.
+Phases 1–10 are implemented.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -25,7 +25,8 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Character animation is manifest-driven with one shared 12 FPS scheduler, semantic behavior priorities, transitions, reduced-motion fallbacks, deterministic idle scheduling, anchors, and canvas sprite rendering.
 - Byte, Mochi, Pip, and Kiwi now ship as distinct production sprite families with complete behavior coverage and eight palettes each.
 - The companion loads the persisted character and palette instead of hard-coding Byte.
-- Global-input types represent anonymous activity only.
+- Windows global keyboard/click/scroll activity now drives privacy-safe typing, click, fast-typing, and idle reactions.
+- The native hook callbacks never expose key identity, text, scan codes, or mouse coordinates and offload all interpretation to a separate worker.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
 
 ## Development
@@ -58,5 +59,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Native windowing](docs/WINDOWING.md)
 - [Character animation runtime](docs/ANIMATION_RUNTIME.md)
 - [Production characters](docs/CHARACTERS.md)
+- [Global input reactions](docs/INPUT_REACTIONS.md)
 
-Next: Phase 10 — Global Input Reaction Engine.
+Next: Phase 11 — Habitat Rendering Engine.

@@ -6,7 +6,7 @@ pub mod telemetry;
 
 use core::{config::ConfigStore, state::AppState};
 use models::DisplayMode;
-use platform::windows::windowing;
+use platform::windows::{input::InputRuntime, windowing};
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -79,7 +79,7 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
             let _ = windowing::set_display_mode(app, DisplayMode::Tray);
         }
         "quit" => {
-            app.state::<AppState>().stop_telemetry_worker();
+            app.state::<AppState>().stop_background_workers();
             app.exit(0);
         }
         _ => {}
@@ -108,6 +108,11 @@ pub fn run() {
 
             windowing::initialize(app.handle())?;
             telemetry::runtime::start(app.handle().clone())?;
+
+            if let Ok(input_runtime) = InputRuntime::start(app.handle().clone()) {
+                app.state::<AppState>().install_input_runtime(input_runtime);
+            }
+
             setup_tray(app)?;
 
             if let Some(main_window) = app.get_webview_window("main") {

@@ -108,6 +108,6 @@ pub fn hide_companion(app: AppHandle) -> Result<(), ByteError> {
 
 #[tauri::command]
 pub fn quit_byte(app: AppHandle, state: State<'_, AppState>) {
-    state.stop_telemetry_worker();
+    state.stop_background_workers();
     app.exit(0);
 }

@@ -162,6 +162,12 @@ export class CharacterAnimator {
     return this.active.behavior;
   }
 
+  releaseSource(source: BehaviorSource): boolean {
+    if (this.active.source !== source) return false;
+    this.active = this.createPlayback(this.baseBehavior, this.baseSource, null);
+    return true;
+  }
+
   private advance(deltaMs: number): void {
     const clip = this.clip();
 
