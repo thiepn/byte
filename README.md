@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–12 are implemented.
+Phases 1–13 are implemented.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -24,10 +24,10 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Move Mode, native dragging, click-through, tray controls, and adjacent Quick Panel placement are implemented.
 - Character animation is manifest-driven with one shared 12 FPS scheduler, semantic behavior priorities, transitions, reduced-motion fallbacks, deterministic idle scheduling, anchors, and canvas sprite rendering.
 - Byte, Mochi, Pip, and Kiwi ship as distinct production sprite families with complete behavior coverage and eight palettes each.
-- The companion loads the persisted character and palette instead of hard-coding Byte.
 - Windows global keyboard/click/scroll activity drives privacy-safe typing, click, fast-typing, and idle reactions.
-- The native hook callbacks never expose key identity, text, scan codes, or mouse coordinates and offload all interpretation to a separate worker.
-- Meadow, Cozy Desk, Bedroom, Space, Aquarium, and Rooftop are production habitats with authored depth, four local-time palettes, time-specific scene layers, richer pixel geometry, habitat-specific system metaphors, fixed decoration slots, and bounded ambience.
+- Meadow, Cozy Desk, Bedroom, Space, Aquarium, and Rooftop are production habitats with authored depth, local-time variants, semantic system reactions, fixed decoration slots, and bounded ambience.
+- Phase 13 adds persistent live customization: character, palette, habitat, 12 anchor-based character cosmetics, 12 fixed-slot habitat decorations, display mode, and size controls.
+- Customization is entirely local; there is no account, store, virtual currency, unlock timer, or cloud inventory.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
 
 ## Development
@@ -63,5 +63,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Global input reactions](docs/INPUT_REACTIONS.md)
 - [Habitat rendering runtime](docs/HABITAT_RUNTIME.md)
 - [Production habitats](docs/HABITAT_PRODUCTION.md)
+- [Customization and decoration](docs/CUSTOMIZATION.md)
 
-Next: Phase 13 — Customization & Decoration.
+Next: Phase 14 — Personality & Ambient Behavior.

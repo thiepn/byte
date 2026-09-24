@@ -257,6 +257,68 @@ pub enum InteractionLevel {
     Playful,
 }
 
+fn none_selection() -> String {
+    "none".into()
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HabitatDecorationPreferences {
+    #[serde(default = "none_selection")]
+    pub large_background: String,
+    #[serde(default = "none_selection")]
+    pub wall_or_sky: String,
+    #[serde(default = "none_selection")]
+    pub surface_left: String,
+    #[serde(default = "none_selection")]
+    pub surface_right: String,
+    #[serde(default = "none_selection")]
+    pub small_prop: String,
+    #[serde(default = "none_selection")]
+    pub ambient: String,
+}
+
+impl Default for HabitatDecorationPreferences {
+    fn default() -> Self {
+        Self {
+            large_background: none_selection(),
+            wall_or_sky: none_selection(),
+            surface_left: none_selection(),
+            surface_right: none_selection(),
+            small_prop: none_selection(),
+            ambient: none_selection(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CompanionCustomization {
+    #[serde(default = "none_selection")]
+    pub headwear: String,
+    #[serde(default = "none_selection")]
+    pub face_accessory: String,
+    #[serde(default = "none_selection")]
+    pub body_accessory: String,
+    #[serde(default = "none_selection")]
+    pub back_accessory: String,
+    #[serde(default = "none_selection")]
+    pub hand_prop: String,
+    #[serde(default)]
+    pub decorations: HabitatDecorationPreferences,
+}
+
+impl Default for CompanionCustomization {
+    fn default() -> Self {
+        Self {
+            headwear: none_selection(),
+            face_accessory: none_selection(),
+            body_accessory: none_selection(),
+            back_accessory: none_selection(),
+            hand_prop: none_selection(),
+            decorations: HabitatDecorationPreferences::default(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CompanionPreferences {
     pub character: String,
@@ -270,6 +332,8 @@ pub struct CompanionPreferences {
     pub edge_anchor: EdgeAnchor,
     #[serde(default)]
     pub placements: WindowPlacements,
+    #[serde(default)]
+    pub customization: CompanionCustomization,
 }
 
 fn default_character_palette() -> String {
@@ -287,6 +351,7 @@ impl Default for CompanionPreferences {
             interaction_level: InteractionLevel::Normal,
             edge_anchor: EdgeAnchor::Right,
             placements: WindowPlacements::default(),
+            customization: CompanionCustomization::default(),
         }
     }
 }
@@ -320,7 +385,7 @@ pub struct ByteConfig {
 impl Default for ByteConfig {
     fn default() -> Self {
         Self {
-            schema_version: 3,
+            schema_version: 4,
             companion: CompanionPreferences::default(),
             app: AppPreferences::default(),
         }

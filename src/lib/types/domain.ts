@@ -84,6 +84,24 @@ export interface WindowPlacements {
   edge: SavedPlacement | null;
 }
 
+export interface HabitatDecorationPreferences {
+  large_background: string;
+  wall_or_sky: string;
+  surface_left: string;
+  surface_right: string;
+  small_prop: string;
+  ambient: string;
+}
+
+export interface CompanionCustomization {
+  headwear: string;
+  face_accessory: string;
+  body_accessory: string;
+  back_accessory: string;
+  hand_prop: string;
+  decorations: HabitatDecorationPreferences;
+}
+
 export interface CompanionPreferences {
   character: "BYTE" | "MOCHI" | "PIP" | "KIWI";
   palette: string;
@@ -93,6 +111,7 @@ export interface CompanionPreferences {
   interaction_level: InteractionLevel;
   edge_anchor: EdgeAnchor;
   placements: WindowPlacements;
+  customization: CompanionCustomization;
 }
 
 export interface WindowShellState {

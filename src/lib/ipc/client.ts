@@ -10,7 +10,7 @@ import type {
 } from "../types/domain";
 
 const DEFAULT_CONFIG: ByteConfig = {
-  schema_version: 3,
+  schema_version: 4,
   companion: {
     character: "BYTE",
     palette: "default",
@@ -24,6 +24,21 @@ const DEFAULT_CONFIG: ByteConfig = {
       perch: null,
       mini: null,
       edge: null,
+    },
+    customization: {
+      headwear: "none",
+      face_accessory: "none",
+      body_accessory: "none",
+      back_accessory: "none",
+      hand_prop: "none",
+      decorations: {
+        large_background: "none",
+        wall_or_sky: "none",
+        surface_left: "none",
+        surface_right: "none",
+        small_prop: "none",
+        ambient: "none",
+      },
     },
   },
   app: {

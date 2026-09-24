@@ -6,7 +6,7 @@ use crate::{
     },
     platform::windows::windowing,
 };
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Emitter, State};
 
 #[tauri::command]
 pub fn get_snapshot(state: State<'_, AppState>) -> SystemSnapshot {
@@ -35,6 +35,11 @@ pub fn update_companion_preferences(
         .update_companion(preferences)?;
 
     windowing::apply_companion_layout(&app, &config.companion)?;
+    let _ = app.emit_to(
+        "companion",
+        "byte://companion-preferences-changed",
+        config.companion.clone(),
+    );
     Ok(config)
 }
 

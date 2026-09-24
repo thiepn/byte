@@ -1,16 +1,35 @@
 import type { DisplayMode } from "../../lib/types/domain";
+import type { PlacedHabitatDecoration } from "../customization/catalog";
 import type { HabitatParticle } from "../habitats/particles";
 import type {
   HabitatLayerDefinition,
   HabitatManifest,
   HabitatPalette,
+  HabitatPlane,
   HabitatPrimitive,
   HabitatRenderState,
 } from "../habitats/types";
 
+interface LayerRenderEntry {
+  kind: "layer";
+  plane: HabitatPlane;
+  order: number;
+  layer: HabitatLayerDefinition;
+}
+
+interface DecorationRenderEntry {
+  kind: "decoration";
+  plane: HabitatPlane;
+  order: number;
+  decoration: PlacedHabitatDecoration;
+}
+
+type RenderEntry = LayerRenderEntry | DecorationRenderEntry;
+
 export class HabitatCanvasRenderer {
   private readonly backContext: CanvasRenderingContext2D;
   private readonly frontContext: CanvasRenderingContext2D;
+  private decorations: PlacedHabitatDecoration[] = [];
 
   constructor(
     private readonly backCanvas: HTMLCanvasElement,
@@ -32,6 +51,10 @@ export class HabitatCanvasRenderer {
     }
   }
 
+  setDecorations(decorations: PlacedHabitatDecoration[]): void {
+    this.decorations = [...decorations];
+  }
+
   render(state: HabitatRenderState, particles: HabitatParticle[]): void {
     this.clear(this.backContext);
     this.clear(this.frontContext);
@@ -45,20 +68,22 @@ export class HabitatCanvasRenderer {
     }
 
     const palette = this.palette(state);
-    const layers = [...this.manifest.layers].sort(
-      (left, right) => left.order - right.order,
-    );
+    const entries = this.entries(state);
 
-    for (const layer of layers) {
-      if (!layer.modes.includes(state.displayMode)) continue;
-      if (layer.time && !layer.time.includes(state.timeOfDay)) continue;
-
-      const intensity = layer.reaction ? state.reactions[layer.reaction] : 1;
-      if (intensity <= 0) continue;
-
+    for (const entry of entries) {
       const context =
-        layer.plane === "BACK" ? this.backContext : this.frontContext;
-      this.drawLayer(context, layer, palette, intensity);
+        entry.plane === "BACK" ? this.backContext : this.frontContext;
+
+      if (entry.kind === "decoration") {
+        this.drawDecoration(context, entry.decoration);
+        continue;
+      }
+
+      const intensity = entry.layer.reaction
+        ? state.reactions[entry.layer.reaction]
+        : 1;
+      if (intensity <= 0) continue;
+      this.drawLayer(context, entry.layer, palette, intensity);
     }
 
     if (state.displayMode === "HABITAT") {
@@ -117,6 +142,35 @@ export class HabitatCanvasRenderer {
     };
   }
 
+  private entries(state: HabitatRenderState): RenderEntry[] {
+    const entries: RenderEntry[] = [];
+
+    for (const layer of this.manifest.layers) {
+      if (!layer.modes.includes(state.displayMode)) continue;
+      if (layer.time && !layer.time.includes(state.timeOfDay)) continue;
+
+      entries.push({
+        kind: "layer",
+        plane: layer.plane,
+        order: layer.order,
+        layer,
+      });
+    }
+
+    if (state.displayMode === "HABITAT") {
+      for (const decoration of this.decorations) {
+        entries.push({
+          kind: "decoration",
+          plane: decoration.plane,
+          order: decoration.order,
+          decoration,
+        });
+      }
+    }
+
+    return entries.sort((left, right) => left.order - right.order);
+  }
+
   private palette(state: HabitatRenderState): HabitatPalette {
     return (
       this.manifest.palettes.find(
@@ -151,6 +205,21 @@ export class HabitatCanvasRenderer {
       const color = palette.colors[primitive.color];
       if (!color) continue;
       this.drawPrimitive(context, primitive, color);
+    }
+
+    context.restore();
+  }
+
+  private drawDecoration(
+    context: CanvasRenderingContext2D,
+    decoration: PlacedHabitatDecoration,
+  ): void {
+    context.save();
+    context.translate(decoration.x, decoration.y);
+    context.imageSmoothingEnabled = false;
+
+    for (const primitive of decoration.primitives) {
+      this.drawPrimitive(context, primitive, primitive.color);
     }
 
     context.restore();

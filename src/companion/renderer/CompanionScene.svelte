@@ -8,12 +8,22 @@
   import { applyInputReaction } from "../animation/input-reactions";
   import type { CharacterManifest, RenderFrame } from "../animation/types";
   import type { InputReactionEvent } from "../../lib/types/input";
-  import type { DisplayMode } from "../../lib/types/domain";
+  import type {
+    CompanionPreferences,
+    DisplayMode,
+  } from "../../lib/types/domain";
   import { hashSeed } from "../animation/random";
   import { HabitatParticleEngine } from "../habitats/particles";
   import { currentTimeOfDay } from "../habitats/time";
   import { habitatReactionsForSnapshot } from "../habitats/reactions";
-  import type { HabitatRenderState } from "../habitats/types";
+  import type {
+    HabitatManifest,
+    HabitatRenderState,
+  } from "../habitats/types";
+  import {
+    loadSelectedCosmetics,
+    resolveHabitatDecorations,
+  } from "../customization/catalog";
   import { CharacterCanvasRenderer } from "./CharacterCanvasRenderer";
   import { HabitatCanvasRenderer } from "./HabitatCanvasRenderer";
   import {
@@ -44,6 +54,7 @@
   let habitatRenderer: HabitatCanvasRenderer | null = null;
   let particleEngine: HabitatParticleEngine | null = null;
   let characterManifest: CharacterManifest | null = null;
+  let habitatManifest: HabitatManifest | null = null;
 
   let displayMode: DisplayMode = "HABITAT";
   let habitatState: HabitatRenderState = {
@@ -161,80 +172,136 @@
 
   onMount(() => {
     let disposed = false;
+    let visualRevision = 0;
     let unsubscribeAnimation: (() => void) | null = null;
     let systemTimer: number | null = null;
     let mediaQuery: MediaQueryList | null = null;
     const cleanups: Array<() => void> = [];
+    const sessionDay = new Date().toISOString().slice(0, 10);
 
-    const initialize = async (): Promise<void> => {
+    const loadCharacter = async (id: string): Promise<CharacterManifest> => {
       try {
-        const preferences = await getPreferences();
-        if (disposed) return;
+        return await loadCharacterManifest(id);
+      } catch {
+        return loadCharacterManifest("byte");
+      }
+    };
 
-        displayMode = preferences.companion.display_mode;
-        habitatState = {
-          ...habitatState,
-          displayMode,
-          timeOfDay: currentTimeOfDay(),
-        };
+    const loadHabitat = async (id: string): Promise<HabitatManifest> => {
+      try {
+        return await loadHabitatManifest(id);
+      } catch {
+        return loadHabitatManifest("meadow");
+      }
+    };
 
-        const requestedCharacter = preferences.companion.character.toLowerCase();
-        const requestedHabitat = preferences.companion.habitat.toLowerCase();
+    const applyVisualPreferences = async (
+      preferences: CompanionPreferences,
+    ): Promise<void> => {
+      const revision = ++visualRevision;
+      const requestedCharacter = preferences.character.toLowerCase();
+      const requestedHabitat = preferences.habitat.toLowerCase();
 
-        try {
-          characterManifest = await loadCharacterManifest(requestedCharacter);
-        } catch {
-          characterManifest = await loadCharacterManifest("byte");
-        }
+      const [nextCharacterManifest, nextHabitatManifest, attachments] =
+        await Promise.all([
+          loadCharacter(requestedCharacter),
+          loadHabitat(requestedHabitat),
+          loadSelectedCosmetics(preferences.customization),
+        ]);
 
-        let habitatManifest;
-        try {
-          habitatManifest = await loadHabitatManifest(requestedHabitat);
-        } catch {
-          habitatManifest = await loadHabitatManifest("meadow");
-        }
+      if (disposed || revision !== visualRevision) return;
 
-        if (disposed || !characterManifest) return;
+      const characterChanged =
+        !characterManifest || characterManifest.id !== nextCharacterManifest.id;
 
-        characterRenderer = new CharacterCanvasRenderer(
+      if (characterChanged) {
+        const nextRenderer = new CharacterCanvasRenderer(
           characterCanvas,
-          characterManifest,
+          nextCharacterManifest,
         );
+        await nextRenderer.load();
+        if (disposed || revision !== visualRevision) return;
+
+        characterManifest = nextCharacterManifest;
+        characterRenderer = nextRenderer;
+        animator = new CharacterAnimator(
+          nextCharacterManifest,
+          hashSeed(`${nextCharacterManifest.id}:${sessionDay}`),
+        );
+        animator.setReducedMotion(mediaQuery?.matches ?? false);
+      }
+
+      characterRenderer?.setPalette(preferences.palette);
+      characterRenderer?.setAttachments(attachments);
+
+      const habitatChanged =
+        !habitatManifest || habitatManifest.id !== nextHabitatManifest.id;
+
+      if (habitatChanged) {
+        habitatManifest = nextHabitatManifest;
         habitatRenderer = new HabitatCanvasRenderer(
           habitatBackCanvas,
           habitatFrontCanvas,
-          habitatManifest,
+          nextHabitatManifest,
         );
+        particleEngine = new HabitatParticleEngine(
+          nextHabitatManifest,
+          hashSeed(`${nextHabitatManifest.id}:${sessionDay}`),
+        );
+      }
 
-        await characterRenderer.load();
-        characterRenderer.setPalette(preferences.companion.palette);
-        if (disposed) return;
+      habitatRenderer?.setDecorations(
+        resolveHabitatDecorations(
+          nextHabitatManifest,
+          preferences.customization.decorations,
+        ),
+      );
 
-        const sessionDay = new Date().toISOString().slice(0, 10);
-        const characterSeed = hashSeed(`${characterManifest.id}:${sessionDay}`);
-        const habitatSeed = hashSeed(`${habitatManifest.id}:${sessionDay}`);
+      displayMode = preferences.display_mode;
+      habitatState = {
+        ...habitatState,
+        displayMode,
+        timeOfDay: currentTimeOfDay(),
+      };
 
-        animator = new CharacterAnimator(characterManifest, characterSeed);
-        particleEngine = new HabitatParticleEngine(habitatManifest, habitatSeed);
+      if (animator && characterRenderer) {
+        const frame = animator.frame();
+        characterRenderer.render(frame);
+        positionCharacter(frame);
+      }
+      if (habitatRenderer && particleEngine) {
+        habitatRenderer.render(
+          habitatState,
+          particleEngine.update(0, habitatState),
+        );
+      }
+    };
 
+    const initialize = async (): Promise<void> => {
+      try {
         mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-        animator.setReducedMotion(mediaQuery.matches);
-        habitatState = { ...habitatState, reducedMotion: mediaQuery.matches };
+        habitatState = {
+          ...habitatState,
+          reducedMotion: mediaQuery.matches,
+        };
 
         const onMotionChange = (event: MediaQueryListEvent): void => {
           animator?.setReducedMotion(event.matches);
           habitatState = { ...habitatState, reducedMotion: event.matches };
         };
         mediaQuery.addEventListener("change", onMotionChange);
-        cleanups.push(() => mediaQuery?.removeEventListener("change", onMotionChange));
+        cleanups.push(() =>
+          mediaQuery?.removeEventListener("change", onMotionChange),
+        );
+
+        const preferences = await getPreferences();
+        if (disposed) return;
+        await applyVisualPreferences(preferences.companion);
+        if (disposed) return;
 
         unsubscribeAnimation = animationScheduler.subscribe(({ deltaMs }) => {
           renderFrame(deltaMs);
         });
-
-        characterRenderer.render(animator.frame());
-        positionCharacter(animator.frame());
-        habitatRenderer.render(habitatState, particleEngine.update(0, habitatState));
 
         await refreshSystemState();
 
@@ -268,6 +335,16 @@
         else cleanups.push(unlisten);
       });
 
+      void listen<CompanionPreferences>(
+        "byte://companion-preferences-changed",
+        (event) => {
+          if (!disposed) void applyVisualPreferences(event.payload);
+        },
+      ).then((unlisten: UnlistenFn) => {
+        if (disposed) unlisten();
+        else cleanups.push(unlisten);
+      });
+
       void listen<InputReactionEvent>("byte://input-reaction", (event) => {
         if (!disposed && animator) {
           applyInputReaction(animator, event.payload);
@@ -282,6 +359,7 @@
 
     return () => {
       disposed = true;
+      visualRevision += 1;
       unsubscribeAnimation?.();
       if (systemTimer != null) window.clearInterval(systemTimer);
       for (const cleanup of cleanups) cleanup();
@@ -290,6 +368,7 @@
       habitatRenderer = null;
       particleEngine = null;
       characterManifest = null;
+      habitatManifest = null;
     };
   });
 </script>
@@ -329,7 +408,11 @@
   {#if runtimeError}
     <div class="runtime-error" role="status">Companion preview unavailable</div>
   {:else}
-    <canvas bind:this={characterCanvas} class="character-canvas" aria-hidden="true"></canvas>
+    <canvas
+      bind:this={characterCanvas}
+      class="character-canvas"
+      aria-hidden="true"
+    ></canvas>
   {/if}
 
   <canvas

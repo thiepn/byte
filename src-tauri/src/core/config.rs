@@ -9,7 +9,7 @@ use std::{
 };
 use tempfile::NamedTempFile;
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 3;
+pub const CURRENT_SCHEMA_VERSION: u32 = 4;
 
 pub struct ConfigStore {
     path: PathBuf,
@@ -79,7 +79,7 @@ fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
 
     match config.schema_version {
         CURRENT_SCHEMA_VERSION => Ok(config),
-        1 | 2 => {
+        1 | 2 | 3 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
             Ok(config)
         }
@@ -110,11 +110,16 @@ mod tests {
         let mut store = ConfigStore::load(path.clone()).expect("load");
         let mut preferences = store.snapshot().companion;
         preferences.display_mode = DisplayMode::Mini;
+        preferences.customization.headwear = "beanie".into();
         store.update_companion(preferences).expect("persist");
         let reloaded = ConfigStore::load(path).expect("reload");
         assert_eq!(
             reloaded.snapshot().companion.display_mode,
             DisplayMode::Mini
+        );
+        assert_eq!(
+            reloaded.snapshot().companion.customization.headwear,
+            "beanie"
         );
     }
 
@@ -153,10 +158,14 @@ mod tests {
         );
         assert!(migrated.snapshot().companion.placements.mini.is_none());
         assert_eq!(migrated.snapshot().companion.palette, "default");
+        assert_eq!(
+            migrated.snapshot().companion.customization.headwear,
+            "none"
+        );
     }
 
     #[test]
-    fn v2_config_adds_default_palette() {
+    fn v2_config_adds_default_palette_and_customization() {
         let temp = tempfile::tempdir().expect("temp dir");
         let path = temp.path().join("config.json");
         let legacy = r#"{
@@ -189,6 +198,55 @@ mod tests {
         assert_eq!(migrated.snapshot().schema_version, CURRENT_SCHEMA_VERSION);
         assert_eq!(migrated.snapshot().companion.character, "MOCHI");
         assert_eq!(migrated.snapshot().companion.palette, "default");
+        assert_eq!(
+            migrated
+                .snapshot()
+                .companion
+                .customization
+                .decorations
+                .ambient,
+            "none"
+        );
+    }
+
+    #[test]
+    fn v3_config_gains_phase_13_customization_defaults() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = temp.path().join("config.json");
+        let legacy = r#"{
+          "schema_version": 3,
+          "companion": {
+            "character": "KIWI",
+            "palette": "autumn",
+            "habitat": "ROOFTOP",
+            "display_mode": "PERCH",
+            "size": "LARGE",
+            "interaction_level": "PLAYFUL",
+            "edge_anchor": "LEFT",
+            "placements": {
+              "habitat": null,
+              "perch": null,
+              "mini": null,
+              "edge": null
+            }
+          },
+          "app": {
+            "hide_in_fullscreen": true,
+            "sound_enabled": false,
+            "launch_at_startup": false,
+            "activity_history_enabled": true
+          }
+        }"#;
+        fs::write(&path, legacy).expect("write");
+
+        let migrated = ConfigStore::load(path).expect("migrate");
+        let companion = migrated.snapshot().companion;
+
+        assert_eq!(companion.character, "KIWI");
+        assert_eq!(companion.palette, "autumn");
+        assert_eq!(companion.habitat, "ROOFTOP");
+        assert_eq!(companion.customization.back_accessory, "none");
+        assert_eq!(companion.customization.decorations.surface_left, "none");
     }
 
     #[test]
