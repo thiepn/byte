@@ -48,6 +48,7 @@ pub struct DiagnosticEngine {
     battery: SustainedTracker,
     storage: SustainedTracker,
     culprits: Box<dyn CulpritProvider>,
+    last_issues: Vec<SystemIssue>,
 }
 
 impl DiagnosticEngine {
@@ -63,6 +64,7 @@ impl DiagnosticEngine {
             battery: SustainedTracker::default(),
             storage: SustainedTracker::default(),
             culprits,
+            last_issues: Vec::new(),
         }
     }
 
@@ -174,9 +176,14 @@ impl DiagnosticEngine {
             SystemStatus::Calm
         };
 
+        self.last_issues = issues.clone();
         snapshot.secondary_issue_count = issues.len().saturating_sub(1).min(u8::MAX as usize) as u8;
         snapshot.primary_issue = issues.into_iter().next();
         snapshot
+    }
+
+    pub fn active_issues(&self) -> &[SystemIssue] {
+        &self.last_issues
     }
 }
 

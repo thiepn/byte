@@ -29,6 +29,14 @@ export interface ProcessSummary {
 }
 
 export type Confidence = "LOW" | "MEDIUM" | "HIGH";
+export type NotificationCategory =
+  | "MEMORY"
+  | "THERMAL"
+  | "STORAGE"
+  | "BATTERY"
+  | "RUNAWAY_PROCESS";
+export type NotificationPermissionState = "GRANTED" | "DENIED" | "PROMPT";
+
 export type RecommendedActionKind =
   | "OPEN_TASK_MANAGER"
   | "OPEN_STORAGE_SETTINGS"
@@ -128,6 +136,13 @@ export interface AppPreferences {
   activity_history_enabled: boolean;
   system_monitoring_enabled: boolean;
   notifications_enabled: boolean;
+  notification_memory_enabled: boolean;
+  notification_thermal_enabled: boolean;
+  notification_storage_enabled: boolean;
+  notification_battery_enabled: boolean;
+  notification_runaway_process_enabled: boolean;
+  notification_quiet_mode: boolean;
+  notification_snoozed_until_epoch_ms: number | null;
   reduce_motion: boolean;
   high_contrast: boolean;
   text_scale_percent: 100 | 110 | 125;

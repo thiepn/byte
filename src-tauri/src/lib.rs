@@ -5,7 +5,8 @@ pub mod platform;
 pub mod telemetry;
 
 use core::{
-    activity::ActivityStore, collection::CollectionStore, config::ConfigStore, state::AppState,
+    activity::ActivityStore, collection::CollectionStore, config::ConfigStore,
+    smart_notifications::SmartNotificationEngine, state::AppState,
 };
 use models::DisplayMode;
 use platform::windows::{fullscreen, input::InputRuntime, startup, windowing};
@@ -109,8 +110,15 @@ pub fn run() {
             let config = ConfigStore::load(app_config_dir.join("config.json"))?;
             let activity = ActivityStore::load(app_config_dir.join("activity.json"))?;
             let collection = CollectionStore::load(app_config_dir.join("collection.json"))?;
+            let smart_notifications =
+                SmartNotificationEngine::load(app_config_dir.join("notifications.json"))?;
             let initial_app_preferences = config.snapshot().app;
-            app.manage(AppState::new(config, activity, collection));
+            app.manage(AppState::new(
+                config,
+                activity,
+                collection,
+                smart_notifications,
+            ));
 
             windowing::initialize(app.handle())?;
             let _ = startup::apply(initial_app_preferences.launch_at_startup);
@@ -147,6 +155,8 @@ pub fn run() {
             ipc::commands::record_collection_discovery,
             ipc::commands::get_preferences,
             ipc::commands::update_app_preferences,
+            ipc::commands::get_notification_permission,
+            ipc::commands::request_notification_permission,
             ipc::commands::clear_activity_history,
             ipc::commands::open_release_page,
             ipc::commands::update_companion_preferences,

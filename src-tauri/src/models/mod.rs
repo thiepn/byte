@@ -135,6 +135,24 @@ pub enum Confidence {
     High,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum NotificationCategory {
+    Memory,
+    Thermal,
+    Storage,
+    Battery,
+    RunawayProcess,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum NotificationPermissionState {
+    Granted,
+    Denied,
+    Prompt,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum RecommendedActionKind {
@@ -457,6 +475,20 @@ pub struct AppPreferences {
     pub system_monitoring_enabled: bool,
     #[serde(default = "default_true")]
     pub notifications_enabled: bool,
+    #[serde(default = "default_true")]
+    pub notification_memory_enabled: bool,
+    #[serde(default = "default_true")]
+    pub notification_thermal_enabled: bool,
+    #[serde(default = "default_true")]
+    pub notification_storage_enabled: bool,
+    #[serde(default = "default_true")]
+    pub notification_battery_enabled: bool,
+    #[serde(default = "default_true")]
+    pub notification_runaway_process_enabled: bool,
+    #[serde(default)]
+    pub notification_quiet_mode: bool,
+    #[serde(default)]
+    pub notification_snoozed_until_epoch_ms: Option<u64>,
     #[serde(default)]
     pub reduce_motion: bool,
     #[serde(default)]
@@ -476,6 +508,13 @@ impl Default for AppPreferences {
             activity_history_enabled: true,
             system_monitoring_enabled: true,
             notifications_enabled: true,
+            notification_memory_enabled: true,
+            notification_thermal_enabled: true,
+            notification_storage_enabled: true,
+            notification_battery_enabled: true,
+            notification_runaway_process_enabled: true,
+            notification_quiet_mode: false,
+            notification_snoozed_until_epoch_ms: None,
             reduce_motion: false,
             high_contrast: false,
             text_scale_percent: 100,
@@ -494,7 +533,7 @@ pub struct ByteConfig {
 impl Default for ByteConfig {
     fn default() -> Self {
         Self {
-            schema_version: 6,
+            schema_version: 7,
             companion: CompanionPreferences::default(),
             app: AppPreferences::default(),
         }

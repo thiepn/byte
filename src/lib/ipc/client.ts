@@ -9,6 +9,7 @@ import type {
   CompanionSize,
   DisplayMode,
   EdgeAnchor,
+  NotificationPermissionState,
   RecommendedActionKind,
   SystemSnapshot,
   WindowShellState,
@@ -54,6 +55,13 @@ const DEFAULT_CONFIG: ByteConfig = {
     activity_history_enabled: true,
     system_monitoring_enabled: true,
     notifications_enabled: true,
+    notification_memory_enabled: true,
+    notification_thermal_enabled: true,
+    notification_storage_enabled: true,
+    notification_battery_enabled: true,
+    notification_runaway_process_enabled: true,
+    notification_quiet_mode: false,
+    notification_snoozed_until_epoch_ms: null,
     reduce_motion: false,
     high_contrast: false,
     text_scale_percent: 100,
@@ -191,6 +199,16 @@ export async function updateAppPreferences(
     return clone(browserConfig);
   }
   return invoke<ByteConfig>("update_app_preferences", { preferences });
+}
+
+export async function getNotificationPermission(): Promise<NotificationPermissionState> {
+  if (!inTauri()) return "GRANTED";
+  return invoke<NotificationPermissionState>("get_notification_permission");
+}
+
+export async function requestNotificationPermission(): Promise<NotificationPermissionState> {
+  if (!inTauri()) return "GRANTED";
+  return invoke<NotificationPermissionState>("request_notification_permission");
 }
 
 export async function clearActivityHistory(): Promise<ActivitySnapshot> {

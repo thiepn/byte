@@ -24,7 +24,6 @@ pub fn start(app: AppHandle) -> Result<(), ByteError> {
 fn run_worker(app: AppHandle) {
     let mut telemetry = TelemetryEngine::new(WindowsTelemetrySource::new());
     let mut diagnostics = DiagnosticEngine::new();
-    let mut last_notified_issue: Option<String> = None;
 
     loop {
         let state = app.state::<AppState>();
@@ -43,22 +42,32 @@ fn run_worker(app: AppHandle) {
                 let _ = app.emit_to("companion", "byte://collection-updated", collection);
             }
 
-            if evaluated.overall_status == crate::models::SystemStatus::NeedsAttention {
-                if let Some(issue) = evaluated.primary_issue.as_ref() {
-                    if app_preferences.notifications_enabled
-                        && last_notified_issue.as_deref() != Some(issue.id.as_str())
-                    {
-                        let _ = app
-                            .notification()
-                            .builder()
-                            .title("Byte needs attention")
-                            .body(&issue.headline)
-                            .show();
-                    }
-                    last_notified_issue = Some(issue.id.clone());
+            let issues = diagnostics.active_issues();
+            if let Some(notification) = state.next_smart_notification(
+                evaluated.timestamp_epoch_ms,
+                issues,
+                &app_preferences,
+            ) {
+                let permission_granted = app
+                    .notification()
+                    .permission_state()
+                    .map(|state| state == tauri::plugin::PermissionState::Granted)
+                    .unwrap_or(false);
+
+                if permission_granted
+                    && app
+                        .notification()
+                        .builder()
+                        .title(&notification.title)
+                        .body(&notification.body)
+                        .show()
+                        .is_ok()
+                {
+                    let _ = state.mark_smart_notification_sent(
+                        &notification,
+                        evaluated.timestamp_epoch_ms,
+                    );
                 }
-            } else {
-                last_notified_issue = None;
             }
 
             state.replace_snapshot(evaluated);

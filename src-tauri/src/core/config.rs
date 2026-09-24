@@ -9,7 +9,7 @@ use std::{
 };
 use tempfile::NamedTempFile;
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 6;
+pub const CURRENT_SCHEMA_VERSION: u32 = 7;
 
 pub struct ConfigStore {
     path: PathBuf,
@@ -85,7 +85,7 @@ fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
 
     match config.schema_version {
         CURRENT_SCHEMA_VERSION => Ok(config),
-        1..=5 => {
+        1..=6 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
             // Existing installations have already passed through Byte without
             // first-run onboarding. Do not force the new onboarding flow on
@@ -369,6 +369,38 @@ mod tests {
         assert!(app.system_monitoring_enabled);
         assert!(app.notifications_enabled);
         assert_eq!(app.text_scale_percent, 100);
+    }
+
+    #[test]
+    fn v6_config_gains_smart_notification_defaults() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = temp.path().join("config.json");
+        let mut config = ByteConfig::default();
+        config.schema_version = 6;
+        let mut value = serde_json::to_value(config).expect("serialize");
+        let app = value
+            .get_mut("app")
+            .and_then(serde_json::Value::as_object_mut)
+            .expect("app");
+        app.remove("notification_memory_enabled");
+        app.remove("notification_thermal_enabled");
+        app.remove("notification_storage_enabled");
+        app.remove("notification_battery_enabled");
+        app.remove("notification_runaway_process_enabled");
+        app.remove("notification_quiet_mode");
+        app.remove("notification_snoozed_until_epoch_ms");
+        fs::write(&path, serde_json::to_vec_pretty(&value).expect("json")).expect("write");
+
+        let migrated = ConfigStore::load(path).expect("migrate");
+        let app = migrated.snapshot().app;
+
+        assert!(app.notification_memory_enabled);
+        assert!(app.notification_thermal_enabled);
+        assert!(app.notification_storage_enabled);
+        assert!(app.notification_battery_enabled);
+        assert!(app.notification_runaway_process_enabled);
+        assert!(!app.notification_quiet_mode);
+        assert!(app.notification_snoozed_until_epoch_ms.is_none());
     }
 
     #[test]

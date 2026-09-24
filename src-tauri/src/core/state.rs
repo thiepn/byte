@@ -5,10 +5,11 @@ use crate::{
         config::ConfigStore,
         diagnostics::AppInspector,
         lifecycle::LifecycleCoordinator,
+        smart_notifications::{SmartNotification, SmartNotificationEngine},
     },
     models::{
         AppDiagnosticsSnapshot, AppPreferences, CollectionDiscoveryKind, CollectionSnapshot,
-        CompanionPreferences, SystemSnapshot, WindowShellState,
+        CompanionPreferences, SystemIssue, SystemSnapshot, WindowShellState,
     },
 };
 use std::{
@@ -27,6 +28,7 @@ pub struct AppState {
     activity: Mutex<ActivityStore>,
     collection: Mutex<CollectionStore>,
     app_inspector: Mutex<AppInspector>,
+    smart_notifications: Mutex<SmartNotificationEngine>,
     telemetry_worker: Mutex<Option<JoinHandle<()>>>,
     #[cfg(target_os = "windows")]
     fullscreen_worker: Mutex<Option<JoinHandle<()>>>,
@@ -35,7 +37,12 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(config: ConfigStore, activity: ActivityStore, collection: CollectionStore) -> Self {
+    pub fn new(
+        config: ConfigStore,
+        activity: ActivityStore,
+        collection: CollectionStore,
+        smart_notifications: SmartNotificationEngine,
+    ) -> Self {
         Self {
             snapshot: RwLock::new(SystemSnapshot::unavailable()),
             config: Mutex::new(config),
@@ -44,6 +51,7 @@ impl AppState {
             activity: Mutex::new(activity),
             collection: Mutex::new(collection),
             app_inspector: Mutex::new(AppInspector::new()),
+            smart_notifications: Mutex::new(smart_notifications),
             telemetry_worker: Mutex::new(None),
             #[cfg(target_os = "windows")]
             fullscreen_worker: Mutex::new(None),
@@ -154,6 +162,29 @@ impl AppState {
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
             .validate_preferences(preferences)
+    }
+
+    pub fn next_smart_notification(
+        &self,
+        now: u64,
+        issues: &[SystemIssue],
+        preferences: &AppPreferences,
+    ) -> Option<SmartNotification> {
+        self.smart_notifications
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .evaluate(now, issues, preferences)
+    }
+
+    pub fn mark_smart_notification_sent(
+        &self,
+        notification: &SmartNotification,
+        now: u64,
+    ) -> Result<(), crate::core::error::ByteError> {
+        self.smart_notifications
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .mark_sent(notification, now)
     }
 
     pub fn inspect_apps(&self) -> AppDiagnosticsSnapshot {

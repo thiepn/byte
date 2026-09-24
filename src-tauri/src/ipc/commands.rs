@@ -3,11 +3,12 @@ use crate::{
     models::{
         AppDiagnosticsSnapshot, AppPreferences, ByteConfig, CollectionDiscoveryKind,
         CollectionSnapshot, CompanionPreferences, CompanionSize, DisplayMode, EdgeAnchor,
-        RecommendedActionKind, SystemSnapshot, WindowShellState,
+        NotificationPermissionState, RecommendedActionKind, SystemSnapshot, WindowShellState,
     },
     platform::windows::{actions, startup, windowing},
 };
-use tauri::{AppHandle, Emitter, State};
+use tauri::{plugin::PermissionState, AppHandle, Emitter, State};
+use tauri_plugin_notification::NotificationExt;
 
 #[tauri::command]
 pub fn get_snapshot(state: State<'_, AppState>) -> SystemSnapshot {
@@ -66,6 +67,16 @@ pub fn update_app_preferences(
         ));
     }
 
+    if let Some(until) = preferences.notification_snoozed_until_epoch_ms {
+        let now = crate::models::now_epoch_ms();
+        let maximum = now.saturating_add(7 * 24 * 60 * 60 * 1_000);
+        if until > maximum {
+            return Err(ByteError::Config(
+                "Notification snooze cannot exceed seven days".into(),
+            ));
+        }
+    }
+
     let previous = state.app_preferences();
     if previous.launch_at_startup != preferences.launch_at_startup {
         startup::apply(preferences.launch_at_startup)?;
@@ -83,6 +94,40 @@ pub fn update_app_preferences(
 
     let _ = app.emit("byte://app-preferences-changed", preferences);
     Ok(config)
+}
+
+#[tauri::command]
+pub fn get_notification_permission(
+    app: AppHandle,
+) -> Result<NotificationPermissionState, ByteError> {
+    map_notification_permission(
+        app.notification()
+            .permission_state()
+            .map_err(|error| ByteError::Window(error.to_string()))?,
+    )
+}
+
+#[tauri::command]
+pub fn request_notification_permission(
+    app: AppHandle,
+) -> Result<NotificationPermissionState, ByteError> {
+    map_notification_permission(
+        app.notification()
+            .request_permission()
+            .map_err(|error| ByteError::Window(error.to_string()))?,
+    )
+}
+
+fn map_notification_permission(
+    state: PermissionState,
+) -> Result<NotificationPermissionState, ByteError> {
+    Ok(match state {
+        PermissionState::Granted => NotificationPermissionState::Granted,
+        PermissionState::Denied => NotificationPermissionState::Denied,
+        PermissionState::Prompt | PermissionState::PromptWithRationale => {
+            NotificationPermissionState::Prompt
+        }
+    })
 }
 
 #[tauri::command]
