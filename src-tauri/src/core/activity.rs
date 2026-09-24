@@ -185,8 +185,14 @@ impl ActivityStore {
         previous: &SystemSnapshot,
         current: &SystemSnapshot,
     ) -> bool {
-        let previous_id = previous.primary_issue.as_ref().map(|issue| issue.id.as_str());
-        let current_id = current.primary_issue.as_ref().map(|issue| issue.id.as_str());
+        let previous_id = previous
+            .primary_issue
+            .as_ref()
+            .map(|issue| issue.id.as_str());
+        let current_id = current
+            .primary_issue
+            .as_ref()
+            .map(|issue| issue.id.as_str());
 
         if previous_id == current_id {
             return false;
@@ -219,11 +225,7 @@ impl ActivityStore {
         changed
     }
 
-    fn record_power_change(
-        &mut self,
-        previous: &SystemSnapshot,
-        current: &SystemSnapshot,
-    ) -> bool {
+    fn record_power_change(&mut self, previous: &SystemSnapshot, current: &SystemSnapshot) -> bool {
         let previous_charging = previous.battery.as_ref().map(|battery| battery.charging);
         let current_charging = current.battery.as_ref().map(|battery| battery.charging);
 
@@ -302,8 +304,7 @@ impl ActivityStore {
 }
 
 fn snapshot_ready(snapshot: &SystemSnapshot) -> bool {
-    snapshot.cpu.state != ResourceState::Unknown
-        || snapshot.memory.state != ResourceState::Unknown
+    snapshot.cpu.state != ResourceState::Unknown || snapshot.memory.state != ResourceState::Unknown
 }
 
 fn issue_tone(issue: &SystemIssue) -> ActivityTone {
