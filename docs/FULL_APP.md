@@ -74,13 +74,29 @@ The store:
 
 If `activity_history_enabled` is false, Byte does not add new events or trends.
 
-## Apps boundary
+## Apps
 
-Phase 16 removes the skeletal Apps screen without implementing Phase 17 early.
+Phase 17 now owns the production Apps surface.
 
-The surface only displays a process when the existing diagnostic engine has already supplied a medium/high-confidence culprit. Otherwise it explicitly says that no single app stands out.
+Apps performs a deliberate point-in-time process inspection when the user opens the destination or presses Refresh scan. Related processes are aggregated by friendly process name.
 
-There is no continuous process leaderboard.
+The page provides:
+
+- CPU standout signal
+- memory standout signal
+- confidence for each signal
+- current active diagnostic context
+- up to 12 relevant app groups
+- process count
+- normalized CPU
+- memory
+- observed CPU/memory share
+- relevance / CPU / memory sorting
+- Task Manager handoff
+
+Rows may be shown for context without being labeled as likely contributors. Byte only uses a standout label when the existing conservative attribution rules are met.
+
+There is no continuous process leaderboard and no process termination control.
 
 ## Settings boundary
 

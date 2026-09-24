@@ -96,3 +96,38 @@ The diagnostic engine does not kill processes, delete files, change power settin
 Issue confidence and culprit confidence are separate.
 
 CPU, memory, storage, and battery conditions are based on direct measurements and normally carry HIGH issue confidence. Thermal issues use MEDIUM confidence because Windows hardware temperature availability and sensor identity vary by machine.
+
+
+## Phase 17 on-demand Apps diagnostics
+
+Phase 17 adds a second process-inspection path for the full application's Apps surface.
+
+It is intentionally separate from the diagnostic engine's lazy culprit scanner:
+
+- the diagnostic engine continues to refresh process attribution only when CPU or memory is already under meaningful pressure
+- the Apps inspector runs only when the user opens Apps or explicitly presses Refresh scan
+- there is no timer-driven Apps scan and no background leaderboard
+
+The inspector groups related processes by process name and exposes only:
+
+- friendly process-group name
+- process count
+- normalized CPU percent
+- memory MB
+- share of observed process CPU
+- share of observed process memory
+- optional CPU attribution confidence
+- optional memory attribution confidence
+
+It does not expose command lines, executable paths, open files, window titles, input content, or process contents.
+
+The Apps inspector uses the same conservative attribution thresholds as diagnostic culprit selection:
+
+- CPU: at least 15% normalized CPU plus 25% observed share for MEDIUM or 50% share for HIGH
+- Memory: at least 256 MB plus 18% observed share for MEDIUM or 35% share for HIGH
+
+Rows that do not satisfy these attribution thresholds may still appear as context, but are explicitly labeled Context only.
+
+The first explicit scan performs a short second CPU refresh after 250 ms so the UI does not present an uninitialized process CPU sample. Subsequent scans are rate-limited to at most one new inspection every 750 ms.
+
+Byte still does not provide process termination. The Apps surface hands deliberate process management to Windows Task Manager.

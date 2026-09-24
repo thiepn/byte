@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–16 are implemented.
+Phases 1–17 are implemented.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -31,6 +31,7 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Personality never weakens diagnostics or captures cursor coordinates; direct warning states keep their existing priority and privacy boundaries.
 - Phase 15 promotes the Quick Panel into the compact operational surface: live cache-only status, primary issue explanation, resource cards, safe allowlisted Windows actions, display-mode controls, Move Mode, click-through, and full-app access.
 - Phase 16 promotes the main application Overview and Activity surfaces: live resource summaries with bounded session trends, persisted meaningful issue/power events, timeline filtering, and a richer investigation path without becoming a raw telemetry dashboard.
+- Phase 17 adds explicit on-demand Apps diagnostics: locally aggregated process groups, CPU/memory shares, conservative standout confidence, point-in-time sorting, diagnostic context, and Task Manager handoff with no End task control.
 - Activity persists only meaningful events locally; trend points are session-only and globally bounded.
 - Customization and personality are entirely local; there is no account, store, virtual currency, unlock timer, or cloud inventory.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
@@ -72,5 +73,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Personality and ambient behavior](docs/PERSONALITY.md)
 - [Quick Panel](docs/QUICK_PANEL.md)
 - [Main app: Overview & Activity](docs/FULL_APP.md)
+- [Apps & Diagnostics](docs/APPS_DIAGNOSTICS.md)
 
-Next: Phase 17 — Apps & Diagnostics.
+Next: Phase 18 — Customization Studio.
