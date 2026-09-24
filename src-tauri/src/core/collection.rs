@@ -129,7 +129,7 @@ impl CollectionStore {
         self.dirty = true;
         let unlocked = self.evaluate_unlocks(timestamp_epoch_ms);
 
-        if unlocked || self.data.typing_events % TYPING_FLUSH_INTERVAL == 0 {
+        if unlocked || self.data.typing_events.is_multiple_of(TYPING_FLUSH_INTERVAL) {
             self.save()?;
         }
 
