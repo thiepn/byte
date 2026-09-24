@@ -68,8 +68,10 @@ impl ConfigStore {
         &mut self,
         update: impl FnOnce(&mut CompanionPreferences),
     ) -> Result<ByteConfig, ByteError> {
-        update(&mut self.config.companion);
-        validate_companion_preferences(&self.config.companion)?;
+        let mut next = self.config.companion.clone();
+        update(&mut next);
+        validate_companion_preferences(&next)?;
+        self.config.companion = next;
         self.save()?;
         Ok(self.config.clone())
     }
