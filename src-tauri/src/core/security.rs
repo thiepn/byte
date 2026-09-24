@@ -256,8 +256,10 @@ mod tests {
 
     #[test]
     fn unknown_asset_ids_and_wrong_slots_are_rejected() {
-        let mut preferences = CompanionPreferences::default();
-        preferences.character = "../../evil".into();
+        let preferences = CompanionPreferences {
+            character: "../../evil".into(),
+            ..CompanionPreferences::default()
+        };
         assert!(validate_companion_preferences(&preferences).is_err());
 
         let mut preferences = CompanionPreferences::default();
@@ -271,9 +273,11 @@ mod tests {
 
     #[test]
     fn palette_must_belong_to_selected_character() {
-        let mut preferences = CompanionPreferences::default();
-        preferences.character = "MOCHI".into();
-        preferences.palette = "mint".into();
+        let mut preferences = CompanionPreferences {
+            character: "MOCHI".into(),
+            palette: "mint".into(),
+            ..CompanionPreferences::default()
+        };
         assert!(validate_companion_preferences(&preferences).is_err());
 
         preferences.palette = "ginger".into();
