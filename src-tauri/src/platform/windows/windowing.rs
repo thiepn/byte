@@ -194,6 +194,9 @@ pub fn drag_companion(app: &AppHandle) -> Result<WindowShellState, ByteError> {
 pub fn finish_move_mode(app: &AppHandle) -> Result<WindowShellState, ByteError> {
     save_current_placement(app)?;
 
+    let preferences = companion_preferences(app);
+    apply_companion_layout(app, &preferences)?;
+
     let shell = {
         let state = app.state::<AppState>();
         let mut shell = state
@@ -277,7 +280,15 @@ pub fn apply_companion_layout(
 
     let position = saved
         .as_ref()
-        .map(|placement| position_from_saved(&monitor, physical_size, placement))
+        .map(|placement| {
+            position_from_saved(
+                &monitor,
+                physical_size,
+                placement,
+                preferences.display_mode,
+                preferences.edge_anchor,
+            )
+        })
         .unwrap_or_else(|| {
             default_position(
                 &monitor,
@@ -477,13 +488,33 @@ fn position_from_saved(
     monitor: &Monitor,
     size: PhysicalSize<u32>,
     placement: &SavedPlacement,
+    mode: DisplayMode,
+    edge_anchor: EdgeAnchor,
 ) -> PhysicalPosition<i32> {
     let work = monitor.work_area();
-    let max_x = work.size.width.saturating_sub(size.width);
-    let max_y = work.size.height.saturating_sub(size.height);
-    let x = work.position.x + (placement.x.clamp(0.0, 1.0) * max_x as f32).round() as i32;
-    let y = work.position.y + (placement.y.clamp(0.0, 1.0) * max_y as f32).round() as i32;
-    PhysicalPosition::new(x, y)
+    let max_x = work.size.width.saturating_sub(size.width) as i32;
+    let max_y = work.size.height.saturating_sub(size.height) as i32;
+    let saved_x = (placement.x.clamp(0.0, 1.0) * max_x as f32).round() as i32;
+    let saved_y = (placement.y.clamp(0.0, 1.0) * max_y as f32).round() as i32;
+
+    let (relative_x, relative_y) = match mode {
+        DisplayMode::Perch => match infer_taskbar_edge(monitor) {
+            TaskbarEdge::Bottom => (saved_x, max_y),
+            TaskbarEdge::Top => (saved_x, 0),
+            TaskbarEdge::Left => (0, saved_y),
+            TaskbarEdge::Right => (max_x, saved_y),
+        },
+        DisplayMode::Edge => match edge_anchor {
+            EdgeAnchor::Left => (0, saved_y),
+            EdgeAnchor::Right => (max_x, saved_y),
+        },
+        _ => (saved_x, saved_y),
+    };
+
+    PhysicalPosition::new(
+        work.position.x + relative_x.max(0),
+        work.position.y + relative_y.max(0),
+    )
 }
 
 fn default_position(
