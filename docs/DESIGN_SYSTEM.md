@@ -42,3 +42,19 @@ Phase 18 treats customization as a playful visual surface rather than convention
 The production layout uses a large sticky preview beside a category editor. Choice cards emphasize imagery, color, habitat tone, and selected state. Dense form rows and generic dropdowns are avoided.
 
 The preview reuses Byte's actual animation, habitat, cosmetic, decoration, palette, personality, and particle systems so the Studio is representative of the desktop companion rather than a separate mock renderer.
+
+
+## Accessibility and resilient presentation
+
+Phase 24 makes accessibility part of the visual contract rather than a separate skin.
+
+- Every keyboard-operable control has a visible focus state.
+- Selected state is exposed structurally and never relies only on fill color.
+- Windows forced-colors may replace authored surface/status colors; semantic text remains authoritative.
+- Byte High contrast removes decorative shadows and strengthens status colors/borders.
+- Main and Quick Panel UI support 100%, 110%, and 125% text scale with wrapping/responsive fallbacks.
+- Companion pixel art remains at authored proportions when application text is enlarged.
+- Reduced-motion preferences remove decorative transition timing without hiding information.
+- Dense diagnostic data scrolls rather than clipping at constrained effective widths.
+
+See [ACCESSIBILITY_RESILIENCE.md](ACCESSIBILITY_RESILIENCE.md).

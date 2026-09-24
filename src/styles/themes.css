@@ -39,6 +39,11 @@ html[data-high-contrast="true"] {
   --border-default: #111111;
   --accent-primary: #005fcc;
   --accent-contrast: #ffffff;
+  --status-normal: #126b39;
+  --status-info: #004e9e;
+  --status-warning: #7a4c00;
+  --status-critical: #9b1b1b;
+  --shadow-panel: none;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -53,5 +58,10 @@ html[data-high-contrast="true"] {
     --border-default: #f0f0f0;
     --accent-primary: #8acbff;
     --accent-contrast: #000000;
+    --status-normal: #8de8ae;
+    --status-info: #91cbff;
+    --status-warning: #ffd27a;
+    --status-critical: #ff9f9f;
+    --shadow-panel: none;
   }
 }

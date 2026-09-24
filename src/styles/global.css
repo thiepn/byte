@@ -1,3 +1,7 @@
+:root {
+  --byte-text-scale: 1;
+}
+
 html,
 body,
 #app {
@@ -22,15 +26,114 @@ textarea {
   font-family: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 button,
-a { -webkit-tap-highlight-color: transparent; }
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
 
 button:focus-visible,
-a:focus-visible {
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
   outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 10000;
+  padding: 8px 11px;
+  border: 2px solid var(--accent-primary);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  transform: translateY(-160%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --border-default: currentColor;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    border-width: 2px;
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    --surface-base: Canvas;
+    --surface-raised: Canvas;
+    --surface-overlay: Canvas;
+    --surface-selected: Highlight;
+    --text-primary: CanvasText;
+    --text-secondary: CanvasText;
+    --text-muted: GrayText;
+    --border-default: CanvasText;
+    --accent-primary: Highlight;
+    --accent-contrast: HighlightText;
+    --status-normal: CanvasText;
+    --status-info: LinkText;
+    --status-warning: CanvasText;
+    --status-critical: CanvasText;
+    --shadow-panel: none;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    border: 1px solid ButtonText !important;
+    background: Canvas !important;
+    color: CanvasText !important;
+  }
+
+  button.selected,
+  button.active,
+  button[aria-pressed="true"],
+  [aria-current="page"] {
+    border-color: Highlight !important;
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  svg path {
+    stroke: CanvasText !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -43,7 +146,6 @@ a:focus-visible {
     transition-duration: 1ms !important;
   }
 }
-
 
 html[data-reduce-motion="true"] *,
 html[data-reduce-motion="true"] *::before,

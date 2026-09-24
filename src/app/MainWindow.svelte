@@ -185,6 +185,18 @@
     return value.cpu.state !== "UNKNOWN" || value.memory.state !== "UNKNOWN";
   }
 
+  function unavailableSystemTitle(): string {
+    return preferences?.app.system_monitoring_enabled === false
+      ? "System monitoring is off"
+      : "System data is currently unavailable";
+  }
+
+  function unavailableSystemDescription(): string {
+    return preferences?.app.system_monitoring_enabled === false
+      ? "Enable System monitoring in Settings when you want Byte to watch system health."
+      : "Byte will keep the interface available and retry local monitoring without inventing readings.";
+  }
+
   function cloneCompanion(): CompanionPreferences | null {
     if (!preferences) return null;
     return JSON.parse(
@@ -399,11 +411,11 @@
         <div class="page-heading">
           <div>
             <p class="eyebrow">System overview</p>
-            <h1>{snapshot && snapshotReady(snapshot) ? statusPresentation(snapshot.overall_status).title : "Checking your PC…"}</h1>
+            <h1>{snapshot && snapshotReady(snapshot) ? statusPresentation(snapshot.overall_status).title : unavailableSystemTitle()}</h1>
             <p class="lede">
               {snapshot && snapshotReady(snapshot)
                 ? statusPresentation(snapshot.overall_status).description
-                : "Byte is waiting for its first real system sample."}
+                : unavailableSystemDescription()}
             </p>
           </div>
           {#if snapshot}

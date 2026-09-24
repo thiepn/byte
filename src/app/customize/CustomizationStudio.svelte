@@ -211,12 +211,17 @@
   }
 
   function chooseCharacter(id: CompanionPreferences["character"]): void {
-    void loadCharacterManifest(id.toLowerCase()).then((manifest) => {
-      mutate((next) => {
-        next.character = id;
-        next.palette = manifest.defaultPalette;
+    saveError = "";
+    void loadCharacterManifest(id.toLowerCase())
+      .then((manifest) => {
+        mutate((next) => {
+          next.character = id;
+          next.palette = manifest.defaultPalette;
+        });
+      })
+      .catch(() => {
+        saveError = "That character asset is unavailable. Your current look was kept.";
       });
-    });
   }
 
   function choosePalette(id: string): void {
@@ -288,9 +293,11 @@
     if ("__TAURI_INTERNALS__" in window) {
       void listen<CollectionSnapshot>("byte://collection-updated", (event) => {
         collection = event.payload;
-      }).then((cleanup) => {
-        unlisten = cleanup;
-      });
+      })
+        .then((cleanup) => {
+          unlisten = cleanup;
+        })
+        .catch(() => {});
     }
 
     return () => unlisten?.();
@@ -319,7 +326,7 @@
       forceReducedMotion={preferences.app.reduce_motion}
     />
 
-    <div class="save-state" class:error={Boolean(saveError)}>
+    <div class="save-state" class:error={Boolean(saveError)} aria-live="polite" aria-atomic="true">
       <span class:saving>{saving || Boolean(pending)}</span>
       <strong>{saveError ? "Save failed" : saving || pending ? "Saving locally…" : "Saved locally"}</strong>
       <small>{saveError || "Every change applies immediately. No Apply button."}</small>
@@ -350,6 +357,7 @@
       {#each STUDIO_SECTIONS as section}
         <button
           type="button"
+          aria-pressed={activeSection === section.id}
           class:selected={activeSection === section.id}
           onclick={() => (activeSection = section.id)}
         >
@@ -410,7 +418,7 @@
         </div>
 
         {#if collectionError}
-          <div class="collection-error">{collectionError}</div>
+          <div class="collection-error" role="alert">{collectionError}</div>
         {:else if !collection}
           <div class="collection-empty">Loading local collection…</div>
         {:else}
@@ -425,7 +433,14 @@
                 <p>{item.description}</p>
                 <small>{item.condition}</small>
                 {#if item.progress_current != null && item.progress_target != null}
-                  <div class="collection-progress" aria-label={`${item.title} progress`}>
+                  <div
+                    class="collection-progress"
+                    role="progressbar"
+                    aria-label={`${item.title} progress`}
+                    aria-valuemin="0"
+                    aria-valuemax={item.progress_target}
+                    aria-valuenow={item.progress_current}
+                  >
                     <span style:width={progressPercent(item) + "%"}></span>
                   </div>
                   <em>{item.progress_current}/{item.progress_target}</em>
@@ -446,7 +461,7 @@
 
         <div class="visual-grid character-grid">
           {#each CHARACTER_CHOICES as choice}
-            <button type="button" class:selected={draft.character === choice.id} onclick={() => chooseCharacter(choice.id)}>
+            <button type="button" aria-pressed={draft.character === choice.id} class:selected={draft.character === choice.id} onclick={() => chooseCharacter(choice.id)}>
               <img src={choice.preview} alt="" />
               <strong>{choice.name}</strong>
             </button>
@@ -459,6 +474,7 @@
             {#each palettes as palette}
               <button
                 type="button"
+                aria-pressed={draft.palette === palette.id}
                 class:selected={draft.palette === palette.id}
                 class:locked={!isUnlocked(paletteUnlockId(palette.id))}
                 disabled={!isUnlocked(paletteUnlockId(palette.id))}
@@ -501,13 +517,14 @@
               <span>One active item</span>
             </div>
             <div class="asset-grid">
-              <button type="button" class:selected={draft.customization[category] === "none"} onclick={() => chooseCosmetic(category, "none")}>
+              <button type="button" aria-pressed={draft.customization[category] === "none"} class:selected={draft.customization[category] === "none"} onclick={() => chooseCosmetic(category, "none")}>
                 <span class="none-preview">None</span>
                 <strong>None</strong>
               </button>
               {#each cosmeticOptions(category) as item}
                 <button
                   type="button"
+                  aria-pressed={draft.customization[category] === item.id}
                   class:selected={draft.customization[category] === item.id}
                   class:locked={!isUnlocked(item.collectionUnlockId)}
                   disabled={!isUnlocked(item.collectionUnlockId)}
@@ -534,7 +551,7 @@
 
         <div class="habitat-grid">
           {#each HABITAT_CHOICES as choice}
-            <button type="button" class:selected={draft.habitat === choice.id} onclick={() => chooseHabitat(choice.id)}>
+            <button type="button" aria-pressed={draft.habitat === choice.id} class:selected={draft.habitat === choice.id} onclick={() => chooseHabitat(choice.id)}>
               <span class="habitat-preview" style:background={choice.tone}></span>
               <strong>{choice.name}</strong>
             </button>
@@ -545,12 +562,13 @@
           <div class="subsection">
             <div class="subheading"><strong>{DECORATION_SLOT_LABELS[slot]}</strong><span>Fixed slot</span></div>
             <div class="asset-grid compact-assets">
-              <button type="button" class:selected={draft.customization.decorations[slot] === "none"} onclick={() => chooseDecoration(slot, "none")}>
+              <button type="button" aria-pressed={draft.customization.decorations[slot] === "none"} class:selected={draft.customization.decorations[slot] === "none"} onclick={() => chooseDecoration(slot, "none")}>
                 <span class="none-preview">None</span><strong>None</strong>
               </button>
               {#each decorationOptions(slot) as item}
                 <button
                   type="button"
+                  aria-pressed={draft.customization.decorations[slot] === item.id}
                   class:selected={draft.customization.decorations[slot] === item.id}
                   class:locked={!isUnlocked(item.collectionUnlockId)}
                   disabled={!isUnlocked(item.collectionUnlockId)}
@@ -574,7 +592,7 @@
 
         <div class="personality-grid">
           {#each PERSONALITY_CHOICES as option}
-            <button type="button" class:selected={draft.personality === option.id} onclick={() => choosePersonality(option.id)}>
+            <button type="button" aria-pressed={draft.personality === option.id} class:selected={draft.personality === option.id} onclick={() => choosePersonality(option.id)}>
               <span class="personality-mark">{option.name.slice(0, 1)}</span>
               <strong>{option.name}</strong>
               <p>{option.description}</p>
@@ -587,7 +605,7 @@
           <div class="subheading"><strong>Interaction level</strong><span>How expressive Byte is</span></div>
           <div class="segmented">
             {#each INTERACTION_LEVELS as option}
-              <button type="button" class:selected={draft.interaction_level === option.id} onclick={() => chooseInteraction(option.id)}>{option.name}</button>
+              <button type="button" aria-pressed={draft.interaction_level === option.id} class:selected={draft.interaction_level === option.id} onclick={() => chooseInteraction(option.id)}>{option.name}</button>
             {/each}
           </div>
         </div>
@@ -599,7 +617,7 @@
 
         <div class="display-grid">
           {#each DISPLAY_MODES as option}
-            <button type="button" class:selected={draft.display_mode === option.id} onclick={() => chooseMode(option.id)}>
+            <button type="button" aria-pressed={draft.display_mode === option.id} class:selected={draft.display_mode === option.id} onclick={() => chooseMode(option.id)}>
               <span class="mode-icon {option.id.toLowerCase()}"></span>
               <strong>{option.name}</strong>
               <small>{option.note}</small>
@@ -611,7 +629,7 @@
           <div class="subheading"><strong>Companion size</strong><span>Desktop scale</span></div>
           <div class="segmented">
             {#each SIZES as option}
-              <button type="button" class:selected={draft.size === option.id} onclick={() => chooseSize(option.id)}>{option.name}</button>
+              <button type="button" aria-pressed={draft.size === option.id} class:selected={draft.size === option.id} onclick={() => chooseSize(option.id)}>{option.name}</button>
             {/each}
           </div>
         </div>
