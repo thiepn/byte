@@ -261,3 +261,16 @@ The companion Tauri window is configured initially hidden. Desktop awareness tak
 Console display-off immediately hides Byte.
 
 Phase 22 intentionally does not suspend telemetry, animation, input, or other workers when the display turns off. That coordinated performance behavior belongs to **Phase 23 — Power & Performance Hardening**.
+
+
+## Phase 22 display-sleep suspension
+
+Desktop awareness now maps display-off into the existing `DISPLAY_SLEEP` lifecycle state.
+
+The telemetry worker blocks through `wait_until_sampling_allowed()` while the display is off. On recovery it creates a fresh DiagnosticEngine and marks the cached snapshot unavailable before sampling again, preventing stale pre-sleep sustained timers from immediately producing diagnostic/notification behavior.
+
+The companion receives `byte://lifecycle-changed` and stops animation/particle advancement for LOCKED, DISPLAY_SLEEP, SYSTEM_SLEEP, and SHUTTING_DOWN states.
+
+Fullscreen/presentation suppression remains `FULLSCREEN_REDUCED`: visibility can be hidden while telemetry continues.
+
+Restore from any suppression reason requires a 1.5-second continuously clear observation window before the shell may show a previously visible companion again.

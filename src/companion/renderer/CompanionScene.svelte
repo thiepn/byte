@@ -13,6 +13,7 @@
     CollectionSnapshot,
     CompanionPreferences,
     DisplayMode,
+    LifecycleState,
   } from "../../lib/types/domain";
   import { hashSeed } from "../animation/random";
   import { HabitatParticleEngine } from "../habitats/particles";
@@ -27,6 +28,7 @@
     resolveHabitatDecorations,
   } from "../customization/catalog";
   import { PersonalityDirector } from "../personality/profiles";
+  import { lifecycleSuspendsVisuals } from "./lifecycle";
   import { CharacterCanvasRenderer } from "./CharacterCanvasRenderer";
   import { HabitatCanvasRenderer } from "./HabitatCanvasRenderer";
   import {
@@ -77,6 +79,7 @@
   let suppressClickUntil = 0;
   let lastObservedBehavior = "";
   let forceReducedMotion = false;
+  let lifecycleSuspended = false;
 
   function isTauri(): boolean {
     return "__TAURI_INTERNALS__" in window;
@@ -154,7 +157,7 @@
   }
 
   function renderFrame(deltaMs: number): void {
-    if (!animator || !characterRenderer) return;
+    if (lifecycleSuspended || !animator || !characterRenderer) return;
 
     personalityDirector?.tick(deltaMs, animator);
     const frame = animator.tick(deltaMs);
@@ -177,6 +180,8 @@
   }
 
   async function refreshSystemState(): Promise<void> {
+    if (lifecycleSuspended) return;
+
     try {
       const snapshot = await getSnapshot();
 
@@ -371,6 +376,14 @@
         displayMode = event.payload;
         habitatState = { ...habitatState, displayMode };
         if (animator) positionCharacter(animator.frame());
+      }).then((unlisten: UnlistenFn) => {
+        if (disposed) unlisten();
+        else cleanups.push(unlisten);
+      });
+
+      void listen<LifecycleState>("byte://lifecycle-changed", (event) => {
+        if (disposed) return;
+        lifecycleSuspended = lifecycleSuspendsVisuals(event.payload);
       }).then((unlisten: UnlistenFn) => {
         if (disposed) unlisten();
         else cleanups.push(unlisten);

@@ -1,5 +1,10 @@
 use super::engine::TelemetryEngine;
-use crate::core::{diagnostics::DiagnosticEngine, error::ByteError, state::AppState};
+use crate::core::{
+    diagnostics::DiagnosticEngine,
+    error::ByteError,
+    lifecycle::LifecycleState,
+    state::AppState,
+};
 use std::{thread, time::Duration};
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_notification::NotificationExt;
@@ -27,8 +32,21 @@ fn run_worker(app: AppHandle) {
 
     loop {
         let state = app.state::<AppState>();
+        let lifecycle_before_wait = state.lifecycle.current();
         if !state.lifecycle.wait_until_sampling_allowed() {
             break;
+        }
+        let lifecycle_after_wait = state.lifecycle.current();
+
+        if matches!(
+            lifecycle_before_wait,
+            LifecycleState::DisplaySleep | LifecycleState::SystemSleep
+        ) && !matches!(
+            lifecycle_after_wait,
+            LifecycleState::DisplaySleep | LifecycleState::SystemSleep
+        ) {
+            diagnostics = DiagnosticEngine::new();
+            state.set_snapshot_unavailable();
         }
 
         let app_preferences = state.app_preferences();

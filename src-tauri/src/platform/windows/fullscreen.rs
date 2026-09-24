@@ -11,9 +11,9 @@ use std::{
     ptr::{null, null_mut},
     sync::atomic::{AtomicU8, Ordering},
     thread,
-    time::Duration,
+    time::{Duration, Instant},
 };
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 use windows_sys::Win32::{
     Foundation::{CloseHandle, HWND, LPARAM, LRESULT, RECT, WPARAM},
     Graphics::Gdi::{GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST},
@@ -41,6 +41,7 @@ use windows_sys::Win32::{
 };
 
 const POLL_INTERVAL: Duration = Duration::from_millis(500);
+const RESTORE_GRACE: Duration = Duration::from_millis(1_500);
 const RECT_TOLERANCE_PX: i32 = 2;
 const QUNS_NOT_PRESENT: i32 = 1;
 const QUNS_BUSY: i32 = 2;
@@ -67,7 +68,9 @@ pub fn start(app: AppHandle) -> Result<(), ByteError> {
         .app_preferences()
         .hidden_foreground_apps
         .is_empty();
-    apply_observation(&app, observe(inspect_foreground_app), true);
+    let initial_observation = observe(inspect_foreground_app);
+    let initial_reason = resolved_suppression_reason(&app, &initial_observation);
+    apply_observation(&app, initial_observation, initial_reason, true);
 
     let worker_app = app.clone();
     let worker = thread::Builder::new()
@@ -81,6 +84,7 @@ pub fn start(app: AppHandle) -> Result<(), ByteError> {
 
 fn run(app: AppHandle) {
     let event_window = PowerEventWindow::new();
+    let mut clear_since: Option<Instant> = None;
 
     loop {
         let state = app.state::<AppState>();
@@ -93,19 +97,37 @@ fn run(app: AppHandle) {
         }
 
         let inspect_foreground_app = !state.app_preferences().hidden_foreground_apps.is_empty();
-        apply_observation(&app, observe(inspect_foreground_app), false);
+        let observation = observe(inspect_foreground_app);
+        let reason = resolved_suppression_reason(&app, &observation);
+
+        if reason.is_some() {
+            clear_since = None;
+            apply_observation(&app, observation, reason, false);
+        } else if state.is_visibility_suppressed() {
+            let since = clear_since.get_or_insert_with(Instant::now);
+            if since.elapsed() >= RESTORE_GRACE {
+                clear_since = None;
+                apply_observation(&app, observation, None, false);
+            }
+        } else {
+            clear_since = None;
+            apply_observation(&app, observation, None, false);
+        }
+
         thread::sleep(POLL_INTERVAL);
     }
 }
 
-fn apply_observation(app: &AppHandle, observation: AwarenessObservation, initial: bool) {
+fn resolved_suppression_reason(
+    app: &AppHandle,
+    observation: &AwarenessObservation,
+) -> Option<VisibilitySuppressionReason> {
     let state = app.state::<AppState>();
     let config = state
         .config
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
         .snapshot();
-
     let previous_reason = state.desktop_awareness().reason;
     let preserve_external_suppression = observation.byte_owns_foreground
         && matches!(
@@ -116,11 +138,26 @@ fn apply_observation(app: &AppHandle, observation: AwarenessObservation, initial
                     | VisibilitySuppressionReason::ExcludedApp
             )
         );
-    let reason = if preserve_external_suppression {
+
+    if preserve_external_suppression {
         previous_reason
     } else {
-        suppression_reason(&observation, &config.app)
-    };
+        suppression_reason(observation, &config.app)
+    }
+}
+
+fn apply_observation(
+    app: &AppHandle,
+    observation: AwarenessObservation,
+    reason: Option<VisibilitySuppressionReason>,
+    initial: bool,
+) {
+    let state = app.state::<AppState>();
+    let config = state
+        .config
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .snapshot();
     let visible = windowing::is_companion_visible(app).unwrap_or(false);
     let visible_foreground_app = (reason == Some(VisibilitySuppressionReason::ExcludedApp))
         .then(|| observation.foreground_app.clone())
@@ -149,11 +186,16 @@ fn apply_observation(app: &AppHandle, observation: AwarenessObservation, initial
                 | VisibilitySuppressionReason::Presentation
                 | VisibilitySuppressionReason::ExcludedApp,
             ) => LifecycleState::FullscreenReduced,
-            // Phase 22 hides on display-off but deliberately leaves worker
-            // suspension for Phase 23's coordinated power lifecycle.
-            Some(VisibilitySuppressionReason::DisplaySleep) | None => LifecycleState::Active,
+            Some(VisibilitySuppressionReason::DisplaySleep) => LifecycleState::DisplaySleep,
+            None => LifecycleState::Active,
         };
+
+        if next_lifecycle == LifecycleState::DisplaySleep {
+            state.set_snapshot_unavailable();
+        }
+
         state.lifecycle.transition(next_lifecycle);
+        let _ = app.emit_to("companion", "byte://lifecycle-changed", next_lifecycle);
     }
 }
 

@@ -48,7 +48,7 @@ When Windows reports the console display as off, Byte immediately suppresses its
 
 Display dim/on clears that reason when no higher-priority awareness condition remains.
 
-Phase 22 uses this only for visibility. Worker suspension belongs to Phase 23.
+When the display is off, Byte enters `DISPLAY_SLEEP`: the companion renderer stops advancing and the telemetry worker suspends until the display becomes available again.
 
 ### Foreground app exclusions
 
@@ -100,7 +100,9 @@ This prevents tray actions, customization, mode changes, and incidental UI event
 
 When suppression begins, AppState records whether the companion was actually visible.
 
-On exit:
+On exit, Byte waits for a short **1.5 second clear grace** so alt-tab/window transitions do not produce a flash.
+
+After that grace:
 
 - if Byte hid a visible companion, it restores it through normal mode/layout logic
 - if Byte was already hidden, it stays hidden
@@ -171,25 +173,17 @@ If the issue remains eligible after the game/presentation/lock/display-off condi
 
 ## Lifecycle boundary
 
-Phase 22 uses existing lifecycle states to describe fullscreen/presentation/lock context where appropriate.
+Phase 22 now fulfills the frozen display-sleep lifecycle behavior:
 
-It deliberately does **not** implement the full power-efficiency policy.
+- display-off hides Byte and Quick Panel
+- companion animation/render advancement pauses
+- telemetry sampling blocks on `DISPLAY_SLEEP`
+- the cached snapshot is marked unavailable instead of remaining stale
+- resume rebuilds DiagnosticEngine before fresh sampling, so stale pre-sleep sustained conditions cannot immediately trigger alerts
 
-In particular, display-off currently means:
+Lock state also pauses visual advancement while leaving local system monitoring available.
 
-- hide Byte
-- keep the shell from reappearing
-- report Display asleep in awareness state
-
-It does not yet mean:
-
-- stop telemetry worker
-- stop input worker
-- suspend the renderer
-- change sampling cadence
-- consolidate all workers under a shared sleep coordinator
-
-Those belong to **Phase 23 — Power & Performance Hardening**.
+Phase 23 still owns broader power/performance work such as input-worker suspension, adaptive sampling cadence, memory/CPU budgets, and coordinated worker backoff.
 
 ## Acceptance
 
@@ -197,8 +191,9 @@ Phase 22 is complete when:
 
 - Byte stays hidden across fullscreen games/video and configured presentation state
 - lock/not-present and display-off cannot leave the companion visible
+- display-off suspends visual advancement and telemetry sampling until recovery
 - no tray/UI/layout operation bypasses suppression
-- restore occurs only when Byte should restore
+- restore occurs only when Byte should restore and only after the clear grace
 - switching suppression reasons causes no reveal flash
 - opening Byte's own UI does not clear an external suppression condition
 - user-selected foreground apps work by normalized name only

@@ -250,3 +250,12 @@ export interface CollectionSnapshot {
   unlocked_ids: string[];
   items: CollectionItemProgress[];
 }
+
+
+export type LifecycleState =
+  | "ACTIVE"
+  | "FULLSCREEN_REDUCED"
+  | "LOCKED"
+  | "DISPLAY_SLEEP"
+  | "SYSTEM_SLEEP"
+  | "SHUTTING_DOWN";
