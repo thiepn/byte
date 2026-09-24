@@ -83,6 +83,12 @@ pub fn hide_companion(app: &AppHandle) -> Result<(), ByteError> {
         .map_err(|error| ByteError::Window(error.to_string()))
 }
 
+pub fn is_companion_visible(app: &AppHandle) -> Result<bool, ByteError> {
+    companion_window(app)?
+        .is_visible()
+        .map_err(|error| ByteError::Window(error.to_string()))
+}
+
 pub fn toggle_companion(app: &AppHandle) -> Result<(), ByteError> {
     let window = companion_window(app)?;
     let preferences = companion_preferences(app);

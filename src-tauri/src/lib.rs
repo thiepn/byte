@@ -8,7 +8,7 @@ use core::{
     activity::ActivityStore, collection::CollectionStore, config::ConfigStore, state::AppState,
 };
 use models::DisplayMode;
-use platform::windows::{input::InputRuntime, windowing};
+use platform::windows::{fullscreen, input::InputRuntime, startup, windowing};
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -103,21 +103,29 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             let app_config_dir = app.path().app_config_dir()?;
             let config = ConfigStore::load(app_config_dir.join("config.json"))?;
             let activity = ActivityStore::load(app_config_dir.join("activity.json"))?;
             let collection = CollectionStore::load(app_config_dir.join("collection.json"))?;
+            let initial_app_preferences = config.snapshot().app;
             app.manage(AppState::new(config, activity, collection));
 
             windowing::initialize(app.handle())?;
+            let _ = startup::apply(initial_app_preferences.launch_at_startup);
             telemetry::runtime::start(app.handle().clone())?;
+            fullscreen::start(app.handle().clone())?;
 
             if let Ok(input_runtime) = InputRuntime::start(app.handle().clone()) {
                 app.state::<AppState>().install_input_runtime(input_runtime);
             }
 
             setup_tray(app)?;
+
+            if !initial_app_preferences.onboarding_completed {
+                let _ = windowing::show_main_window(app.handle());
+            }
 
             if let Some(main_window) = app.get_webview_window("main") {
                 let window_to_hide = main_window.clone();
@@ -138,6 +146,9 @@ pub fn run() {
             ipc::commands::get_collection,
             ipc::commands::record_collection_discovery,
             ipc::commands::get_preferences,
+            ipc::commands::update_app_preferences,
+            ipc::commands::clear_activity_history,
+            ipc::commands::open_release_page,
             ipc::commands::update_companion_preferences,
             ipc::commands::execute_recommended_action,
             ipc::commands::get_window_shell_state,

@@ -1,6 +1,6 @@
 use crate::{
     core::error::ByteError,
-    models::{ByteConfig, CompanionPreferences},
+    models::{AppPreferences, ByteConfig, CompanionPreferences},
 };
 use std::{
     fs,
@@ -9,7 +9,7 @@ use std::{
 };
 use tempfile::NamedTempFile;
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 5;
+pub const CURRENT_SCHEMA_VERSION: u32 = 6;
 
 pub struct ConfigStore {
     path: PathBuf,
@@ -61,6 +61,12 @@ impl ConfigStore {
         Ok(self.config.clone())
     }
 
+    pub fn update_app(&mut self, preferences: AppPreferences) -> Result<ByteConfig, ByteError> {
+        self.config.app = preferences;
+        self.save()?;
+        Ok(self.config.clone())
+    }
+
     pub fn save(&self) -> Result<(), ByteError> {
         let parent = self.path.parent().unwrap_or_else(|| Path::new("."));
         fs::create_dir_all(parent)?;
@@ -79,8 +85,12 @@ fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
 
     match config.schema_version {
         CURRENT_SCHEMA_VERSION => Ok(config),
-        1..=4 => {
+        1..=5 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
+            // Existing installations have already passed through Byte without
+            // first-run onboarding. Do not force the new onboarding flow on
+            // them during migration.
+            config.app.onboarding_completed = true;
             Ok(config)
         }
         other => Err(ByteError::Config(format!(
@@ -304,6 +314,61 @@ mod tests {
             companion.customization.decorations.large_background,
             "pennant_banner"
         );
+    }
+
+    #[test]
+    fn v5_config_gains_phase_20_defaults_without_forcing_onboarding() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = temp.path().join("config.json");
+        let legacy = r#"{
+          "schema_version": 5,
+          "companion": {
+            "character": "BYTE",
+            "palette": "mint",
+            "habitat": "DESK",
+            "display_mode": "HABITAT",
+            "size": "MEDIUM",
+            "interaction_level": "NORMAL",
+            "personality": "CURIOUS",
+            "edge_anchor": "RIGHT",
+            "placements": {
+              "habitat": null,
+              "perch": null,
+              "mini": null,
+              "edge": null
+            },
+            "customization": {
+              "headwear": "none",
+              "face_accessory": "none",
+              "body_accessory": "none",
+              "back_accessory": "none",
+              "hand_prop": "none",
+              "decorations": {
+                "large_background": "none",
+                "wall_or_sky": "none",
+                "surface_left": "none",
+                "surface_right": "none",
+                "small_prop": "none",
+                "ambient": "none"
+              }
+            }
+          },
+          "app": {
+            "hide_in_fullscreen": true,
+            "sound_enabled": false,
+            "launch_at_startup": false,
+            "activity_history_enabled": true
+          }
+        }"#;
+        fs::write(&path, legacy).expect("write");
+
+        let migrated = ConfigStore::load(path).expect("migrate");
+        let app = migrated.snapshot().app;
+
+        assert!(app.onboarding_completed);
+        assert!(app.system_monitoring_enabled);
+        assert!(app.notifications_enabled);
+        assert_eq!(app.text_scale_percent, 100);
     }
 
     #[test]

@@ -126,6 +126,12 @@ export interface AppPreferences {
   sound_enabled: boolean;
   launch_at_startup: boolean;
   activity_history_enabled: boolean;
+  system_monitoring_enabled: boolean;
+  notifications_enabled: boolean;
+  reduce_motion: boolean;
+  high_contrast: boolean;
+  text_scale_percent: 100 | 110 | 125;
+  onboarding_completed: boolean;
 }
 
 export interface ByteConfig {

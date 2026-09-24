@@ -123,6 +123,16 @@ impl ActivityStore {
         }
     }
 
+    pub fn clear(&mut self) -> Result<ActivitySnapshot, ByteError> {
+        self.events.clear();
+        self.trends.clear();
+        self.previous = None;
+        self.last_trend_at = None;
+        self.next_id = 1;
+        self.save()?;
+        Ok(self.snapshot())
+    }
+
     pub fn record(
         &mut self,
         snapshot: &SystemSnapshot,

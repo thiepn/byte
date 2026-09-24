@@ -435,12 +435,36 @@ impl Default for CompanionPreferences {
     }
 }
 
+fn default_true() -> bool {
+    true
+}
+
+fn default_text_scale_percent() -> u16 {
+    100
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppPreferences {
+    #[serde(default = "default_true")]
     pub hide_in_fullscreen: bool,
+    #[serde(default)]
     pub sound_enabled: bool,
+    #[serde(default)]
     pub launch_at_startup: bool,
+    #[serde(default = "default_true")]
     pub activity_history_enabled: bool,
+    #[serde(default = "default_true")]
+    pub system_monitoring_enabled: bool,
+    #[serde(default = "default_true")]
+    pub notifications_enabled: bool,
+    #[serde(default)]
+    pub reduce_motion: bool,
+    #[serde(default)]
+    pub high_contrast: bool,
+    #[serde(default = "default_text_scale_percent")]
+    pub text_scale_percent: u16,
+    #[serde(default)]
+    pub onboarding_completed: bool,
 }
 
 impl Default for AppPreferences {
@@ -450,6 +474,12 @@ impl Default for AppPreferences {
             sound_enabled: false,
             launch_at_startup: false,
             activity_history_enabled: true,
+            system_monitoring_enabled: true,
+            notifications_enabled: true,
+            reduce_motion: false,
+            high_contrast: false,
+            text_scale_percent: 100,
+            onboarding_completed: false,
         }
     }
 }
@@ -464,7 +494,7 @@ pub struct ByteConfig {
 impl Default for ByteConfig {
     fn default() -> Self {
         Self {
-            schema_version: 5,
+            schema_version: 6,
             companion: CompanionPreferences::default(),
             app: AppPreferences::default(),
         }

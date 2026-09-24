@@ -1,11 +1,11 @@
 use crate::{
     core::{activity::ActivitySnapshot, error::ByteError, state::AppState},
     models::{
-        AppDiagnosticsSnapshot, ByteConfig, CollectionDiscoveryKind, CollectionSnapshot,
-        CompanionPreferences, CompanionSize, DisplayMode, EdgeAnchor, RecommendedActionKind,
-        SystemSnapshot, WindowShellState,
+        AppDiagnosticsSnapshot, AppPreferences, ByteConfig, CollectionDiscoveryKind,
+        CollectionSnapshot, CompanionPreferences, CompanionSize, DisplayMode, EdgeAnchor,
+        RecommendedActionKind, SystemSnapshot, WindowShellState,
     },
-    platform::windows::{actions, windowing},
+    platform::windows::{actions, startup, windowing},
 };
 use tauri::{AppHandle, Emitter, State};
 
@@ -52,6 +52,47 @@ pub fn get_preferences(state: State<'_, AppState>) -> ByteConfig {
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
         .snapshot()
+}
+
+#[tauri::command]
+pub fn update_app_preferences(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    preferences: AppPreferences,
+) -> Result<ByteConfig, ByteError> {
+    if !matches!(preferences.text_scale_percent, 100 | 110 | 125) {
+        return Err(ByteError::Config(
+            "Text scale must be 100, 110, or 125 percent".into(),
+        ));
+    }
+
+    let previous = state.app_preferences();
+    if previous.launch_at_startup != preferences.launch_at_startup {
+        startup::apply(preferences.launch_at_startup)?;
+    }
+
+    let config = state
+        .config
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .update_app(preferences.clone())?;
+
+    if !preferences.system_monitoring_enabled {
+        state.set_snapshot_unavailable();
+    }
+
+    let _ = app.emit("byte://app-preferences-changed", preferences);
+    Ok(config)
+}
+
+#[tauri::command]
+pub fn clear_activity_history(state: State<'_, AppState>) -> Result<ActivitySnapshot, ByteError> {
+    state.clear_activity()
+}
+
+#[tauri::command]
+pub fn open_release_page() -> Result<(), ByteError> {
+    actions::open_release_page()
 }
 
 #[tauri::command]

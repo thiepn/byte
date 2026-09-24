@@ -15,7 +15,7 @@ import type {
 } from "../types/domain";
 
 const DEFAULT_CONFIG: ByteConfig = {
-  schema_version: 5,
+  schema_version: 6,
   companion: {
     character: "BYTE",
     palette: "default",
@@ -52,6 +52,12 @@ const DEFAULT_CONFIG: ByteConfig = {
     sound_enabled: false,
     launch_at_startup: false,
     activity_history_enabled: true,
+    system_monitoring_enabled: true,
+    notifications_enabled: true,
+    reduce_motion: false,
+    high_contrast: false,
+    text_scale_percent: 100,
+    onboarding_completed: false,
   },
 };
 
@@ -175,6 +181,25 @@ export async function recordCollectionDiscovery(
 export async function getPreferences(): Promise<ByteConfig> {
   if (!inTauri()) return clone(browserConfig);
   return invoke<ByteConfig>("get_preferences");
+}
+
+export async function updateAppPreferences(
+  preferences: ByteConfig["app"],
+): Promise<ByteConfig> {
+  if (!inTauri()) {
+    browserConfig = { ...browserConfig, app: clone(preferences) };
+    return clone(browserConfig);
+  }
+  return invoke<ByteConfig>("update_app_preferences", { preferences });
+}
+
+export async function clearActivityHistory(): Promise<ActivitySnapshot> {
+  if (!inTauri()) return { events: [], trends: [] };
+  return invoke<ActivitySnapshot>("clear_activity_history");
+}
+
+export async function openReleasePage(): Promise<void> {
+  if (inTauri()) await invoke("open_release_page");
 }
 
 export async function updateCompanionPreferences(

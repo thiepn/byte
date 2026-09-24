@@ -6,6 +6,8 @@ use windows_sys::Win32::{
     UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOWNORMAL},
 };
 
+const RELEASES_URL: &str = "https://github.com/thiepn/byte/releases";
+
 pub fn execute(app: &AppHandle, action: RecommendedActionKind) -> Result<(), ByteError> {
     match action {
         RecommendedActionKind::ViewDetails => windowing::show_main_window(app),
@@ -13,6 +15,10 @@ pub fn execute(app: &AppHandle, action: RecommendedActionKind) -> Result<(), Byt
         RecommendedActionKind::OpenStorageSettings => launch("ms-settings:storagesense"),
         RecommendedActionKind::OpenBatterySettings => launch("ms-settings:batterysaver-settings"),
     }
+}
+
+pub fn open_release_page() -> Result<(), ByteError> {
+    launch(RELEASES_URL)
 }
 
 fn launch(target: &str) -> Result<(), ByteError> {

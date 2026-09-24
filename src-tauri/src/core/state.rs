@@ -7,8 +7,8 @@ use crate::{
         lifecycle::LifecycleCoordinator,
     },
     models::{
-        AppDiagnosticsSnapshot, CollectionDiscoveryKind, CollectionSnapshot, CompanionPreferences,
-        SystemSnapshot, WindowShellState,
+        AppDiagnosticsSnapshot, AppPreferences, CollectionDiscoveryKind, CollectionSnapshot,
+        CompanionPreferences, SystemSnapshot, WindowShellState,
     },
 };
 use std::{
@@ -29,6 +29,8 @@ pub struct AppState {
     app_inspector: Mutex<AppInspector>,
     telemetry_worker: Mutex<Option<JoinHandle<()>>>,
     #[cfg(target_os = "windows")]
+    fullscreen_worker: Mutex<Option<JoinHandle<()>>>,
+    #[cfg(target_os = "windows")]
     input_runtime: Mutex<Option<InputRuntime>>,
 }
 
@@ -43,6 +45,8 @@ impl AppState {
             collection: Mutex::new(collection),
             app_inspector: Mutex::new(AppInspector::new()),
             telemetry_worker: Mutex::new(None),
+            #[cfg(target_os = "windows")]
+            fullscreen_worker: Mutex::new(None),
             #[cfg(target_os = "windows")]
             input_runtime: Mutex::new(None),
         }
@@ -81,6 +85,28 @@ impl AppState {
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
             .snapshot()
+    }
+
+    pub fn clear_activity(&self) -> Result<ActivitySnapshot, crate::core::error::ByteError> {
+        self.activity
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .clear()
+    }
+
+    pub fn app_preferences(&self) -> AppPreferences {
+        self.config
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .snapshot()
+            .app
+    }
+
+    pub fn set_snapshot_unavailable(&self) {
+        *self
+            .snapshot
+            .write()
+            .unwrap_or_else(|poisoned| poisoned.into_inner()) = SystemSnapshot::unavailable();
     }
 
     pub fn collection_snapshot(&self) -> Result<CollectionSnapshot, crate::core::error::ByteError> {
@@ -145,6 +171,14 @@ impl AppState {
     }
 
     #[cfg(target_os = "windows")]
+    pub fn install_fullscreen_worker(&self, worker: JoinHandle<()>) {
+        *self
+            .fullscreen_worker
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner()) = Some(worker);
+    }
+
+    #[cfg(target_os = "windows")]
     pub fn install_input_runtime(&self, runtime: InputRuntime) {
         *self
             .input_runtime
@@ -181,7 +215,22 @@ impl AppState {
     pub fn stop_background_workers(&self) {
         #[cfg(target_os = "windows")]
         self.stop_input_runtime();
+
+        self.lifecycle.cancel();
         self.stop_telemetry_worker();
+
+        #[cfg(target_os = "windows")]
+        {
+            let worker = self
+                .fullscreen_worker
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner())
+                .take();
+            if let Some(worker) = worker {
+                let _ = worker.join();
+            }
+        }
+
         let _ = self
             .collection
             .lock()
