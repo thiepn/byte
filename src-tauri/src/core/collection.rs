@@ -76,12 +76,17 @@ impl CollectionStore {
         }
 
         let now = now_epoch_ms();
-        let data = match fs::read_to_string(&path) {
-            Ok(raw) => serde_json::from_str::<CollectionData>(&raw)
+        let (data, recovered) = match fs::read_to_string(&path) {
+            Ok(raw) => match serde_json::from_str::<CollectionData>(&raw)
                 .ok()
                 .filter(|value| value.schema_version == COLLECTION_SCHEMA_VERSION)
-                .unwrap_or_else(|| CollectionData::new(now)),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => CollectionData::new(now),
+            {
+                Some(value) => (value, false),
+                None => (CollectionData::new(now), true),
+            },
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                (CollectionData::new(now), true)
+            }
             Err(error) => return Err(error.into()),
         };
 
@@ -89,10 +94,10 @@ impl CollectionStore {
             path,
             data,
             previous_charging: None,
-            dirty: false,
+            dirty: recovered,
         };
         let changed = store.evaluate_unlocks(now);
-        if changed || !store.path.exists() {
+        if changed || recovered {
             store.save()?;
         }
         Ok(store)
@@ -431,6 +436,21 @@ mod tests {
             primary_issue: None,
             secondary_issue_count: 0,
         }
+    }
+
+    #[test]
+    fn malformed_collection_recovers_to_a_persisted_fresh_store() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = temp.path().join("collection.json");
+        fs::write(&path, "{ not valid json").expect("fixture");
+
+        let mut store = CollectionStore::load(path.clone()).expect("recover");
+        let snapshot = store.snapshot().expect("snapshot");
+        assert!(snapshot.unlocked_ids.is_empty());
+
+        let raw = fs::read_to_string(path).expect("rewritten collection");
+        let decoded = serde_json::from_str::<CollectionData>(&raw).expect("valid persisted json");
+        assert_eq!(decoded.schema_version, COLLECTION_SCHEMA_VERSION);
     }
 
     #[test]
