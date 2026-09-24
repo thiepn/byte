@@ -389,7 +389,7 @@ impl PowerEventWindow {
 
             let power_notification =
                 RegisterPowerSettingNotification(hwnd as _, &GUID_CONSOLE_DISPLAY_STATE, 0);
-            if power_notification.is_null() {
+            if power_notification == 0 {
                 let _ = DestroyWindow(hwnd);
                 return None;
             }
@@ -434,7 +434,7 @@ unsafe extern "system" fn power_window_proc(
         // SAFETY: Windows documents lParam for PBT_POWERSETTINGCHANGE as a
         // valid POWERBROADCAST_SETTING pointer for the duration of the call.
         let setting = unsafe { &*(lparam as *const POWERBROADCAST_SETTING) };
-        if setting.PowerSetting == GUID_CONSOLE_DISPLAY_STATE && setting.DataLength >= 4 {
+        if guid_equal(&setting.PowerSetting, &GUID_CONSOLE_DISPLAY_STATE) && setting.DataLength >= 4 {
             let data = setting.Data.as_ptr() as *const u32;
             let value = unsafe { std::ptr::read_unaligned(data) };
             if value <= DISPLAY_DIMMED as u32 {
@@ -445,6 +445,13 @@ unsafe extern "system" fn power_window_proc(
     }
 
     unsafe { DefWindowProcW(hwnd, message, wparam, lparam) }
+}
+
+fn guid_equal(left: &windows_sys::core::GUID, right: &windows_sys::core::GUID) -> bool {
+    left.data1 == right.data1
+        && left.data2 == right.data2
+        && left.data3 == right.data3
+        && left.data4 == right.data4
 }
 
 fn wide(value: &str) -> Vec<u16> {
