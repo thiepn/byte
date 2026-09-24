@@ -133,3 +133,31 @@ export interface ByteConfig {
   companion: CompanionPreferences;
   app: AppPreferences;
 }
+
+
+export type ActivityEventKind = "ISSUE_OPENED" | "ISSUE_RESOLVED" | "POWER";
+export type ActivityTone = "NORMAL" | "INFO" | "WARNING" | "CRITICAL";
+
+export interface ActivityEvent {
+  id: number;
+  timestamp_epoch_ms: number;
+  kind: ActivityEventKind;
+  tone: ActivityTone;
+  title: string;
+  detail: string;
+}
+
+export interface TrendPoint {
+  timestamp_epoch_ms: number;
+  cpu_percent: number;
+  memory_percent: number;
+  storage_percent: number;
+  battery_percent: number | null;
+  network_mbps: number;
+  thermal_c: number | null;
+}
+
+export interface ActivitySnapshot {
+  events: ActivityEvent[];
+  trends: TrendPoint[];
+}

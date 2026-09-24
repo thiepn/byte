@@ -1,5 +1,5 @@
 use crate::{
-    core::{error::ByteError, state::AppState},
+    core::{activity::ActivitySnapshot, error::ByteError, state::AppState},
     models::{
         ByteConfig, CompanionPreferences, CompanionSize, DisplayMode, EdgeAnchor,
         RecommendedActionKind, SystemSnapshot, WindowShellState,
@@ -11,6 +11,11 @@ use tauri::{AppHandle, Emitter, State};
 #[tauri::command]
 pub fn get_snapshot(state: State<'_, AppState>) -> SystemSnapshot {
     state.snapshot()
+}
+
+#[tauri::command]
+pub fn get_activity_history(state: State<'_, AppState>) -> ActivitySnapshot {
+    state.activity_snapshot()
 }
 
 #[tauri::command]

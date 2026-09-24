@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
+  ActivitySnapshot,
   ByteConfig,
   CompanionPreferences,
   CompanionSize,
@@ -81,6 +82,27 @@ function inTauri(): boolean {
 export async function getSnapshot(): Promise<SystemSnapshot> {
   if (!inTauri()) return { ...clone(MOCK_SNAPSHOT), timestamp_epoch_ms: Date.now() };
   return invoke<SystemSnapshot>("get_snapshot");
+}
+
+export async function getActivityHistory(): Promise<ActivitySnapshot> {
+  if (!inTauri()) {
+    return {
+      events: [],
+      trends: [
+        {
+          timestamp_epoch_ms: Date.now(),
+          cpu_percent: MOCK_SNAPSHOT.cpu.value,
+          memory_percent: MOCK_SNAPSHOT.memory.value,
+          storage_percent: MOCK_SNAPSHOT.storage.value,
+          battery_percent: MOCK_SNAPSHOT.battery?.percent ?? null,
+          network_mbps:
+            MOCK_SNAPSHOT.network.download_mbps + MOCK_SNAPSHOT.network.upload_mbps,
+          thermal_c: MOCK_SNAPSHOT.thermal?.value ?? null,
+        },
+      ],
+    };
+  }
+  return invoke<ActivitySnapshot>("get_activity_history");
 }
 
 export async function getPreferences(): Promise<ByteConfig> {

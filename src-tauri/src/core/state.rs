@@ -1,5 +1,9 @@
 use crate::{
-    core::{config::ConfigStore, lifecycle::LifecycleCoordinator},
+    core::{
+        activity::{ActivitySnapshot, ActivityStore},
+        config::ConfigStore,
+        lifecycle::LifecycleCoordinator,
+    },
     models::{SystemSnapshot, WindowShellState},
 };
 use std::{
@@ -15,18 +19,20 @@ pub struct AppState {
     pub config: Mutex<ConfigStore>,
     pub lifecycle: LifecycleCoordinator,
     pub window_shell: Mutex<WindowShellState>,
+    activity: Mutex<ActivityStore>,
     telemetry_worker: Mutex<Option<JoinHandle<()>>>,
     #[cfg(target_os = "windows")]
     input_runtime: Mutex<Option<InputRuntime>>,
 }
 
 impl AppState {
-    pub fn new(config: ConfigStore) -> Self {
+    pub fn new(config: ConfigStore, activity: ActivityStore) -> Self {
         Self {
             snapshot: RwLock::new(SystemSnapshot::unavailable()),
             config: Mutex::new(config),
             lifecycle: LifecycleCoordinator::default(),
             window_shell: Mutex::new(WindowShellState::default()),
+            activity: Mutex::new(activity),
             telemetry_worker: Mutex::new(None),
             #[cfg(target_os = "windows")]
             input_runtime: Mutex::new(None),
@@ -41,10 +47,31 @@ impl AppState {
     }
 
     pub fn replace_snapshot(&self, snapshot: SystemSnapshot) {
+        let history_enabled = self
+            .config
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .snapshot()
+            .app
+            .activity_history_enabled;
+
+        let _ = self
+            .activity
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .record(&snapshot, history_enabled);
+
         *self
             .snapshot
             .write()
             .unwrap_or_else(|poisoned| poisoned.into_inner()) = snapshot;
+    }
+
+    pub fn activity_snapshot(&self) -> ActivitySnapshot {
+        self.activity
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .snapshot()
     }
 
     pub fn install_telemetry_worker(&self, worker: JoinHandle<()>) {

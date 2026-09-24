@@ -4,7 +4,7 @@ pub mod models;
 pub mod platform;
 pub mod telemetry;
 
-use core::{config::ConfigStore, state::AppState};
+use core::{activity::ActivityStore, config::ConfigStore, state::AppState};
 use models::DisplayMode;
 use platform::windows::{input::InputRuntime, windowing};
 use tauri::{
@@ -102,9 +102,10 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            let config_path = app.path().app_config_dir()?.join("config.json");
-            let config = ConfigStore::load(config_path)?;
-            app.manage(AppState::new(config));
+            let app_config_dir = app.path().app_config_dir()?;
+            let config = ConfigStore::load(app_config_dir.join("config.json"))?;
+            let activity = ActivityStore::load(app_config_dir.join("activity.json"))?;
+            app.manage(AppState::new(config, activity));
 
             windowing::initialize(app.handle())?;
             telemetry::runtime::start(app.handle().clone())?;
@@ -129,6 +130,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             ipc::commands::get_snapshot,
+            ipc::commands::get_activity_history,
             ipc::commands::get_preferences,
             ipc::commands::update_companion_preferences,
             ipc::commands::execute_recommended_action,
