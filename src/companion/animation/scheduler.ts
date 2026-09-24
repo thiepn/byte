@@ -38,7 +38,9 @@ export class FramePacer {
 export class AnimationScheduler {
   private readonly listeners = new Set<(tick: AnimationTick) => void>();
   private readonly pacer = new FramePacer(12, 125);
+  private readonly cadenceMs = 1000 / 12;
   private animationFrame: number | null = null;
+  private timer: number | null = null;
   private visibilityBound = false;
 
   subscribe(listener: (tick: AnimationTick) => void): () => void {
@@ -67,15 +69,26 @@ export class AnimationScheduler {
 
   private ensureRunning(): void {
     if (
+      this.timer != null ||
       this.animationFrame != null ||
       this.listeners.size === 0 ||
+      typeof window === "undefined" ||
       typeof requestAnimationFrame === "undefined" ||
       (typeof document !== "undefined" && document.hidden)
     ) {
       return;
     }
 
-    this.animationFrame = requestAnimationFrame(this.onFrame);
+    this.timer = window.setTimeout(() => {
+      this.timer = null;
+      if (
+        this.listeners.size === 0 ||
+        (typeof document !== "undefined" && document.hidden)
+      ) {
+        return;
+      }
+      this.animationFrame = requestAnimationFrame(this.onFrame);
+    }, this.cadenceMs);
   }
 
   private readonly onFrame = (now: number): void => {
@@ -88,9 +101,14 @@ export class AnimationScheduler {
   };
 
   private stop(): void {
+    if (this.timer != null && typeof window !== "undefined") {
+      window.clearTimeout(this.timer);
+    }
     if (this.animationFrame != null && typeof cancelAnimationFrame !== "undefined") {
       cancelAnimationFrame(this.animationFrame);
     }
+
+    this.timer = null;
     this.animationFrame = null;
     this.pacer.reset();
   }

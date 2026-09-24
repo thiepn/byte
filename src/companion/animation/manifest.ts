@@ -89,8 +89,12 @@ function validateFrames(
       throw new Error(`Frame "${id}" points outside the atlas`);
     }
     for (const anchorName of manifest.anchors) {
-      if (!frame.anchors?.[anchorName]) {
+      const anchor = frame.anchors?.[anchorName];
+      if (!anchor) {
         throw new Error(`Frame "${id}" is missing anchor "${anchorName}"`);
+      }
+      if (!Number.isFinite(anchor.x) || !Number.isFinite(anchor.y)) {
+        throw new Error(`Frame "${id}" has invalid anchor "${anchorName}"`);
       }
     }
   }

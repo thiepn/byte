@@ -38,14 +38,18 @@ export class CharacterCanvasRenderer {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.imageSmoothingEnabled = false;
 
-    for (const attachment of this.attachments) {
-      if ((attachment.layer ?? 1) < 0) this.drawAttachment(attachment, frame);
+    const ordered = [...this.attachments].sort(
+      (left, right) => this.layerFor(left, frame) - this.layerFor(right, frame),
+    );
+
+    for (const attachment of ordered) {
+      if (this.layerFor(attachment, frame) < 0) this.drawAttachment(attachment, frame);
     }
 
     this.drawBase(frame);
 
-    for (const attachment of this.attachments) {
-      if ((attachment.layer ?? 1) >= 0) this.drawAttachment(attachment, frame);
+    for (const attachment of ordered) {
+      if (this.layerFor(attachment, frame) >= 0) this.drawAttachment(attachment, frame);
     }
   }
 
@@ -69,6 +73,10 @@ export class CharacterCanvasRenderer {
       atlas.frameWidth,
       atlas.frameHeight,
     );
+  }
+
+  private layerFor(attachment: CosmeticAttachment, frame: RenderFrame): number {
+    return attachment.layer ?? frame.anchors[attachment.anchor]?.layer ?? 1;
   }
 
   private drawAttachment(attachment: CosmeticAttachment, frame: RenderFrame): void {
