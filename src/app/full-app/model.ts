@@ -2,6 +2,8 @@ import type {
   ActivityEvent,
   ActivityEventKind,
   ActivityTone,
+  AppUsageSummary,
+  Confidence,
   TrendPoint,
 } from "../../lib/types/domain";
 
@@ -93,4 +95,64 @@ export function groupEventsByDay(
     day,
     events: values,
   }));
+}
+
+
+export type AppSort = "RELEVANCE" | "CPU" | "MEMORY";
+
+export function sortApps(
+  apps: AppUsageSummary[],
+  sort: AppSort,
+): AppUsageSummary[] {
+  return [...apps].sort((left, right) => {
+    if (sort === "CPU") {
+      return (
+        right.cpu_percent - left.cpu_percent ||
+        right.memory_mb - left.memory_mb ||
+        left.name.localeCompare(right.name)
+      );
+    }
+
+    if (sort === "MEMORY") {
+      return (
+        right.memory_mb - left.memory_mb ||
+        right.cpu_percent - left.cpu_percent ||
+        left.name.localeCompare(right.name)
+      );
+    }
+
+    const leftScore = Math.max(left.cpu_share, left.memory_share);
+    const rightScore = Math.max(right.cpu_share, right.memory_share);
+    return (
+      rightScore - leftScore ||
+      right.memory_mb - left.memory_mb ||
+      left.name.localeCompare(right.name)
+    );
+  });
+}
+
+export function appSignalLabel(app: AppUsageSummary): string {
+  if (app.cpu_confidence && app.memory_confidence) return "CPU + memory";
+  if (app.cpu_confidence) return "CPU stands out";
+  if (app.memory_confidence) return "Memory stands out";
+  return "Context only";
+}
+
+export function confidenceLabel(confidence: Confidence | null): string {
+  if (!confidence) return "No strong signal";
+  return `${confidence[0]}${confidence.slice(1).toLowerCase()} confidence`;
+}
+
+export function formatMemoryMb(memoryMb: number): string {
+  if (!Number.isFinite(memoryMb) || memoryMb < 0) return "—";
+  if (memoryMb >= 1024) {
+    const gb = memoryMb / 1024;
+    return `${gb >= 10 ? Math.round(gb) : gb.toFixed(1)} GB`;
+  }
+  return `${Math.round(memoryMb)} MB`;
+}
+
+export function formatShare(share: number): string {
+  if (!Number.isFinite(share) || share <= 0) return "<1%";
+  return `${Math.max(1, Math.round(share * 100))}%`;
 }

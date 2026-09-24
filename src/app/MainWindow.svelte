@@ -3,6 +3,8 @@
   import type {
     ActivityEventKind,
     ActivitySnapshot,
+    AppDiagnosticsSnapshot,
+    AppUsageSummary,
     ByteConfig,
     CompanionPreferences,
     CompanionSize,
@@ -19,6 +21,7 @@
     getActivityHistory,
     getPreferences,
     getSnapshot,
+    inspectApps,
     setCompanionSize,
     setDisplayMode,
     updateCompanionPreferences,
@@ -32,11 +35,17 @@
     thermalLabel,
   } from "../features/quick-panel/model";
   import {
+    appSignalLabel,
+    confidenceLabel,
     eventKindLabel,
     eventTime,
     eventToneClass,
+    formatMemoryMb,
+    formatShare,
     groupEventsByDay,
+    sortApps,
     sparklinePath,
+    type AppSort,
     type TrendMetric,
   } from "./full-app/model";
   import { loadCharacterManifest } from "../companion/assets/registry";
@@ -95,13 +104,17 @@
 
   let view: View = "overview";
   let activityFilter: ActivityFilter = "ALL";
+  let appSort: AppSort = "RELEVANCE";
   let snapshot: SystemSnapshot | null = null;
+  let appDiagnostics: AppDiagnosticsSnapshot | null = null;
   let activity: ActivitySnapshot = { events: [], trends: [] };
   let preferences: ByteConfig | null = null;
   let paletteOptions: PaletteDefinition[] = [];
   let errorMessage = "";
   let customizeError = "";
   let actionError = "";
+  let appsError = "";
+  let appsLoading = false;
   let saving = false;
   let runningAction = "";
 
@@ -128,6 +141,29 @@
     } catch {
       errorMessage = "Byte could not refresh its current local state.";
     }
+  }
+
+  async function refreshApps(): Promise<void> {
+    if (appsLoading) return;
+    appsLoading = true;
+    appsError = "";
+
+    try {
+      appDiagnostics = await inspectApps();
+    } catch {
+      appsError = "Byte could not inspect current app usage.";
+    } finally {
+      appsLoading = false;
+    }
+  }
+
+  function openApps(): void {
+    view = "apps";
+    if (!appDiagnostics) void refreshApps();
+  }
+
+  function sortedApps(): AppUsageSummary[] {
+    return sortApps(appDiagnostics?.apps ?? [], appSort);
   }
 
   async function refreshPaletteOptions(): Promise<void> {
@@ -313,7 +349,7 @@
     <nav>
       <button class:active={view === "overview"} onclick={() => (view = "overview")}>Overview</button>
       <button class:active={view === "activity"} onclick={() => (view = "activity")}>Activity</button>
-      <button class:active={view === "apps"} onclick={() => (view = "apps")}>Apps</button>
+      <button class:active={view === "apps"} onclick={openApps}>Apps</button>
       <button class:active={view === "customize"} onclick={() => (view = "customize")}>Customize</button>
     </nav>
     <button class:active={view === "settings"} class="settings-link" onclick={() => (view = "settings")}>Settings</button>
@@ -436,29 +472,155 @@
       </section>
 
     {:else if view === "apps"}
-      <section class="page">
-        <p class="eyebrow">Current attribution</p>
-        <h1>Apps</h1>
-        <p class="lede">Byte only names an application when the diagnostic engine has enough evidence. It does not continuously rank every running process.</p>
+      <section class="page apps-page">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">On-demand diagnostics</p>
+            <h1>Apps</h1>
+            <p class="lede">
+              Inspect which app groups are using CPU and memory right now.
+              Byte only calls something a likely contributor when both its
+              absolute use and share of observed app usage are meaningful.
+            </p>
+          </div>
+          <button
+            class="secondary-button"
+            disabled={appsLoading}
+            onclick={() => void refreshApps()}
+          >{appsLoading ? "Inspecting…" : appDiagnostics ? "Refresh scan" : "Inspect apps"}</button>
+        </div>
 
-        {#if snapshot?.primary_issue?.culprit}
-          <article class="app-insight">
-            <div class="app-avatar">{snapshot.primary_issue.culprit.name.slice(0, 1).toUpperCase()}</div>
+        <div class="privacy-note">
+          <strong>On demand only</strong>
+          <span>
+            App inspection runs only when this page is opened or you press
+            Refresh scan. Byte aggregates process names locally and does not
+            read command lines, file paths, window titles, or process content.
+          </span>
+        </div>
+
+        {#if appsError}
+          <div class="notice error compact">{appsError}</div>
+        {/if}
+
+        {#if snapshot?.primary_issue}
+          <article class="diagnostic-context">
             <div>
-              <strong>{snapshot.primary_issue.culprit.name}</strong>
-              <span>Likely contributor to {snapshot.primary_issue.category.toLowerCase()} pressure</span>
-              <small>{snapshot.primary_issue.culprit_confidence?.toLowerCase()} confidence</small>
+              <span class="field-label">Current diagnostic context</span>
+              <strong>{snapshot.primary_issue.headline}</strong>
+              <p>{snapshot.primary_issue.explanation}</p>
             </div>
-            <div class="app-numbers">
-              {#if snapshot.primary_issue.culprit.cpu_percent != null}<span>{Math.round(snapshot.primary_issue.culprit.cpu_percent)}% CPU</span>{/if}
-              {#if snapshot.primary_issue.culprit.memory_mb != null}<span>{Math.round(snapshot.primary_issue.culprit.memory_mb)} MB</span>{/if}
-            </div>
+            <span class="diagnostic-confidence">
+              {confidenceLabel(snapshot.primary_issue.confidence)}
+            </span>
           </article>
-          <button class="secondary-button" onclick={() => void runAction("OPEN_TASK_MANAGER")}>Open Task Manager</button>
+        {/if}
+
+        {#if appsLoading && !appDiagnostics}
+          <div class="empty-state">
+            <strong>Inspecting current app usage…</strong>
+            <p>The first CPU inspection takes a short second sample so Byte does not present an uninitialized CPU reading.</p>
+          </div>
+        {:else if appDiagnostics}
+          <div class="signal-grid">
+            <article class="signal-card">
+              <span>CPU signal</span>
+              {#if appDiagnostics.cpu_leader}
+                <strong>{appDiagnostics.cpu_leader.name}</strong>
+                <p>
+                  {formatShare(appDiagnostics.cpu_leader.share)} of observed
+                  app CPU · {confidenceLabel(appDiagnostics.cpu_leader.confidence)}
+                </p>
+              {:else}
+                <strong>No app clearly stands out</strong>
+                <p>Current CPU use is distributed or below Byte's attribution threshold.</p>
+              {/if}
+            </article>
+
+            <article class="signal-card">
+              <span>Memory signal</span>
+              {#if appDiagnostics.memory_leader}
+                <strong>{appDiagnostics.memory_leader.name}</strong>
+                <p>
+                  {formatShare(appDiagnostics.memory_leader.share)} of observed
+                  app memory · {confidenceLabel(appDiagnostics.memory_leader.confidence)}
+                </p>
+              {:else}
+                <strong>No app clearly stands out</strong>
+                <p>Current memory use is distributed or below Byte's attribution threshold.</p>
+              {/if}
+            </article>
+          </div>
+
+          <div class="apps-toolbar">
+            <div class="sort-control" aria-label="Sort apps">
+              <button class:selected={appSort === "RELEVANCE"} onclick={() => (appSort = "RELEVANCE")}>Relevant</button>
+              <button class:selected={appSort === "CPU"} onclick={() => (appSort = "CPU")}>CPU</button>
+              <button class:selected={appSort === "MEMORY"} onclick={() => (appSort = "MEMORY")}>Memory</button>
+            </div>
+            <span>{relativeFreshness(appDiagnostics.timestamp_epoch_ms)}</span>
+          </div>
+
+          {#if sortedApps().length > 0}
+            <div class="apps-table" role="table" aria-label="Current aggregated app usage">
+              <div class="apps-row apps-header" role="row">
+                <span role="columnheader">App group</span>
+                <span role="columnheader">Processes</span>
+                <span role="columnheader">CPU</span>
+                <span role="columnheader">Memory</span>
+                <span role="columnheader">Assessment</span>
+              </div>
+              {#each sortedApps() as app}
+                <div class="apps-row" role="row">
+                  <div class="app-name" role="cell">
+                    <span class="app-avatar">{app.name.slice(0, 1).toUpperCase()}</span>
+                    <strong>{app.name}</strong>
+                  </div>
+                  <span role="cell">{app.process_count}</span>
+                  <div class="usage-cell" role="cell">
+                    <strong>{app.cpu_percent < 10 ? app.cpu_percent.toFixed(1) : Math.round(app.cpu_percent)}%</strong>
+                    <small>{formatShare(app.cpu_share)} share</small>
+                  </div>
+                  <div class="usage-cell" role="cell">
+                    <strong>{formatMemoryMb(app.memory_mb)}</strong>
+                    <small>{formatShare(app.memory_share)} share</small>
+                  </div>
+                  <div class="assessment" role="cell">
+                    <span
+                      class:signal={Boolean(app.cpu_confidence || app.memory_confidence)}
+                    >{appSignalLabel(app)}</span>
+                    {#if app.cpu_confidence || app.memory_confidence}
+                      <small>
+                        {app.cpu_confidence
+                          ? confidenceLabel(app.cpu_confidence)
+                          : confidenceLabel(app.memory_confidence)}
+                      </small>
+                    {/if}
+                  </div>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <div class="empty-state">
+              <strong>No app usage was available</strong>
+              <p>Windows did not return enough process CPU or memory data for this inspection.</p>
+            </div>
+          {/if}
+
+          <div class="apps-footer">
+            <div>
+              <strong>Why no End task button?</strong>
+              <span>
+                Byte is an explainer, not a process manager. Use Task Manager
+                when you intentionally want to inspect or stop a process.
+              </span>
+            </div>
+            <button class="secondary-button" onclick={() => void runAction("OPEN_TASK_MANAGER")}>Open Task Manager</button>
+          </div>
         {:else}
           <div class="empty-state">
-            <strong>No single app stands out right now</strong>
-            <p>That is intentional. Byte would rather show no culprit than blame the wrong process.</p>
+            <strong>Inspect apps when you need context</strong>
+            <p>Byte does not keep a background process leaderboard. Open this page or press Inspect apps for a local point-in-time scan.</p>
           </div>
         {/if}
       </section>
@@ -664,12 +826,35 @@
   .event-card p { margin: 4px 0 0; color: var(--text-secondary); font-size: 12px; line-height: 1.45; }
   .empty-state { padding: 36px 22px; border: 1px dashed var(--border-default); border-radius: var(--radius-card); text-align: center; color: var(--text-secondary); }
   .empty-state p { max-width: 520px; margin: 7px auto 0; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
-  .app-insight { display: grid; grid-template-columns: 46px 1fr auto; gap: 13px; align-items: center; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-default); border-radius: var(--radius-card); background: var(--surface-raised); }
-  .app-avatar { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 12px; background: var(--surface-selected); font-weight: 800; }
-  .app-insight > div:nth-child(2) { display: grid; gap: 3px; }
-  .app-insight span, .app-insight small { color: var(--text-muted); font-size: 11px; }
-  .app-numbers { display: grid; gap: 3px; text-align: right; }
   .secondary-button { width: fit-content; border: 1px solid var(--border-default); background: var(--surface-raised); }
+  .privacy-note { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: baseline; margin-bottom: 12px; padding: 10px 12px; border-radius: 11px; background: var(--surface-selected); color: var(--text-secondary); font-size: 11px; line-height: 1.45; }
+  .privacy-note strong { color: var(--text-primary); }
+  .diagnostic-context { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 12px; padding: 14px; border: 1px solid var(--border-default); border-radius: 13px; background: var(--surface-raised); }
+  .diagnostic-context > div { display: grid; gap: 5px; }
+  .diagnostic-context p { margin: 0; color: var(--text-secondary); font-size: 11px; line-height: 1.45; }
+  .diagnostic-confidence { flex: 0 0 auto; color: var(--text-muted); font-size: 10px; }
+  .signal-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin-bottom: 12px; }
+  .signal-card { padding: 14px; border: 1px solid var(--border-default); border-radius: 13px; background: var(--surface-raised); display: grid; gap: 6px; }
+  .signal-card > span { color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
+  .signal-card p { margin: 0; color: var(--text-secondary); font-size: 11px; line-height: 1.45; }
+  .apps-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0 8px; }
+  .apps-toolbar > span { color: var(--text-muted); font-size: 10px; }
+  .sort-control { display: flex; gap: 5px; }
+  .sort-control button { padding: 6px 9px; border: 1px solid var(--border-default); background: var(--surface-raised); font-size: 10px; }
+  .apps-table { overflow: hidden; border: 1px solid var(--border-default); border-radius: 13px; background: var(--border-default); }
+  .apps-row { display: grid; grid-template-columns: minmax(180px,1.7fr) .65fr .8fr 1fr 1.1fr; gap: 10px; align-items: center; min-height: 58px; padding: 8px 12px; background: var(--surface-raised); border-top: 1px solid var(--border-default); font-size: 11px; }
+  .apps-row:first-child { border-top: 0; }
+  .apps-header { min-height: 34px; background: var(--surface-selected); color: var(--text-muted); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+  .app-name { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .app-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .app-avatar { width: 32px; height: 32px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 9px; background: var(--surface-selected); font-size: 11px; font-weight: 800; }
+  .usage-cell,.assessment { display: grid; gap: 2px; }
+  .usage-cell small,.assessment small { color: var(--text-muted); font-size: 9px; }
+  .assessment > span { width: fit-content; color: var(--text-muted); font-size: 10px; }
+  .assessment > span.signal { padding: 3px 6px; border-radius: 999px; background: color-mix(in srgb,var(--status-info) 12%,transparent); color: var(--text-primary); font-weight: 700; }
+  .apps-footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 12px; padding: 12px 2px; }
+  .apps-footer > div { display: grid; gap: 3px; }
+  .apps-footer span { color: var(--text-muted); font-size: 10px; line-height: 1.4; }
   .settings-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin-bottom: 14px; }
   .settings-card { display: grid; gap: 6px; }
   .settings-card span, .settings-card small { color: var(--text-muted); font-size: 11px; }
@@ -710,6 +895,8 @@
     .content { padding: 28px 24px 48px; }
     .overview-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
     .characters,.palette-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
-    .habitats,.personality-grid,.settings-grid { grid-template-columns: 1fr; }
+    .habitats,.personality-grid,.settings-grid,.signal-grid { grid-template-columns: 1fr; }
+    .apps-row { grid-template-columns: minmax(150px,1.4fr) .6fr .8fr 1fr; }
+    .apps-row > :last-child { display: none; }
   }
 </style>
