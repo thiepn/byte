@@ -252,7 +252,7 @@ fn processor_loop(app: AppHandle, receiver: Receiver<RawInputMessage>) {
     loop {
         let now = now_epoch_ms();
         let timeout = interpreter.next_deadline_ms(now);
-        let wait = Duration::from_millis(timeout.min(PROCESSOR_MAX_SLEEP_MS).max(1));
+        let wait = Duration::from_millis(timeout.clamp(1, PROCESSOR_MAX_SLEEP_MS));
 
         match receiver.recv_timeout(wait) {
             Ok(RawInputMessage::Activity(activity)) => {
