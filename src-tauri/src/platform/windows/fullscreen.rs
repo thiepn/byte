@@ -432,10 +432,7 @@ unsafe extern "system" fn power_window_proc(
         if setting.PowerSetting == GUID_CONSOLE_DISPLAY_STATE && setting.DataLength >= 4 {
             let data = setting.Data.as_ptr() as *const u32;
             let value = unsafe { std::ptr::read_unaligned(data) };
-            if matches!(
-                value,
-                DISPLAY_OFF as u32 | DISPLAY_ON as u32 | DISPLAY_DIMMED as u32
-            ) {
+            if value <= DISPLAY_DIMMED as u32 {
                 DISPLAY_STATE.store(value as u8, Ordering::Release);
             }
         }
