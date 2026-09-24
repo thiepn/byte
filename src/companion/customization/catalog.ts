@@ -44,6 +44,7 @@ export interface CharacterCosmeticDefinition {
   offsetY?: number;
   scale?: number;
   layer?: number;
+  collectionUnlockId?: string;
 }
 
 export const CHARACTER_COSMETICS: CharacterCosmeticDefinition[] = [
@@ -82,6 +83,32 @@ export const CHARACTER_COSMETICS: CharacterCosmeticDefinition[] = [
     offsetY: -10,
     scale: 0.82,
     layer: 2,
+  },
+  {
+    id: "night_cap",
+    name: "Night Cap",
+    category: "headwear",
+    src: "/assets/cosmetics/night-cap.svg",
+    anchor: "head",
+    frameWidth: 32,
+    frameHeight: 32,
+    offsetY: -9,
+    scale: 0.92,
+    layer: 2,
+    collectionUnlockId: "cosmetic:night_cap",
+  },
+  {
+    id: "headphones",
+    name: "Pixel Headphones",
+    category: "headwear",
+    src: "/assets/cosmetics/headphones.svg",
+    anchor: "head",
+    frameWidth: 32,
+    frameHeight: 32,
+    offsetY: -2,
+    scale: 0.96,
+    layer: 3,
+    collectionUnlockId: "cosmetic:headphones",
   },
   {
     id: "round_glasses",
@@ -296,6 +323,7 @@ export interface HabitatDecorationDefinition {
   slot: DecorationSlot;
   previewColor: string;
   primitives: HabitatPrimitive[];
+  collectionUnlockId?: string;
 }
 
 const rect = (
@@ -350,6 +378,20 @@ export const HABITAT_DECORATIONS: HabitatDecorationDefinition[] = [
     ],
   },
   {
+    id: "memory_frame",
+    name: "Memory Frame",
+    slot: "large_background",
+    previewColor: "#c6a6d8",
+    collectionUnlockId: "decoration:memory_frame",
+    primitives: [
+      rect(-18, -16, 36, 32, "#5c4c67", 3),
+      rect(-14, -12, 28, 24, "#d9c3e7", 2),
+      circle(-5, -2, 4, "#8e78a3"),
+      polygon([{ x: 2, y: 7 }, { x: 7, y: -3 }, { x: 12, y: 7 }], "#7aa28a"),
+      circle(8, -5, 3, "#f2cc79"),
+    ],
+  },
+  {
     id: "constellation_frame",
     name: "Constellation",
     slot: "large_background",
@@ -375,6 +417,19 @@ export const HABITAT_DECORATIONS: HabitatDecorationDefinition[] = [
       circle(-4, -5, 3, "#f39b87"),
       circle(6, -3, 3, "#9accc3"),
       circle(15, -2, 3, "#ffd47f"),
+    ],
+  },
+  {
+    id: "signal_kite",
+    name: "Signal Kite",
+    slot: "wall_or_sky",
+    previewColor: "#7fc2d0",
+    collectionUnlockId: "decoration:signal_kite",
+    primitives: [
+      polygon([{ x: 0, y: -15 }, { x: 12, y: -2 }, { x: 0, y: 10 }, { x: -12, y: -2 }], "#7fc2d0"),
+      polygon([{ x: 0, y: -12 }, { x: 9, y: -2 }, { x: 0, y: -2 }], "#f2c56d"),
+      line(0, 10, 6, 19, 1, "#5f5964"),
+      polygon([{ x: 5, y: 17 }, { x: 10, y: 21 }, { x: 4, y: 22 }], "#d77f79"),
     ],
   },
   {
@@ -449,6 +504,19 @@ export const HABITAT_DECORATIONS: HabitatDecorationDefinition[] = [
       circle(7, 0, 2, "#000000"),
       line(-3, -10, -5, -16, 2, "#e7e4d6"),
       line(2, -10, 4, -16, 2, "#e7e4d6"),
+    ],
+  },
+  {
+    id: "charging_orb",
+    name: "Charging Orb",
+    slot: "small_prop",
+    previewColor: "#7ddbc1",
+    collectionUnlockId: "decoration:charging_orb",
+    primitives: [
+      circle(0, -2, 10, "#46645f"),
+      circle(0, -2, 7, "#7ddbc1"),
+      polygon([{ x: -2, y: -8 }, { x: 4, y: -8 }, { x: 1, y: -1 }, { x: 6, y: -1 }, { x: -3, y: 8 }, { x: 0, y: 2 }, { x: -5, y: 2 }], "#fff0a8"),
+      rect(-8, 8, 16, 4, "#5b5660", 2),
     ],
   },
   {

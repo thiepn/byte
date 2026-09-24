@@ -127,6 +127,19 @@
         "eye": "#343639",
         "blush": "#e99bab"
       }
+    },
+    {
+      "id": "aurora",
+      "name": "Aurora",
+      "colors": {
+        "dark": "#3b3150",
+        "shadow": "#745ba8",
+        "primary": "#a789df",
+        "highlight": "#e5d7ff",
+        "accent": "#65cdb9",
+        "eye": "#342d48",
+        "blush": "#ec91b8"
+      }
     }
   ],
   "frames": {

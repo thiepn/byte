@@ -66,8 +66,8 @@ describe("Customization Studio model", () => {
 
   it("keeps Phase 18 inside the existing finite catalogs", () => {
     expect(catalogCounts()).toEqual({
-      cosmetics: 12,
-      decorations: 12,
+      cosmetics: 14,
+      decorations: 15,
     });
     expect(STUDIO_PRESETS.length).toBeGreaterThanOrEqual(4);
   });
