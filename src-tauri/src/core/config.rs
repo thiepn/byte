@@ -74,10 +74,7 @@ impl ConfigStore {
         Ok(self.config.clone())
     }
 
-    pub fn update_app(
-        &mut self,
-        mut preferences: AppPreferences,
-    ) -> Result<ByteConfig, ByteError> {
+    pub fn update_app(&mut self, mut preferences: AppPreferences) -> Result<ByteConfig, ByteError> {
         normalize_and_validate_app_preferences(&mut preferences)?;
         self.config.app = preferences;
         self.save()?;
