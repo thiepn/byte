@@ -25,7 +25,8 @@ describe("production character assets", () => {
 
       expect(manifest.status).toBe("production");
       expect(manifest.frames ? Object.keys(manifest.frames).length : 0).toBeGreaterThanOrEqual(26);
-      expect(manifest.palettes).toHaveLength(8);
+      expect(manifest.palettes).toHaveLength(9);
+      expect(manifest.palettes.some((palette) => palette.id === "aurora")).toBe(true);
       expect(manifest.defaultPalette).toBe("default");
 
       for (const behavior of CORE_BEHAVIORS) {

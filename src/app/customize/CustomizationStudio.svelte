@@ -467,8 +467,12 @@
                   {/each}
                 </span>
                 <strong>{palette.name}</strong>
-                {#if collectionItem(paletteUnlockId(palette.id)) as lockedPalette}
-                  <small>{lockedPalette.unlocked ? "Collection extra" : lockedPalette.condition}</small>
+                {#if collectionItem(paletteUnlockId(palette.id))}
+                  <small>
+                    {collectionItem(paletteUnlockId(palette.id))?.unlocked
+                      ? "Collection extra"
+                      : collectionItem(paletteUnlockId(palette.id))?.condition}
+                  </small>
                 {/if}
               </button>
             {/each}
@@ -551,8 +555,8 @@
                 >
                   <span class="decor-preview" style:background={item.previewColor}></span>
                   <strong>{item.name}</strong>
-                  {#if collectionItem(item.collectionUnlockId) as lockedDecor}
-                    <small>{lockedDecor.condition}</small>
+                  {#if collectionItem(item.collectionUnlockId)}
+                    <small>{collectionItem(item.collectionUnlockId)?.condition}</small>
                   {/if}
                 </button>
               {/each}

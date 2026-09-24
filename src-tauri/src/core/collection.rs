@@ -128,7 +128,10 @@ impl CollectionStore {
         let mut progress_changed = false;
         let charging = snapshot.battery.as_ref().map(|battery| battery.charging);
 
-        if matches!((self.previous_charging, charging), (Some(false), Some(true))) {
+        if matches!(
+            (self.previous_charging, charging),
+            (Some(false), Some(true))
+        ) {
             self.data.charging_sessions = self.data.charging_sessions.saturating_add(1);
             self.dirty = true;
             progress_changed = true;
@@ -184,7 +187,10 @@ impl CollectionStore {
         Ok((self.build_snapshot(now), unlocked))
     }
 
-    pub fn validate_preferences(&self, preferences: &CompanionPreferences) -> Result<(), ByteError> {
+    pub fn validate_preferences(
+        &self,
+        preferences: &CompanionPreferences,
+    ) -> Result<(), ByteError> {
         let customization = &preferences.customization;
 
         let gated = [
@@ -453,12 +459,20 @@ mod tests {
         let temp = tempfile::tempdir().expect("temp dir");
         let mut store = CollectionStore::load(temp.path().join("collection.json")).expect("load");
 
-        store.observe_system(&snapshot(1_000, true, 0.0)).expect("baseline");
-        store.observe_system(&snapshot(2_000, true, 0.0)).expect("steady");
+        store
+            .observe_system(&snapshot(1_000, true, 0.0))
+            .expect("baseline");
+        store
+            .observe_system(&snapshot(2_000, true, 0.0))
+            .expect("steady");
         assert_eq!(store.snapshot().expect("snapshot").charging_sessions, 0);
 
-        store.observe_system(&snapshot(3_000, false, 0.0)).expect("battery");
-        store.observe_system(&snapshot(4_000, true, 0.0)).expect("charge");
+        store
+            .observe_system(&snapshot(3_000, false, 0.0))
+            .expect("battery");
+        store
+            .observe_system(&snapshot(4_000, true, 0.0))
+            .expect("charge");
         assert_eq!(store.snapshot().expect("snapshot").charging_sessions, 1);
     }
 
@@ -467,9 +481,15 @@ mod tests {
         let temp = tempfile::tempdir().expect("temp dir");
         let mut store = CollectionStore::load(temp.path().join("collection.json")).expect("load");
 
-        store.observe_system(&snapshot(1_000, false, 2.0)).expect("first");
-        store.observe_system(&snapshot(2_000, false, 2.0)).expect("too soon");
-        store.observe_system(&snapshot(61_000, false, 2.0)).expect("second");
+        store
+            .observe_system(&snapshot(1_000, false, 2.0))
+            .expect("first");
+        store
+            .observe_system(&snapshot(2_000, false, 2.0))
+            .expect("too soon");
+        store
+            .observe_system(&snapshot(61_000, false, 2.0))
+            .expect("second");
 
         assert_eq!(store.snapshot().expect("snapshot").network_moments, 2);
     }
