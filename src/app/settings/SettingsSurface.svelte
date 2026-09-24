@@ -1,8 +1,26 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { getVersion } from "@tauri-apps/api/app";
-  import type { AppPreferences, ByteConfig } from "../../lib/types/domain";
-  import { clearActivityHistory, openReleasePage, updateAppPreferences } from "../../lib/ipc/client";
+  import type {
+    AppPreferences,
+    ByteConfig,
+    NotificationPermissionState,
+  } from "../../lib/types/domain";
+  import {
+    clearActivityHistory,
+    getNotificationPermission,
+    openReleasePage,
+    requestNotificationPermission,
+    updateAppPreferences,
+  } from "../../lib/ipc/client";
+  import {
+    NOTIFICATION_CATEGORIES,
+    clearSnooze,
+    permissionLabel,
+    snoozeForHours,
+    snoozeLabel,
+    snoozeUntilTomorrow,
+  } from "./notification-model";
 
   export let preferences: ByteConfig;
   export let onSaved: (config: ByteConfig) => void = () => {};
@@ -14,6 +32,8 @@
   let saving = false;
   let saveError = "";
   let dataMessage = "";
+  let notificationPermission: NotificationPermissionState | null = null;
+  let permissionBusy = false;
   let version = "0.1.0";
 
   $: if (preferences !== source) {
@@ -49,6 +69,51 @@
     saving = false;
   }
 
+  async function refreshNotificationPermission(): Promise<void> {
+    try {
+      notificationPermission = await getNotificationPermission();
+    } catch {
+      notificationPermission = null;
+    }
+  }
+
+  async function requestPermission(): Promise<void> {
+    if (permissionBusy) return;
+    permissionBusy = true;
+    try {
+      notificationPermission = await requestNotificationPermission();
+    } catch {
+      notificationPermission = null;
+    } finally {
+      permissionBusy = false;
+    }
+  }
+
+  function snoozeHours(hours: number): void {
+    const next = snoozeForHours(draft, hours);
+    change((value) => {
+      value.notification_snoozed_until_epoch_ms =
+        next.notification_snoozed_until_epoch_ms;
+    });
+  }
+
+  function snoozeTomorrow(): void {
+    const next = snoozeUntilTomorrow(draft);
+    change((value) => {
+      value.notification_snoozed_until_epoch_ms =
+        next.notification_snoozed_until_epoch_ms;
+    });
+  }
+
+  function resumeNotifications(): void {
+    const next = clearSnooze(draft);
+    change((value) => {
+      value.notification_snoozed_until_epoch_ms =
+        next.notification_snoozed_until_epoch_ms;
+      value.notification_quiet_mode = false;
+    });
+  }
+
   async function clearHistory(): Promise<void> {
     dataMessage = "";
     try {
@@ -65,6 +130,7 @@
 
   onMount(() => {
     void getVersion().then((value) => (version = value)).catch(() => {});
+    void refreshNotificationPermission();
   });
 </script>
 
@@ -95,10 +161,72 @@
       <div class="setting-row"><span><strong>Privacy summary</strong><small>No account, ads, analytics, cloud profile, keylogging, cursor history, or uploaded process names.</small></span><span class="status-badge">Local only</span></div>
     </section>
 
-    <section class="settings-group">
-      <div class="group-heading"><h2>Notifications & sound</h2><p>Keep Byte quiet unless a sustained condition genuinely needs attention.</p></div>
-      <label class="setting-row"><span><strong>Windows notifications</strong><small>One native notification when a sustained diagnostic reaches NEEDS_ATTENTION; duplicate issue notifications are suppressed.</small></span><input type="checkbox" checked={draft.notifications_enabled} onchange={(event) => change((next) => (next.notifications_enabled = event.currentTarget.checked))} /></label>
-      <label class="setting-row"><span><strong>Sound cues</strong><small>Master switch for optional Byte sounds. System-health meaning never depends on audio.</small></span><input type="checkbox" checked={draft.sound_enabled} onchange={(event) => change((next) => (next.sound_enabled = event.currentTarget.checked))} /></label>
+    <section class="settings-group smart-notifications">
+      <div class="group-heading">
+        <h2>Smart Notifications</h2>
+        <p>Byte alerts only on a small set of sustained, actionable conditions.</p>
+      </div>
+
+      <label class="setting-row">
+        <span><strong>Windows notifications</strong><small>Master switch for Byte's native system-health alerts.</small></span>
+        <input type="checkbox" checked={draft.notifications_enabled} onchange={(event) => change((next) => (next.notifications_enabled = event.currentTarget.checked))} />
+      </label>
+
+      <div class="setting-row">
+        <span><strong>Windows permission</strong><small>{permissionLabel(notificationPermission)}. Byte cannot bypass Windows notification controls.</small></span>
+        {#if notificationPermission !== "GRANTED"}
+          <button disabled={permissionBusy} onclick={() => void requestPermission()}>{permissionBusy ? "Requesting…" : "Request permission"}</button>
+        {:else}
+          <span class="status-badge">Allowed</span>
+        {/if}
+      </div>
+
+      <label class="setting-row">
+        <span><strong>Quiet mode</strong><small>Suppress all Byte OS notifications until you turn Quiet mode off. In-app diagnostics continue normally.</small></span>
+        <input type="checkbox" checked={draft.notification_quiet_mode} onchange={(event) => change((next) => (next.notification_quiet_mode = event.currentTarget.checked))} />
+      </label>
+
+      <div class="setting-row snooze-row">
+        <span>
+          <strong>Snooze</strong>
+          <small>{snoozeLabel(draft.notification_snoozed_until_epoch_ms) ?? "Temporarily suppress OS notifications without disabling categories."}</small>
+        </span>
+        <div class="snooze-actions">
+          <button onclick={() => snoozeHours(1)}>1 hour</button>
+          <button onclick={() => snoozeHours(4)}>4 hours</button>
+          <button onclick={snoozeTomorrow}>Until tomorrow</button>
+          {#if snoozeLabel(draft.notification_snoozed_until_epoch_ms) || draft.notification_quiet_mode}
+            <button class="resume" onclick={resumeNotifications}>Resume now</button>
+          {/if}
+        </div>
+      </div>
+
+      <div class="category-list">
+        {#each NOTIFICATION_CATEGORIES as category}
+          <label class="category-row">
+            <span><strong>{category.title}</strong><small>{category.description}</small></span>
+            <input
+              type="checkbox"
+              checked={draft[category.key]}
+              onchange={(event) =>
+                change((next) => {
+                  next[category.key] = event.currentTarget.checked;
+                })}
+            />
+          </label>
+        {/each}
+      </div>
+
+      <div class="notification-policy">
+        <strong>Noise controls</strong>
+        <span>Thermal 30m · Battery 1h · Memory 4h · Runaway app 4h · Storage 24h</span>
+        <small>One alert wins when several conditions begin together. Normal workload and ordinary network activity never notify.</small>
+      </div>
+
+      <label class="setting-row">
+        <span><strong>Sound cues</strong><small>Master switch for optional Byte sounds. System-health meaning never depends on audio.</small></span>
+        <input type="checkbox" checked={draft.sound_enabled} onchange={(event) => change((next) => (next.sound_enabled = event.currentTarget.checked))} />
+      </label>
     </section>
 
     <section class="settings-group">
@@ -146,4 +274,15 @@
   .status-badge { padding:4px 7px; border-radius:999px; background:var(--surface-selected); color:var(--text-muted); font-size:9px; font-weight:700; }
   .danger-soft { color:var(--status-critical); }
   .data-message { padding:8px 16px 12px; color:var(--text-muted); font-size:10px; }
+  .snooze-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:5px; }
+  .snooze-actions .resume { border-color:var(--accent-primary); color:var(--text-primary); }
+  .category-list { border-top:1px solid var(--border-default); }
+  .category-row { min-height:55px; padding:10px 16px; display:flex; align-items:center; justify-content:space-between; gap:18px; border-top:1px solid var(--border-default); }
+  .category-row:first-child { border-top:0; }
+  .category-row > span { display:grid; gap:3px; }
+  .category-row strong { font-size:10px; }
+  .category-row small { color:var(--text-muted); font-size:9px; line-height:1.4; }
+  .notification-policy { margin:10px 16px; padding:10px 11px; display:grid; gap:3px; border-radius:10px; background:var(--surface-selected); }
+  .notification-policy strong { font-size:9px; text-transform:uppercase; letter-spacing:.05em; }
+  .notification-policy span,.notification-policy small { color:var(--text-muted); font-size:9px; line-height:1.4; }
 </style>
