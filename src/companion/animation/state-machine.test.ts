@@ -19,6 +19,7 @@ function manifest(): CharacterManifest {
     name: "Test",
     nativeSize: 8,
     animationCanvas: 10,
+    preview: "/test-preview.png",
     atlas: {
       src: "/test.png",
       width: 40,
@@ -27,6 +28,21 @@ function manifest(): CharacterManifest {
       frameHeight: 10,
       columns: 4,
     },
+    paletteSlots: {
+      primary: "#112233",
+      accent: "#445566",
+    },
+    defaultPalette: "default",
+    palettes: [
+      {
+        id: "default",
+        name: "Default",
+        colors: {
+          primary: "#112233",
+          accent: "#445566",
+        },
+      },
+    ],
     frames: {
       idle: { index: 0, anchors },
       happy: { index: 1, anchors },
