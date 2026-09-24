@@ -325,4 +325,3 @@ pub struct WindowShellState {
     pub move_mode: bool,
     pub click_through: bool,
 }
-
