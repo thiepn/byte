@@ -60,6 +60,7 @@ fn run_worker(app: AppHandle) {
                         .builder()
                         .title(&notification.title)
                         .body(&notification.body)
+                        .silent(!app_preferences.sound_enabled)
                         .show()
                         .is_ok()
                 {

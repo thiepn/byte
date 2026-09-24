@@ -100,34 +100,32 @@ pub fn update_app_preferences(
 pub fn get_notification_permission(
     app: AppHandle,
 ) -> Result<NotificationPermissionState, ByteError> {
-    map_notification_permission(
+    Ok(map_notification_permission(
         app.notification()
             .permission_state()
             .map_err(|error| ByteError::Window(error.to_string()))?,
-    )
+    ))
 }
 
 #[tauri::command]
 pub fn request_notification_permission(
     app: AppHandle,
 ) -> Result<NotificationPermissionState, ByteError> {
-    map_notification_permission(
+    Ok(map_notification_permission(
         app.notification()
             .request_permission()
             .map_err(|error| ByteError::Window(error.to_string()))?,
-    )
+    ))
 }
 
-fn map_notification_permission(
-    state: PermissionState,
-) -> Result<NotificationPermissionState, ByteError> {
-    Ok(match state {
+fn map_notification_permission(state: PermissionState) -> NotificationPermissionState {
+    match state {
         PermissionState::Granted => NotificationPermissionState::Granted,
         PermissionState::Denied => NotificationPermissionState::Denied,
         PermissionState::Prompt | PermissionState::PromptWithRationale => {
             NotificationPermissionState::Prompt
         }
-    })
+    }
 }
 
 #[tauri::command]

@@ -85,12 +85,16 @@ fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
 
     match config.schema_version {
         CURRENT_SCHEMA_VERSION => Ok(config),
-        1..=6 => {
+        1..=5 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
-            // Existing installations have already passed through Byte without
-            // first-run onboarding. Do not force the new onboarding flow on
-            // them during migration.
+            // Installations predating Phase 20 already passed through Byte
+            // without onboarding. Do not force first-run setup on them.
             config.app.onboarding_completed = true;
+            Ok(config)
+        }
+        6 => {
+            config.schema_version = CURRENT_SCHEMA_VERSION;
+            // Phase 20 already persisted onboarding state; preserve it.
             Ok(config)
         }
         other => Err(ByteError::Config(format!(
