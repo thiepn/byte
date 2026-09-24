@@ -8,3 +8,8 @@ src-tauri/gen/
 .env
 .env.*
 !.env.example
+
+# Local packaging/release outputs
+release-artifacts/
+previous-release/
+src-tauri/tauri.signing.conf.json

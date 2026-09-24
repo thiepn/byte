@@ -71,9 +71,38 @@
     }
   },
   "bundle": {
-    "active": false,
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "category": "Utility",
+    "publisher": "thiepn",
+    "homepage": "https://github.com/thiepn/byte",
+    "shortDescription": "A privacy-first Windows desktop companion for understandable system health.",
+    "longDescription": "Byte is a privacy-first Windows desktop companion that turns local system health into calm, understandable status and character reactions.",
+    "createUpdaterArtifacts": false,
     "icon": [
+      "icons/icon.ico",
       "icons/icon.png"
-    ]
-  }
+    ],
+    "windows": {
+      "allowDowngrades": false,
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper",
+        "silent": true
+      },
+      "nsis": {
+        "compression": "lzma",
+        "installMode": "currentUser",
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico",
+        "installerHooks": "windows/hooks.nsh",
+        "languages": [
+          "English"
+        ],
+        "startMenuFolder": "Byte"
+      }
+    }
+  },
+  "mainBinaryName": "Byte"
 }
