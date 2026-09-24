@@ -158,10 +158,7 @@ mod tests {
         );
         assert!(migrated.snapshot().companion.placements.mini.is_none());
         assert_eq!(migrated.snapshot().companion.palette, "default");
-        assert_eq!(
-            migrated.snapshot().companion.customization.headwear,
-            "none"
-        );
+        assert_eq!(migrated.snapshot().companion.customization.headwear, "none");
     }
 
     #[test]
