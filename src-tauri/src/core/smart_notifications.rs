@@ -454,7 +454,9 @@ mod tests {
         let (_temp, mut engine) = engine();
         let prefs = AppPreferences::default();
         let critical = issue(IssueCategory::Memory, ResourceState::Critical, 0);
-        let first = engine.evaluate(1_000, &[critical.clone()], &prefs).expect("first");
+        let first = engine
+            .evaluate(1_000, &[critical.clone()], &prefs)
+            .expect("first");
         engine.mark_sent(&first, 1_000).expect("record");
 
         let high_same_incident = issue(IssueCategory::Memory, ResourceState::High, 0);
@@ -462,9 +464,7 @@ mod tests {
             .evaluate(2_000, &[high_same_incident], &prefs)
             .is_none());
 
-        assert!(engine
-            .evaluate(5 * HOUR_MS, &[critical], &prefs)
-            .is_none());
+        assert!(engine.evaluate(5 * HOUR_MS, &[critical], &prefs).is_none());
     }
 
     #[test]
