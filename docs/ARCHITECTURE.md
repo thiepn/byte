@@ -381,3 +381,20 @@ Packaging certification is independent of ordinary compilation CI. The Windows p
 Tagged release builds additionally compare the tag to all three project version declarations, reject non-increasing release versions, optionally import a Windows signing certificate, certify against the previous standardized installer when available, generate a portable ZIP plus release manifest and SHA-256 checksums, and publish those exact files to GitHub Releases only after certification passes.
 
 See [PACKAGING_RELEASE.md](PACKAGING_RELEASE.md).
+
+
+## Phase 27 final release certification and distribution
+
+Phase 27 treats distribution artifacts as a separate trust boundary from source compilation.
+
+The package pipeline verifies the staged installer and portable ZIP after Tauri/NSIS generation rather than assuming a successful build implies a valid downloadable artifact. It validates SHA-256 data, release metadata, executable version, archive shape, PE architecture, and signing-state consistency.
+
+The portable executable receives a bounded startup smoke test. The NSIS installer receives clean-install, reinstall/upgrade, downgrade-policy, uninstall, startup-cleanup, and app-data-preservation tests.
+
+After those checks pass, a machine-readable release certification is generated and the checksum file is finalized. Pull requests and exact `main` commits can retain certified release candidates.
+
+Tagged releases add GitHub artifact provenance attestations for the installer and portable ZIP and verify those attestations before release publication.
+
+The public-release workflow therefore publishes only artifacts that have passed both source-level CI and artifact-level runtime/installer certification.
+
+See [RELEASE_CERTIFICATION.md](RELEASE_CERTIFICATION.md).

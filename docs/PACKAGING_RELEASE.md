@@ -170,3 +170,22 @@ Release automation uses the same SHA-pinned GitHub Actions established in Phase 
 6. Verify the GitHub Release contains the installer, portable ZIP, manifest, and SHA-256 file.
 
 Do not manually upload an installer built from a different commit under the same release tag.
+
+
+## Phase 27 certification layer
+
+Phase 27 adds a final artifact-level gate after Phase 26 packaging succeeds.
+
+The packaging workflow now also runs on pushes to `main`, producing a release candidate for the exact merged commit only when all certification checks pass.
+
+After staging, Byte verifies the installer/portable filenames, SHA-256 values, manifest metadata, embedded executable version, portable archive contents, x64 PE machine type, and signing-state consistency.
+
+The portable executable is then launched for a bounded runtime smoke test.
+
+Installer certification now additionally verifies that Byte's roaming application data survives reinstall/upgrade and uninstall. Installer-owned registration and the HKCU startup value must still be removed.
+
+Successful builds receive `release-certification.json`, after which `SHA256SUMS.txt` is finalized across the installer, portable ZIP, release manifest, and certification file.
+
+Tagged release builds additionally generate and immediately verify GitHub artifact attestations for the installer and portable ZIP before GitHub Release publication.
+
+See [RELEASE_CERTIFICATION.md](RELEASE_CERTIFICATION.md).

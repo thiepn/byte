@@ -195,3 +195,17 @@ Phase 25 regression tests certify that:
 - persisted CPU/memory Activity details omit process attribution
 
 Capability/CSP configuration is additionally validated by the Tauri build in Windows CI.
+
+
+## Release provenance
+
+Phase 27 adds GitHub artifact attestations to tagged installer and portable releases.
+
+The release workflow grants the minimum extra permissions required for provenance generation:
+
+- `attestations: write`
+- `id-token: write`
+
+The installer and portable ZIP are attested only after package/runtime certification succeeds. The workflow then verifies both attestations before publishing the GitHub Release.
+
+Release provenance links a binary to its source workflow and commit; it is an integrity/provenance control, not a claim that the binary is free of vulnerabilities.
