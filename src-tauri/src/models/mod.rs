@@ -60,6 +60,34 @@ pub struct ProcessSummary {
     pub memory_mb: Option<f32>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppUsageSummary {
+    pub name: String,
+    pub process_count: u32,
+    pub cpu_percent: f32,
+    pub memory_mb: f32,
+    pub cpu_share: f32,
+    pub memory_share: f32,
+    pub cpu_confidence: Option<Confidence>,
+    pub memory_confidence: Option<Confidence>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppAttribution {
+    pub name: String,
+    pub confidence: Confidence,
+    pub share: f32,
+    pub value: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppDiagnosticsSnapshot {
+    pub timestamp_epoch_ms: u64,
+    pub apps: Vec<AppUsageSummary>,
+    pub cpu_leader: Option<AppAttribution>,
+    pub memory_leader: Option<AppAttribution>,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Confidence {

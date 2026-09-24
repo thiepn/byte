@@ -161,3 +161,29 @@ export interface ActivitySnapshot {
   events: ActivityEvent[];
   trends: TrendPoint[];
 }
+
+
+export interface AppUsageSummary {
+  name: string;
+  process_count: number;
+  cpu_percent: number;
+  memory_mb: number;
+  cpu_share: number;
+  memory_share: number;
+  cpu_confidence: Confidence | null;
+  memory_confidence: Confidence | null;
+}
+
+export interface AppAttribution {
+  name: string;
+  confidence: Confidence;
+  share: number;
+  value: number;
+}
+
+export interface AppDiagnosticsSnapshot {
+  timestamp_epoch_ms: number;
+  apps: AppUsageSummary[];
+  cpu_leader: AppAttribution | null;
+  memory_leader: AppAttribution | null;
+}

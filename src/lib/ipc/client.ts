@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
   ActivitySnapshot,
+  AppDiagnosticsSnapshot,
   ByteConfig,
   CompanionPreferences,
   CompanionSize,
@@ -103,6 +104,49 @@ export async function getActivityHistory(): Promise<ActivitySnapshot> {
     };
   }
   return invoke<ActivitySnapshot>("get_activity_history");
+}
+
+export async function inspectApps(): Promise<AppDiagnosticsSnapshot> {
+  if (!inTauri()) {
+    return {
+      timestamp_epoch_ms: Date.now(),
+      apps: [
+        {
+          name: "Browser",
+          process_count: 8,
+          cpu_percent: 18,
+          memory_mb: 1420,
+          cpu_share: 0.42,
+          memory_share: 0.38,
+          cpu_confidence: "MEDIUM",
+          memory_confidence: "HIGH",
+        },
+        {
+          name: "Editor",
+          process_count: 4,
+          cpu_percent: 7,
+          memory_mb: 860,
+          cpu_share: 0.16,
+          memory_share: 0.23,
+          cpu_confidence: null,
+          memory_confidence: "MEDIUM",
+        },
+      ],
+      cpu_leader: {
+        name: "Browser",
+        confidence: "MEDIUM",
+        share: 0.42,
+        value: 18,
+      },
+      memory_leader: {
+        name: "Browser",
+        confidence: "HIGH",
+        share: 0.38,
+        value: 1420,
+      },
+    };
+  }
+  return invoke<AppDiagnosticsSnapshot>("inspect_apps");
 }
 
 export async function getPreferences(): Promise<ByteConfig> {

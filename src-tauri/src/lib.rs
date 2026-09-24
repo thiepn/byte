@@ -131,6 +131,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             ipc::commands::get_snapshot,
             ipc::commands::get_activity_history,
+            ipc::commands::inspect_apps,
             ipc::commands::get_preferences,
             ipc::commands::update_companion_preferences,
             ipc::commands::execute_recommended_action,

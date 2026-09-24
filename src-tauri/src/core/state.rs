@@ -2,9 +2,10 @@ use crate::{
     core::{
         activity::{ActivitySnapshot, ActivityStore},
         config::ConfigStore,
+        diagnostics::AppInspector,
         lifecycle::LifecycleCoordinator,
     },
-    models::{SystemSnapshot, WindowShellState},
+    models::{AppDiagnosticsSnapshot, SystemSnapshot, WindowShellState},
 };
 use std::{
     sync::{Mutex, RwLock},
@@ -20,6 +21,7 @@ pub struct AppState {
     pub lifecycle: LifecycleCoordinator,
     pub window_shell: Mutex<WindowShellState>,
     activity: Mutex<ActivityStore>,
+    app_inspector: Mutex<AppInspector>,
     telemetry_worker: Mutex<Option<JoinHandle<()>>>,
     #[cfg(target_os = "windows")]
     input_runtime: Mutex<Option<InputRuntime>>,
@@ -33,6 +35,7 @@ impl AppState {
             lifecycle: LifecycleCoordinator::default(),
             window_shell: Mutex::new(WindowShellState::default()),
             activity: Mutex::new(activity),
+            app_inspector: Mutex::new(AppInspector::new()),
             telemetry_worker: Mutex::new(None),
             #[cfg(target_os = "windows")]
             input_runtime: Mutex::new(None),
@@ -72,6 +75,13 @@ impl AppState {
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
             .snapshot()
+    }
+
+    pub fn inspect_apps(&self) -> AppDiagnosticsSnapshot {
+        self.app_inspector
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .inspect()
     }
 
     pub fn install_telemetry_worker(&self, worker: JoinHandle<()>) {

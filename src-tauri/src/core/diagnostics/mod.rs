@@ -1,6 +1,8 @@
 mod processes;
 mod tracker;
 
+pub use processes::AppInspector;
+
 use crate::models::{
     Confidence, IssueCategory, RecommendedAction, RecommendedActionKind, ResourceState,
     ResourceSummary, SystemIssue, SystemSnapshot, SystemStatus,

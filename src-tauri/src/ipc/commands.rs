@@ -1,8 +1,8 @@
 use crate::{
     core::{activity::ActivitySnapshot, error::ByteError, state::AppState},
     models::{
-        ByteConfig, CompanionPreferences, CompanionSize, DisplayMode, EdgeAnchor,
-        RecommendedActionKind, SystemSnapshot, WindowShellState,
+        AppDiagnosticsSnapshot, ByteConfig, CompanionPreferences, CompanionSize, DisplayMode,
+        EdgeAnchor, RecommendedActionKind, SystemSnapshot, WindowShellState,
     },
     platform::windows::{actions, windowing},
 };
@@ -16,6 +16,11 @@ pub fn get_snapshot(state: State<'_, AppState>) -> SystemSnapshot {
 #[tauri::command]
 pub fn get_activity_history(state: State<'_, AppState>) -> ActivitySnapshot {
     state.activity_snapshot()
+}
+
+#[tauri::command]
+pub fn inspect_apps(state: State<'_, AppState>) -> AppDiagnosticsSnapshot {
+    state.inspect_apps()
 }
 
 #[tauri::command]
