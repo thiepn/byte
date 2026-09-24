@@ -169,6 +169,8 @@ Security-sensitive Tauri dependencies are pinned to exact versions:
 - `@tauri-apps/api = 2.11.1`
 - `@tauri-apps/cli = 2.11.4`
 
+Both `package-lock.json` and `src-tauri/Cargo.lock` are committed. CI uses `npm ci` plus Cargo's `--locked` mode so dependency resolution cannot silently drift during verification.
+
 CI pins its GitHub Actions by commit SHA instead of mutable major-version tags.
 
 Every CI run adds:
