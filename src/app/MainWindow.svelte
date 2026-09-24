@@ -337,9 +337,31 @@
   }
 
   onMount(() => {
+    let timer: number | null = null;
+
+    const stopRefreshing = (): void => {
+      if (timer == null) return;
+      window.clearInterval(timer);
+      timer = null;
+    };
+
+    const startRefreshing = (): void => {
+      if (timer != null) return;
+      void refreshLive();
+      timer = window.setInterval(() => void refreshLive(), 5_000);
+    };
+
     void load();
-    const timer = window.setInterval(() => void refreshLive(), 2_000);
-    return () => window.clearInterval(timer);
+    if (document.hasFocus()) startRefreshing();
+
+    window.addEventListener("focus", startRefreshing);
+    window.addEventListener("blur", stopRefreshing);
+
+    return () => {
+      stopRefreshing();
+      window.removeEventListener("focus", startRefreshing);
+      window.removeEventListener("blur", stopRefreshing);
+    };
   });
 </script>
 

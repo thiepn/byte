@@ -292,6 +292,18 @@ impl AppState {
     }
 
     #[cfg(target_os = "windows")]
+    pub fn notify_input_lifecycle_changed(&self) {
+        if let Some(runtime) = self
+            .input_runtime
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .as_ref()
+        {
+            runtime.notify_lifecycle_changed();
+        }
+    }
+
+    #[cfg(target_os = "windows")]
     pub fn stop_input_runtime(&self) {
         let runtime = self
             .input_runtime

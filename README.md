@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–22 are implemented.
+Phases 1–23 are implemented.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -37,6 +37,7 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Phase 20 adds the production first-run and Settings layer: a short four-step onboarding flow, real current-user Windows startup registration, fullscreen companion auto-hide/restore, system-monitoring controls, sustained NEEDS_ATTENTION notifications, accessibility overrides, local history clearing, privacy explanations, and release-channel access.
 - Phase 21 replaces the simple Phase 20 alert gate with Smart Notifications: all-active-issue routing, critical-category filters, a 10-minute confident runaway-process rule, persisted per-category cooldowns, duplicate suppression, Quiet mode, finite snooze controls, Windows permission awareness, and concise cause/next-step notification text.
 - Phase 22 hardens Byte around fullscreen games, movies, presentations, lock/display-off state, and screen capture: centralized desktop-awareness suppression, 1.5s restore grace, display-sleep telemetry/render suspension, fresh post-sleep diagnostics, restore-safe windowing guards, Windows presentation/fullscreen signals, capture exclusion, and optional local foreground-app exclusions.
+- Phase 23 makes that lifecycle power-aware end to end: telemetry uses adaptive 1.5–8 second sampling, lock/display/system sleep block heavy monitoring, fullscreen-reduced mode pauses input/render work and slows telemetry, hidden main-window polling stops, companion telemetry becomes event-driven, process attribution scans are sustained-issue-only, and the desktop-awareness loop becomes the single low-frequency sleep sentinel.
 - Activity persists only meaningful events locally; trend points are session-only and globally bounded.
 - Customization and personality are entirely local; there is no account, store, virtual currency, unlock timer, or cloud inventory.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
@@ -84,5 +85,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Onboarding & Settings](docs/ONBOARDING_SETTINGS.md)
 - [Smart Notifications](docs/SMART_NOTIFICATIONS.md)
 - [Desktop awareness](docs/DESKTOP_AWARENESS.md)
+- [Power & performance](docs/PERFORMANCE.md)
 
-Next: Phase 23 — Power & Performance Hardening.
+Next: Phase 24 — Accessibility, Robustness & Edge-Case Resilience.

@@ -168,6 +168,8 @@ The hook callbacks perform only a small channel send and return immediately.
 
 The processor is deadline-driven rather than polling at a fixed high frequency: it sleeps until either input arrives or the next typing-stop/idle deadline approaches.
 
+Phase 23 also gates the hook callback before timestamp/channel work and blocks the processor completely while Byte is fullscreen-reduced, locked, display-sleeping, system-sleeping, or shutting down. A lifecycle control message resets the interpreter on resume so stale typing/idle state cannot burst into the companion.
+
 No input history database exists.
 
 ## Testing

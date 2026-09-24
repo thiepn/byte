@@ -10,7 +10,7 @@ use std::{
 use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, System};
 
 const BYTES_PER_MIB: f32 = 1_048_576.0;
-const PROCESS_REFRESH_INTERVAL: Duration = Duration::from_secs(3);
+const PROCESS_REFRESH_INTERVAL: Duration = Duration::from_secs(10);
 const APP_INSPECTION_COOLDOWN: Duration = Duration::from_millis(750);
 const FIRST_CPU_SAMPLE_DELAY: Duration = Duration::from_millis(250);
 const APP_RESULT_CAP: usize = 12;
@@ -39,6 +39,7 @@ pub struct ProcessAttributor {
     system: System,
     cpu_count: f32,
     aggregates: Vec<Aggregate>,
+    primed: bool,
     last_refresh: Option<Instant>,
 }
 
@@ -48,6 +49,7 @@ impl ProcessAttributor {
             system: System::new(),
             cpu_count: logical_cpu_count(),
             aggregates: Vec::new(),
+            primed: false,
             last_refresh: None,
         }
     }
@@ -82,6 +84,12 @@ impl CulpritProvider for ProcessAttributor {
         }
 
         refresh_processes(&mut self.system);
+        if !self.primed {
+            thread::sleep(FIRST_CPU_SAMPLE_DELAY);
+            refresh_processes(&mut self.system);
+            self.primed = true;
+        }
+
         self.rebuild_aggregates();
         self.last_refresh = Some(Instant::now());
     }

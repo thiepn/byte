@@ -14,6 +14,7 @@
     CompanionPreferences,
     DisplayMode,
     LifecycleState,
+    SystemSnapshot,
   } from "../../lib/types/domain";
   import { hashSeed } from "../animation/random";
   import { HabitatParticleEngine } from "../habitats/particles";
@@ -34,6 +35,7 @@
   import {
     dragCompanion,
     finishMoveMode,
+    getDesktopAwareness,
     getPreferences,
     getSnapshot,
     getWindowShellState,
@@ -80,6 +82,7 @@
   let lastObservedBehavior = "";
   let forceReducedMotion = false;
   let lifecycleSuspended = false;
+  let companionVisible = true;
 
   function isTauri(): boolean {
     return "__TAURI_INTERNALS__" in window;
@@ -179,23 +182,27 @@
     }
   }
 
+  function applySystemSnapshot(snapshot: SystemSnapshot): void {
+    if (lifecycleSuspended) return;
+
+    if (animator) {
+      const request = systemBehaviorForSnapshot(snapshot);
+      animator.setBaseBehavior(request.behavior, request.source);
+      personalityDirector?.observeSnapshot(snapshot, animator);
+    }
+
+    habitatState = {
+      ...habitatState,
+      timeOfDay: currentTimeOfDay(),
+      reactions: habitatReactionsForSnapshot(snapshot),
+    };
+  }
+
   async function refreshSystemState(): Promise<void> {
     if (lifecycleSuspended) return;
 
     try {
-      const snapshot = await getSnapshot();
-
-      if (animator) {
-        const request = systemBehaviorForSnapshot(snapshot);
-        animator.setBaseBehavior(request.behavior, request.source);
-        personalityDirector?.observeSnapshot(snapshot, animator);
-      }
-
-      habitatState = {
-        ...habitatState,
-        timeOfDay: currentTimeOfDay(),
-        reactions: habitatReactionsForSnapshot(snapshot),
-      };
+      applySystemSnapshot(await getSnapshot());
     } catch {
       // Keep the last known character/habitat state if cached telemetry is unavailable.
     }
@@ -205,10 +212,26 @@
     let disposed = false;
     let visualRevision = 0;
     let unsubscribeAnimation: (() => void) | null = null;
-    let systemTimer: number | null = null;
     let mediaQuery: MediaQueryList | null = null;
     const cleanups: Array<() => void> = [];
     const sessionDay = new Date().toISOString().slice(0, 10);
+
+    const stopAnimation = (): void => {
+      unsubscribeAnimation?.();
+      unsubscribeAnimation = null;
+    };
+
+    const startAnimation = (): void => {
+      if (
+        disposed ||
+        lifecycleSuspended ||
+        !companionVisible ||
+        unsubscribeAnimation
+      ) return;
+      unsubscribeAnimation = animationScheduler.subscribe(({ deltaMs }) => {
+        renderFrame(deltaMs);
+      });
+    };
 
     const loadCharacter = async (id: string): Promise<CharacterManifest> => {
       try {
@@ -335,8 +358,14 @@
           mediaQuery?.removeEventListener("change", onMotionChange),
         );
 
-        const preferences = await getPreferences();
+        const [preferences, awareness] = await Promise.all([
+          getPreferences(),
+          getDesktopAwareness(),
+        ]);
         if (disposed) return;
+        lifecycleSuspended = awareness.suppressed;
+        companionVisible =
+          !awareness.suppressed && preferences.companion.display_mode !== "TRAY";
         forceReducedMotion = preferences.app.reduce_motion;
         habitatState = {
           ...habitatState,
@@ -345,15 +374,10 @@
         await applyVisualPreferences(preferences.companion);
         if (disposed) return;
 
-        unsubscribeAnimation = animationScheduler.subscribe(({ deltaMs }) => {
-          renderFrame(deltaMs);
-        });
-
-        await refreshSystemState();
-
-        systemTimer = window.setInterval(() => {
-          void refreshSystemState();
-        }, 2000);
+        if (!lifecycleSuspended) {
+          startAnimation();
+          await refreshSystemState();
+        }
       } catch {
         runtimeError = true;
       }
@@ -381,9 +405,41 @@
         else cleanups.push(unlisten);
       });
 
+      void listen<boolean>("byte://companion-visibility-changed", (event) => {
+        if (disposed) return;
+        companionVisible = event.payload;
+        if (companionVisible && !lifecycleSuspended) {
+          startAnimation();
+          void refreshSystemState();
+        } else {
+          stopAnimation();
+        }
+      }).then((unlisten: UnlistenFn) => {
+        if (disposed) unlisten();
+        else cleanups.push(unlisten);
+      });
+
       void listen<LifecycleState>("byte://lifecycle-changed", (event) => {
         if (disposed) return;
-        lifecycleSuspended = lifecycleSuspendsVisuals(event.payload);
+        const suspended = lifecycleSuspendsVisuals(event.payload);
+        if (suspended === lifecycleSuspended) return;
+
+        lifecycleSuspended = suspended;
+        if (suspended) {
+          stopAnimation();
+        } else if (companionVisible) {
+          startAnimation();
+          void refreshSystemState();
+        }
+      }).then((unlisten: UnlistenFn) => {
+        if (disposed) unlisten();
+        else cleanups.push(unlisten);
+      });
+
+      void listen<SystemSnapshot>("byte://snapshot-updated", (event) => {
+        if (!disposed && !lifecycleSuspended) {
+          applySystemSnapshot(event.payload);
+        }
       }).then((unlisten: UnlistenFn) => {
         if (disposed) unlisten();
         else cleanups.push(unlisten);
@@ -411,7 +467,7 @@
       });
 
       void listen<CollectionSnapshot>("byte://collection-updated", () => {
-        if (!disposed && animator) {
+        if (!disposed && !lifecycleSuspended && animator) {
           animator.requestBehavior({
             behavior: "happy",
             source: "personality",
@@ -423,7 +479,7 @@
       });
 
       void listen<InputReactionEvent>("byte://input-reaction", (event) => {
-        if (!disposed && animator) {
+        if (!disposed && !lifecycleSuspended && animator) {
           applyInputReaction(animator, event.payload, personalityDirector ?? undefined);
         }
       }).then((unlisten: UnlistenFn) => {
@@ -437,8 +493,7 @@
     return () => {
       disposed = true;
       visualRevision += 1;
-      unsubscribeAnimation?.();
-      if (systemTimer != null) window.clearInterval(systemTimer);
+      stopAnimation();
       for (const cleanup of cleanups) cleanup();
       animator = null;
       characterRenderer = null;

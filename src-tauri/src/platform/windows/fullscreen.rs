@@ -1,7 +1,7 @@
 use crate::{
     core::{error::ByteError, lifecycle::LifecycleState, state::AppState},
     models::{AppPreferences, VisibilitySuppressionReason},
-    platform::windows::windowing,
+    platform::windows::{input, windowing},
 };
 use std::{
     ffi::OsString,
@@ -40,7 +40,9 @@ use windows_sys::Win32::{
     },
 };
 
-const POLL_INTERVAL: Duration = Duration::from_millis(500);
+const ACTIVE_POLL_INTERVAL: Duration = Duration::from_millis(500);
+const REDUCED_POLL_INTERVAL: Duration = Duration::from_secs(1);
+const SUSPENDED_SENTINEL_INTERVAL: Duration = Duration::from_secs(2);
 const RESTORE_GRACE: Duration = Duration::from_millis(1_500);
 const RECT_TOLERANCE_PX: i32 = 2;
 const QUNS_NOT_PRESENT: i32 = 1;
@@ -114,7 +116,21 @@ fn run(app: AppHandle) {
             apply_observation(&app, observation, None, false);
         }
 
-        thread::sleep(POLL_INTERVAL);
+        let interval = poll_interval(state.lifecycle.current());
+        if !state.lifecycle.wait_for_change_or_timeout(interval) {
+            break;
+        }
+    }
+}
+
+fn poll_interval(state: LifecycleState) -> Duration {
+    match state {
+        LifecycleState::Active => ACTIVE_POLL_INTERVAL,
+        LifecycleState::FullscreenReduced => REDUCED_POLL_INTERVAL,
+        LifecycleState::Locked
+        | LifecycleState::DisplaySleep
+        | LifecycleState::SystemSleep
+        | LifecycleState::ShuttingDown => SUSPENDED_SENTINEL_INTERVAL,
     }
 }
 
@@ -194,7 +210,9 @@ fn apply_observation(
             state.set_snapshot_unavailable();
         }
 
+        input::set_capture_enabled(!input::lifecycle_suspends_input(next_lifecycle));
         state.lifecycle.transition(next_lifecycle);
+        state.notify_input_lifecycle_changed();
         let _ = app.emit_to("companion", "byte://lifecycle-changed", next_lifecycle);
     }
 }
@@ -517,6 +535,19 @@ mod tests {
             foreground_app: Some("browser".into()),
             byte_owns_foreground: false,
         }
+    }
+
+    #[test]
+    fn awareness_polling_slows_when_byte_is_suppressed() {
+        assert_eq!(poll_interval(LifecycleState::Active), ACTIVE_POLL_INTERVAL);
+        assert_eq!(
+            poll_interval(LifecycleState::FullscreenReduced),
+            REDUCED_POLL_INTERVAL
+        );
+        assert_eq!(
+            poll_interval(LifecycleState::DisplaySleep),
+            SUSPENDED_SENTINEL_INTERVAL
+        );
     }
 
     #[test]
