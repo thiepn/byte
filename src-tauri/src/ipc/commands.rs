@@ -49,10 +49,7 @@ pub fn set_display_mode(app: AppHandle, mode: DisplayMode) -> Result<ByteConfig,
 }
 
 #[tauri::command]
-pub fn set_companion_size(
-    app: AppHandle,
-    size: CompanionSize,
-) -> Result<ByteConfig, ByteError> {
+pub fn set_companion_size(app: AppHandle, size: CompanionSize) -> Result<ByteConfig, ByteError> {
     windowing::set_companion_size(&app, size)
 }
 

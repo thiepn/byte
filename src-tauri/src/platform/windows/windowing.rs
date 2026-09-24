@@ -5,9 +5,7 @@ use crate::{
         WindowShellState,
     },
 };
-use tauri::{
-    window::Monitor, AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize,
-};
+use tauri::{window::Monitor, AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize};
 
 const QUICK_PANEL_LOGICAL_WIDTH: f64 = 340.0;
 const QUICK_PANEL_LOGICAL_HEIGHT: f64 = 390.0;
@@ -107,10 +105,7 @@ pub fn set_display_mode(app: &AppHandle, mode: DisplayMode) -> Result<ByteConfig
     Ok(config)
 }
 
-pub fn set_companion_size(
-    app: &AppHandle,
-    size: CompanionSize,
-) -> Result<ByteConfig, ByteError> {
+pub fn set_companion_size(app: &AppHandle, size: CompanionSize) -> Result<ByteConfig, ByteError> {
     let config = {
         let state = app.state::<AppState>();
         let mut store = state
@@ -205,10 +200,7 @@ pub fn finish_move_mode(app: &AppHandle) -> Result<WindowShellState, ByteError> 
     Ok(shell)
 }
 
-pub fn set_click_through(
-    app: &AppHandle,
-    enabled: bool,
-) -> Result<WindowShellState, ByteError> {
+pub fn set_click_through(app: &AppHandle, enabled: bool) -> Result<WindowShellState, ByteError> {
     let window = companion_window(app)?;
 
     {
@@ -265,8 +257,7 @@ pub fn apply_companion_layout(
         .cloned();
     let monitor = choose_monitor(&window, saved.as_ref())?;
     let scale = monitor.scale_factor();
-    let (logical_width, logical_height) =
-        logical_size(preferences.display_mode, preferences.size);
+    let (logical_width, logical_height) = logical_size(preferences.display_mode, preferences.size);
     let physical_size = PhysicalSize::new(
         physical_pixels(logical_width, scale),
         physical_pixels(logical_height, scale),

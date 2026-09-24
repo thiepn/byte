@@ -143,7 +143,10 @@ mod tests {
         let migrated = ConfigStore::load(path).expect("migrate");
 
         assert_eq!(migrated.snapshot().schema_version, CURRENT_SCHEMA_VERSION);
-        assert_eq!(migrated.snapshot().companion.display_mode, DisplayMode::Mini);
+        assert_eq!(
+            migrated.snapshot().companion.display_mode,
+            DisplayMode::Mini
+        );
         assert_eq!(
             migrated.snapshot().companion.edge_anchor,
             crate::models::EdgeAnchor::Right
