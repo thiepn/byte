@@ -109,18 +109,34 @@ $previousPath = if ([string]::IsNullOrWhiteSpace($PreviousInstaller)) {
   (Resolve-Path $PreviousInstaller).Path
 }
 
+$dataDirectory = Join-Path $env:APPDATA ([string]$config.identifier)
+$sentinelPath = Join-Path $dataDirectory ("release-certification-" + [guid]::NewGuid().ToString("N") + ".txt")
+$sentinelValue = [guid]::NewGuid().ToString("N")
 $installed = $false
 
 try {
   if ($previousPath) {
     Invoke-SilentInstaller $previousPath
+    $installed = $true
     $previousEntry = Wait-ForByteInstall
     [void](Find-InstalledByte $previousEntry)
+
+    New-Item -ItemType Directory -Path $dataDirectory -Force | Out-Null
+    Set-Content $sentinelPath $sentinelValue -Encoding ascii
 
     Invoke-SilentInstaller $installerPath
   } else {
     Invoke-SilentInstaller $installerPath
+    $installed = $true
+
+    New-Item -ItemType Directory -Path $dataDirectory -Force | Out-Null
+    Set-Content $sentinelPath $sentinelValue -Encoding ascii
+
     Invoke-SilentInstaller $installerPath
+  }
+
+  if (!(Test-Path $sentinelPath) -or (Get-Content $sentinelPath -Raw).Trim() -ne $sentinelValue) {
+    throw "Byte app-data sentinel did not survive reinstall/upgrade."
   }
 
   $installed = $true
@@ -135,6 +151,10 @@ try {
     $entry = Wait-ForByteInstall
     $exePath = Find-InstalledByte $entry
     Assert-CurrentVersion $exePath
+
+    if (!(Test-Path $sentinelPath) -or (Get-Content $sentinelPath -Raw).Trim() -ne $sentinelValue) {
+      throw "Byte app-data sentinel did not survive downgrade-policy certification."
+    }
   }
 
   $runKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
@@ -162,7 +182,11 @@ try {
     throw "Byte startup registration survived uninstall."
   }
 
-  Write-Host "Installer smoke certification passed."
+  if (!(Test-Path $sentinelPath) -or (Get-Content $sentinelPath -Raw).Trim() -ne $sentinelValue) {
+    throw "Byte app data was removed or changed by uninstall."
+  }
+
+  Write-Host "Installer smoke certification passed, including app-data preservation."
 } finally {
   if ($installed) {
     $entry = Get-ByteUninstallEntry
@@ -175,4 +199,6 @@ try {
       }
     }
   }
+
+  Remove-Item $sentinelPath -Force -ErrorAction SilentlyContinue
 }
