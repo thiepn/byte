@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: ["main"]
 
+# Temporary Phase 25 bootstrap permission. Removed after the two generated
+# lockfiles are committed to the PR branch.
+permissions:
+  contents: write
+
 jobs:
   verify:
     runs-on: windows-latest
@@ -23,8 +28,23 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      - name: Generate Rust lockfile
+        run: cargo generate-lockfile --manifest-path src-tauri/Cargo.toml
+
       - name: Install frontend dependencies
         run: npm install
+
+      - name: Commit Phase 25 lockfiles
+        if: github.event_name == 'pull_request' && github.head_ref == 'phase-25-security-privacy'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json src-tauri/Cargo.lock
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: lock dependency graphs"
+            git push origin "HEAD:${GITHUB_HEAD_REF}"
+          fi
 
       - name: Frontend dependency audit
         run: npm audit --audit-level=high
