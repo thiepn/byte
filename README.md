@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–20 are implemented.
+Phases 1–21 are implemented.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -35,6 +35,7 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Phase 18 turns Customize into a full live Customization Studio with a large animated habitat preview, reaction testing, visual category browsing, four curated looks, optimistic queued persistence, undo/redo, reset controls, and the complete existing character/cosmetic/decor/personality/display toolset.
 - Phase 19 adds a finite optional collection layer: eight local extras unlocked through elapsed time, natural anonymous typing, ordinary charging/network moments, and naturally encountered rare idles. Core customization remains immediately available.
 - Phase 20 adds the production first-run and Settings layer: a short four-step onboarding flow, real current-user Windows startup registration, fullscreen companion auto-hide/restore, system-monitoring controls, sustained NEEDS_ATTENTION notifications, accessibility overrides, local history clearing, privacy explanations, and release-channel access.
+- Phase 21 replaces the simple Phase 20 alert gate with Smart Notifications: all-active-issue routing, critical-category filters, a 10-minute confident runaway-process rule, persisted per-category cooldowns, duplicate suppression, Quiet mode, finite snooze controls, Windows permission awareness, and concise cause/next-step notification text.
 - Activity persists only meaningful events locally; trend points are session-only and globally bounded.
 - Customization and personality are entirely local; there is no account, store, virtual currency, unlock timer, or cloud inventory.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
@@ -80,5 +81,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Customization Studio](docs/CUSTOMIZATION_STUDIO.md)
 - [Lightweight collection & unlocks](docs/COLLECTION.md)
 - [Onboarding & Settings](docs/ONBOARDING_SETTINGS.md)
+- [Smart Notifications](docs/SMART_NOTIFICATIONS.md)
 
-Next: Phase 21 — Smart Notifications.
+Next: Phase 22 — Fullscreen, Gaming & Presentation Awareness.

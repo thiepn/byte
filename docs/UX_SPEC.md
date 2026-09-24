@@ -84,3 +84,22 @@ It contains:
 - handoff to the Customization Studio
 
 There is still no threshold editor, optimizer control panel, generic shell launcher, or advanced sensor configuration.
+
+
+## Smart Notifications
+
+Phase 21 keeps notifications intentionally rare.
+
+Eligible OS notifications are limited to:
+
+- critical memory pressure
+- serious sustained thermal pressure
+- critically low storage
+- critically low battery while not charging
+- a confidently attributed process that remains under critical CPU pressure for about 10 minutes
+
+Normal CPU load, normal memory use, ordinary network activity, collection progress, and routine system changes do not produce health notifications.
+
+Smart Notifications evaluate all active diagnostic issues rather than only the primary issue shown in compact UI.
+
+Users can disable individual categories, enable notification Quiet mode, or snooze for one hour, four hours, or until 08:00 the next local day. Snooze/Quiet mode affects OS notifications only; in-app diagnostic state remains current.

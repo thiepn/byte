@@ -171,3 +171,38 @@ Notifications never replace in-app diagnostics and contain only Byte's existing 
 `byte://app-preferences-changed` applies reduced-motion, high-contrast, and text-scale preferences across every webview. The companion animation runtime combines Byte's explicit Reduce Motion setting with the operating-system media preference.
 
 High-contrast mode changes UI tokens only; semantic health states remain represented by text as well as color.
+
+
+## Smart Notification engine
+
+Phase 21 adds `SmartNotificationEngine` to application core.
+
+The diagnostic engine retains the full ordered list of currently active sustained issues for internal consumers while continuing to publish one primary issue plus a secondary count to the existing SystemSnapshot UI contract.
+
+The notification engine consumes that full active-issue list and applies a second conservative eligibility layer:
+
+- memory: CRITICAL only
+- thermal: HIGH or CRITICAL
+- storage: CRITICAL only
+- battery: CRITICAL only
+- runaway process: critical CPU issue, medium/high culprit confidence, named culprit, and at least 10 minutes since the sustained condition began
+
+Only one OS alert is selected from conditions that become eligible together. Priority is thermal → memory → battery → storage → runaway process.
+
+Per-category cooldown timestamps are persisted in `notifications.json` so restarting Byte does not reset alert cooldowns:
+
+- thermal: 30 minutes
+- battery: 1 hour
+- memory: 4 hours
+- runaway process: 4 hours
+- storage: 24 hours
+
+The engine separately suppresses duplicate notifications for an active incident until that incident recovers.
+
+Quiet mode, snooze, the master notification switch, and per-category switches are ordinary AppPreferences. Snooze is bounded by the backend to at most seven days.
+
+Notification delivery occurs only when the OS notification permission is granted. A successful notification send commits its cooldown. Failed/blocked delivery does not pretend an alert was delivered.
+
+Notification sound obeys Byte's existing Sound setting.
+
+Phase 21 does not implement app-hang detection because Byte currently has no reliable local signal that can distinguish a hung application from a deliberately non-responsive/background application without increasing false positives.

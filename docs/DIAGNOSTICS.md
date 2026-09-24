@@ -131,3 +131,14 @@ Rows that do not satisfy these attribution thresholds may still appear as contex
 The first explicit scan performs a short second CPU refresh after 250 ms so the UI does not present an uninitialized process CPU sample. Subsequent scans are rate-limited to at most one new inspection every 750 ms.
 
 Byte still does not provide process termination. The Apps surface hands deliberate process management to Windows Task Manager.
+
+
+## Phase 21 notification eligibility
+
+Smart Notifications sit downstream of DiagnosticEngine; they do not alter diagnostic thresholds, issue priority, recovery, or primary-issue selection.
+
+The notification engine evaluates all active sustained issues. Notification eligibility is stricter than issue visibility, so a diagnostic can remain visible in Byte without producing an OS alert.
+
+A prolonged runaway-process alert additionally requires the existing process attribution to provide a named medium/high-confidence culprit and requires roughly ten minutes of critical CPU pressure.
+
+App-hang detection remains intentionally absent because no reliable hang signal is available in the current privacy/performance boundary.

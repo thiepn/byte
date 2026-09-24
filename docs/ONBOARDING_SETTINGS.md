@@ -112,7 +112,7 @@ Phase 20 notification behavior is intentionally conservative:
 - headline only
 - diagnostics still remain available inside Byte
 
-Phase 21 will deepen notification routing, cooldown policy, notification interaction, and cross-condition intelligence.
+Phase 21 now deepens this into Smart Notifications with per-category routing, cooldowns, duplicate suppression, Quiet mode, snooze, Windows permission status, and cause/action text. See [SMART_NOTIFICATIONS.md](SMART_NOTIFICATIONS.md).
 
 ## Sound
 
@@ -169,4 +169,4 @@ Phase 20 is complete when an unfamiliar user can:
 - reopen onboarding
 - reach customization and releases from Settings
 
-Next: **Phase 21 — Smart Notifications**.
+Next: **Phase 22 — Fullscreen, Gaming & Presentation Awareness**.
