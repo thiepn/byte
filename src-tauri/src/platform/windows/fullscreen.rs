@@ -106,11 +106,18 @@ fn apply_observation(app: &AppHandle, observation: AwarenessObservation, initial
         .unwrap_or_else(|poisoned| poisoned.into_inner())
         .snapshot();
 
-    let reason = if observation.byte_owns_foreground
-        && !observation.display_off
-        && observation.user_state != Some(QUNS_NOT_PRESENT)
-    {
-        state.desktop_awareness().reason
+    let previous_reason = state.desktop_awareness().reason;
+    let preserve_external_suppression = observation.byte_owns_foreground
+        && matches!(
+            previous_reason,
+            Some(
+                VisibilitySuppressionReason::Fullscreen
+                    | VisibilitySuppressionReason::Presentation
+                    | VisibilitySuppressionReason::ExcludedApp
+            )
+        );
+    let reason = if preserve_external_suppression {
+        previous_reason
     } else {
         suppression_reason(&observation, &config.app)
     };
@@ -520,6 +527,41 @@ mod tests {
             suppression_reason(&current, &preferences()),
             Some(VisibilitySuppressionReason::Presentation)
         );
+    }
+
+    #[test]
+    fn only_external_foreground_reasons_need_byte_foreground_preservation() {
+        for reason in [
+            VisibilitySuppressionReason::Fullscreen,
+            VisibilitySuppressionReason::Presentation,
+            VisibilitySuppressionReason::ExcludedApp,
+        ] {
+            assert!(matches!(
+                Some(reason),
+                Some(
+                    VisibilitySuppressionReason::Fullscreen
+                        | VisibilitySuppressionReason::Presentation
+                        | VisibilitySuppressionReason::ExcludedApp
+                )
+            ));
+        }
+
+        assert!(!matches!(
+            Some(VisibilitySuppressionReason::Locked),
+            Some(
+                VisibilitySuppressionReason::Fullscreen
+                    | VisibilitySuppressionReason::Presentation
+                    | VisibilitySuppressionReason::ExcludedApp
+            )
+        ));
+        assert!(!matches!(
+            Some(VisibilitySuppressionReason::DisplaySleep),
+            Some(
+                VisibilitySuppressionReason::Fullscreen
+                    | VisibilitySuppressionReason::Presentation
+                    | VisibilitySuppressionReason::ExcludedApp
+            )
+        ));
     }
 
     #[test]
