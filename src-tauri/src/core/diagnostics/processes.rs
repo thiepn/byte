@@ -218,20 +218,8 @@ fn build_app_snapshot(aggregates: &[Aggregate]) -> AppDiagnosticsSnapshot {
                 memory_mb: item.memory_mb,
                 cpu_share,
                 memory_share,
-                cpu_confidence: confidence_for(
-                    item.cpu_percent,
-                    cpu_share,
-                    15.0,
-                    0.50,
-                    0.25,
-                ),
-                memory_confidence: confidence_for(
-                    item.memory_mb,
-                    memory_share,
-                    256.0,
-                    0.35,
-                    0.18,
-                ),
+                cpu_confidence: confidence_for(item.cpu_percent, cpu_share, 15.0, 0.50, 0.25),
+                memory_confidence: confidence_for(item.memory_mb, memory_share, 256.0, 0.35, 0.18),
             }
         })
         .collect::<Vec<_>>();
@@ -333,8 +321,7 @@ fn attribution_from(
 
     let top_value = metric(top);
     let share = share(top_value, total);
-    let confidence =
-        confidence_for(top_value, share, minimum_value, high_share, medium_share)?;
+    let confidence = confidence_for(top_value, share, minimum_value, high_share, medium_share)?;
 
     Some(Attribution {
         culprit: ProcessSummary {
@@ -411,7 +398,10 @@ mod tests {
         let result = build_app_snapshot(&values);
         assert_eq!(result.apps.len(), 3);
         assert_eq!(result.apps[0].name, "Browser");
-        assert_eq!(result.cpu_leader.as_ref().map(|item| item.name.as_str()), Some("Browser"));
+        assert_eq!(
+            result.cpu_leader.as_ref().map(|item| item.name.as_str()),
+            Some("Browser")
+        );
         assert!(result.apps[2].cpu_confidence.is_none());
     }
 
@@ -431,7 +421,13 @@ mod tests {
     #[test]
     fn app_snapshot_is_capped() {
         let values = (0..30)
-            .map(|index| aggregate(&format!("App{index}"), index as f32 + 1.0, 100.0 + index as f32))
+            .map(|index| {
+                aggregate(
+                    &format!("App{index}"),
+                    index as f32 + 1.0,
+                    100.0 + index as f32,
+                )
+            })
             .collect::<Vec<_>>();
 
         assert_eq!(build_app_snapshot(&values).apps.len(), APP_RESULT_CAP);
