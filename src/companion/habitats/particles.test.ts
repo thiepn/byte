@@ -54,6 +54,7 @@ const state: HabitatRenderState = {
   reactions: {
     BUSY: 0,
     MEMORY_PRESSURE: 0,
+    STORAGE: 0,
     THERMAL: 0,
     LOW_BATTERY: 0,
     CHARGING: 0,

@@ -97,6 +97,7 @@ Habitat reactions are:
 
 - BUSY
 - MEMORY_PRESSURE
+- STORAGE
 - THERMAL
 - LOW_BATTERY
 - CHARGING
@@ -108,6 +109,7 @@ Examples:
 
 - BUSY is driven by legitimate workload intensity.
 - MEMORY_PRESSURE comes from a real memory diagnostic issue.
+- STORAGE comes from the storage resource state, including simultaneous secondary issues.
 - THERMAL comes from a real thermal issue.
 - LOW_BATTERY and CHARGING are mutually meaningful battery states.
 - NETWORK uses aggregate throughput as playful activity, never as a warning.

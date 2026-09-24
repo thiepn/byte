@@ -29,6 +29,7 @@ describe("habitat foundations", () => {
         expect.arrayContaining([
           "BUSY",
           "MEMORY_PRESSURE",
+          "STORAGE",
           "THERMAL",
           "LOW_BATTERY",
           "CHARGING",

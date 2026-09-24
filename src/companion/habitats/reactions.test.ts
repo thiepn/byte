@@ -45,22 +45,21 @@ describe("habitatReactionsForSnapshot", () => {
     expect(habitatReactionsForSnapshot(low).CHARGING).toBe(0);
   });
 
-  it("uses the primary diagnostic category for specific pressure reactions", () => {
+  it("reads memory, storage, and thermal resource states independently", () => {
     const value = snapshot();
-    value.overall_status = "STRESSED";
-    value.primary_issue = {
-      id: "memory-pressure",
-      category: "MEMORY",
-      severity: "HIGH",
-      headline: "Memory is getting tight",
-      explanation: "Test",
-      culprit: null,
-      confidence: "HIGH",
-      culprit_confidence: null,
-      recommended_action: null,
-      started_at_epoch_ms: 1,
+    value.memory.state = "HIGH";
+    value.storage.state = "CRITICAL";
+    value.thermal = {
+      value: 102,
+      unit: "°C",
+      state: "ELEVATED",
+      available: null,
+      available_unit: null,
     };
 
-    expect(habitatReactionsForSnapshot(value).MEMORY_PRESSURE).toBe(0.65);
+    const reactions = habitatReactionsForSnapshot(value);
+    expect(reactions.MEMORY_PRESSURE).toBe(0.65);
+    expect(reactions.STORAGE).toBe(1);
+    expect(reactions.THERMAL).toBe(0.3);
   });
 });

@@ -388,6 +388,45 @@
           "color": "ground2"
         }
       ]
+    },
+    {
+      "id": "storage",
+      "plane": "FRONT",
+      "order": 52,
+      "modes": [
+        "HABITAT"
+      ],
+      "opacity": 0.82,
+      "reaction": "STORAGE",
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 203,
+          "y": 181,
+          "width": 18,
+          "height": 15,
+          "color": "ground2",
+          "radius": 2
+        },
+        {
+          "kind": "RECT",
+          "x": 222,
+          "y": 174,
+          "width": 20,
+          "height": 22,
+          "color": "shadow",
+          "radius": 2
+        },
+        {
+          "kind": "RECT",
+          "x": 210,
+          "y": 163,
+          "width": 25,
+          "height": 10,
+          "color": "ground2",
+          "radius": 2
+        }
+      ]
     }
   ],
   "decorationSlots": [
@@ -493,6 +532,10 @@
     },
     {
       "id": "MEMORY_PRESSURE",
+      "maxIntensity": 1
+    },
+    {
+      "id": "STORAGE",
       "maxIntensity": 1
     },
     {

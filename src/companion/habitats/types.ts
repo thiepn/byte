@@ -5,6 +5,7 @@ export type HabitatPlane = "BACK" | "FRONT";
 export type HabitatReaction =
   | "BUSY"
   | "MEMORY_PRESSURE"
+  | "STORAGE"
   | "THERMAL"
   | "LOW_BATTERY"
   | "CHARGING"
@@ -115,6 +116,7 @@ export interface HabitatManifest {
 export interface HabitatReactionState {
   BUSY: number;
   MEMORY_PRESSURE: number;
+  STORAGE: number;
   THERMAL: number;
   LOW_BATTERY: number;
   CHARGING: number;

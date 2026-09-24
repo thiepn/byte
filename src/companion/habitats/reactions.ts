@@ -4,6 +4,7 @@ import type { HabitatReactionState } from "./types";
 const EMPTY: HabitatReactionState = {
   BUSY: 0,
   MEMORY_PRESSURE: 0,
+  STORAGE: 0,
   THERMAL: 0,
   LOW_BATTERY: 0,
   CHARGING: 0,
@@ -23,15 +24,9 @@ export function habitatReactionsForSnapshot(
         ? clamp01((snapshot.cpu.value - 70) / 30)
         : 0;
 
-  if (snapshot.primary_issue?.category === "MEMORY") {
-    reactions.MEMORY_PRESSURE =
-      snapshot.primary_issue.severity === "CRITICAL" ? 1 : 0.65;
-  }
-
-  if (snapshot.primary_issue?.category === "THERMAL") {
-    reactions.THERMAL =
-      snapshot.primary_issue.severity === "CRITICAL" ? 1 : 0.65;
-  }
+  reactions.MEMORY_PRESSURE = severityIntensity(snapshot.memory.state);
+  reactions.STORAGE = severityIntensity(snapshot.storage.state);
+  reactions.THERMAL = severityIntensity(snapshot.thermal?.state ?? "UNKNOWN");
 
   const battery = snapshot.battery;
   if (battery?.charging) {
@@ -48,4 +43,11 @@ export function habitatReactionsForSnapshot(
 
 function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value));
+}
+
+function severityIntensity(state: string): number {
+  if (state === "CRITICAL") return 1;
+  if (state === "HIGH") return 0.65;
+  if (state === "ELEVATED") return 0.3;
+  return 0;
 }

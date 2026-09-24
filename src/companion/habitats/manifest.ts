@@ -10,6 +10,7 @@ const MODES = new Set(["HABITAT", "PERCH", "MINI", "EDGE", "TRAY"]);
 const REACTIONS = new Set([
   "BUSY",
   "MEMORY_PRESSURE",
+  "STORAGE",
   "THERMAL",
   "LOW_BATTERY",
   "CHARGING",
