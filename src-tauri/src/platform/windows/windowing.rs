@@ -527,18 +527,29 @@ fn perch_relative_position(monitor: &Monitor, max_x: i32, max_y: i32, margin: i3
 }
 
 fn infer_taskbar_edge(monitor: &Monitor) -> TaskbarEdge {
-    let full_position = monitor.position();
-    let full_size = monitor.size();
     let work = monitor.work_area();
+    infer_taskbar_edge_from_rects(
+        *monitor.position(),
+        *monitor.size(),
+        work.position,
+        work.size,
+    )
+}
 
+fn infer_taskbar_edge_from_rects(
+    full_position: PhysicalPosition<i32>,
+    full_size: PhysicalSize<u32>,
+    work_position: PhysicalPosition<i32>,
+    work_size: PhysicalSize<u32>,
+) -> TaskbarEdge {
     let full_right = full_position.x + full_size.width as i32;
     let full_bottom = full_position.y + full_size.height as i32;
-    let work_right = work.position.x + work.size.width as i32;
-    let work_bottom = work.position.y + work.size.height as i32;
+    let work_right = work_position.x + work_size.width as i32;
+    let work_bottom = work_position.y + work_size.height as i32;
 
-    if work.position.y > full_position.y {
+    if work_position.y > full_position.y {
         TaskbarEdge::Top
-    } else if work.position.x > full_position.x {
+    } else if work_position.x > full_position.x {
         TaskbarEdge::Left
     } else if work_right < full_right {
         TaskbarEdge::Right
@@ -613,5 +624,48 @@ mod tests {
     fn physical_pixel_conversion_is_integer_and_dpi_aware() {
         assert_eq!(physical_pixels(240.0, 1.25), 300);
         assert_eq!(physical_pixels(116.0, 1.5), 174);
+    }
+
+    #[test]
+    fn taskbar_edge_is_inferred_from_work_area() {
+        let full_position = PhysicalPosition::new(0, 0);
+        let full_size = PhysicalSize::new(1920, 1080);
+
+        assert_eq!(
+            infer_taskbar_edge_from_rects(
+                full_position,
+                full_size,
+                PhysicalPosition::new(0, 0),
+                PhysicalSize::new(1920, 1040),
+            ),
+            TaskbarEdge::Bottom
+        );
+        assert_eq!(
+            infer_taskbar_edge_from_rects(
+                full_position,
+                full_size,
+                PhysicalPosition::new(0, 40),
+                PhysicalSize::new(1920, 1040),
+            ),
+            TaskbarEdge::Top
+        );
+        assert_eq!(
+            infer_taskbar_edge_from_rects(
+                full_position,
+                full_size,
+                PhysicalPosition::new(40, 0),
+                PhysicalSize::new(1880, 1080),
+            ),
+            TaskbarEdge::Left
+        );
+        assert_eq!(
+            infer_taskbar_edge_from_rects(
+                full_position,
+                full_size,
+                PhysicalPosition::new(0, 0),
+                PhysicalSize::new(1880, 1080),
+            ),
+            TaskbarEdge::Right
+        );
     }
 }

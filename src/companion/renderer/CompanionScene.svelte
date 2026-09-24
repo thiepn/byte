@@ -99,7 +99,11 @@
     <div class="move-banner" aria-live="polite">
       <strong>Move Byte</strong>
       <span>Drag anywhere in this window</span>
-      <button type="button" onclick={(event) => void finishMove(event)}>Done</button>
+      <button
+        type="button"
+        onpointerdown={(event) => event.stopPropagation()}
+        onclick={(event) => void finishMove(event)}
+      >Done</button>
     </div>
   {/if}
 
