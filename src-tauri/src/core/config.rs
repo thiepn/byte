@@ -122,15 +122,33 @@ mod tests {
     fn v1_config_migrates_without_losing_companion_preferences() {
         let temp = tempfile::tempdir().expect("temp dir");
         let path = temp.path().join("config.json");
-        let mut legacy = ByteConfig::default();
-        legacy.schema_version = 1;
-        legacy.companion.display_mode = DisplayMode::Mini;
-        fs::write(&path, serde_json::to_vec_pretty(&legacy).expect("serialize")).expect("write");
+        let legacy = r#"{
+          "schema_version": 1,
+          "companion": {
+            "character": "BYTE",
+            "habitat": "MEADOW",
+            "display_mode": "MINI",
+            "size": "MEDIUM",
+            "interaction_level": "NORMAL"
+          },
+          "app": {
+            "hide_in_fullscreen": true,
+            "sound_enabled": false,
+            "launch_at_startup": false,
+            "activity_history_enabled": true
+          }
+        }"#;
+        fs::write(&path, legacy).expect("write");
 
         let migrated = ConfigStore::load(path).expect("migrate");
 
         assert_eq!(migrated.snapshot().schema_version, CURRENT_SCHEMA_VERSION);
         assert_eq!(migrated.snapshot().companion.display_mode, DisplayMode::Mini);
+        assert_eq!(
+            migrated.snapshot().companion.edge_anchor,
+            crate::models::EdgeAnchor::Right
+        );
+        assert!(migrated.snapshot().companion.placements.mini.is_none());
     }
 
     #[test]
