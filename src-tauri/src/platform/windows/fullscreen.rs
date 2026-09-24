@@ -588,14 +588,13 @@ mod tests {
 
     #[test]
     fn excluded_app_names_are_normalized_and_deduplicated() {
-        let result =
-            normalize_excluded_apps(&[
-                " OBS64.exe ".into(),
-                "obs64".into(),
-                "POWERPNT.EXE".into(),
-                "Mixed.ExE".into(),
-            ])
-            .expect("normalize");
+        let result = normalize_excluded_apps(&[
+            " OBS64.exe ".into(),
+            "obs64".into(),
+            "POWERPNT.EXE".into(),
+            "Mixed.ExE".into(),
+        ])
+        .expect("normalize");
 
         assert_eq!(result, vec!["obs64", "powerpnt", "mixed"]);
     }
