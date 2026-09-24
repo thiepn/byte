@@ -1,8 +1,11 @@
-import type {
-  AnimationClipDefinition,
-  CharacterManifest,
-  SpriteFrameDefinition,
+import {
+  CORE_BEHAVIORS,
+  type AnimationClipDefinition,
+  type CharacterManifest,
+  type SpriteFrameDefinition,
 } from "./types";
+
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
 export function validateCharacterManifest(value: unknown): CharacterManifest {
   if (!value || typeof value !== "object") {
@@ -24,14 +27,26 @@ export function validateCharacterManifest(value: unknown): CharacterManifest {
   ) {
     throw new Error("Character manifest has invalid dimensions");
   }
+  if (!manifest.preview) {
+    throw new Error("Character manifest is missing preview artwork");
+  }
 
   validateAtlas(manifest);
+  validatePalettes(manifest);
   validateFrames(manifest.frames, manifest);
   validateClips(manifest.clips, manifest.frames);
 
   for (const [behavior, clipId] of Object.entries(manifest.behaviors)) {
     if (!manifest.clips[clipId]) {
       throw new Error(`Behavior "${behavior}" references missing clip "${clipId}"`);
+    }
+  }
+
+  if (manifest.status === "production") {
+    for (const behavior of CORE_BEHAVIORS) {
+      if (!manifest.behaviors[behavior]) {
+        throw new Error(`Production character is missing behavior "${behavior}"`);
+      }
     }
   }
 
@@ -66,9 +81,46 @@ function validateAtlas(manifest: CharacterManifest): void {
     atlas.height <= 0 ||
     atlas.frameWidth <= 0 ||
     atlas.frameHeight <= 0 ||
-    atlas.columns <= 0
+    atlas.columns <= 0 ||
+    atlas.width % atlas.frameWidth !== 0 ||
+    atlas.height % atlas.frameHeight !== 0
   ) {
     throw new Error("Character manifest has invalid atlas metadata");
+  }
+}
+
+function validatePalettes(manifest: CharacterManifest): void {
+  const slotEntries = Object.entries(manifest.paletteSlots ?? {});
+  if (slotEntries.length === 0) {
+    throw new Error("Character manifest has no palette slots");
+  }
+  for (const [slot, color] of slotEntries) {
+    if (!HEX_COLOR.test(color)) {
+      throw new Error(`Palette slot "${slot}" has invalid color`);
+    }
+  }
+
+  if (!Array.isArray(manifest.palettes) || manifest.palettes.length === 0) {
+    throw new Error("Character manifest has no palettes");
+  }
+
+  const ids = new Set<string>();
+  for (const palette of manifest.palettes) {
+    if (!palette.id || !palette.name || ids.has(palette.id)) {
+      throw new Error("Character manifest has an invalid or duplicate palette");
+    }
+    ids.add(palette.id);
+
+    for (const [slot] of slotEntries) {
+      const color = palette.colors?.[slot];
+      if (!color || !HEX_COLOR.test(color)) {
+        throw new Error(`Palette "${palette.id}" is missing slot "${slot}"`);
+      }
+    }
+  }
+
+  if (!ids.has(manifest.defaultPalette)) {
+    throw new Error("Character default palette does not exist");
   }
 }
 
@@ -93,7 +145,14 @@ function validateFrames(
       if (!anchor) {
         throw new Error(`Frame "${id}" is missing anchor "${anchorName}"`);
       }
-      if (!Number.isFinite(anchor.x) || !Number.isFinite(anchor.y)) {
+      if (
+        !Number.isFinite(anchor.x) ||
+        !Number.isFinite(anchor.y) ||
+        anchor.x < 0 ||
+        anchor.y < 0 ||
+        anchor.x > manifest.animationCanvas ||
+        anchor.y > manifest.animationCanvas
+      ) {
         throw new Error(`Frame "${id}" has invalid anchor "${anchorName}"`);
       }
     }

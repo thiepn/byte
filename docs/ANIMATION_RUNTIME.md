@@ -138,11 +138,11 @@ The production renderer:
 
 This avoids interpolated blurry sprites at normal desktop sizes.
 
-## Development atlas
+## Production character assets
 
-Phase 8 includes a deliberately simple eight-frame Byte development atlas. It exists only to prove the runtime end-to-end.
+Phase 9 replaces the development atlas with production sprite sheets for Byte, Mochi, Pip, and Kiwi. Each character uses the same runtime contract while defining its own 26 poses, idle profile, eight palettes, and per-frame anchors.
 
-It is not final art and should be removed/replaced by the Phase 9 production character assets.
+See [CHARACTERS.md](CHARACTERS.md).
 
 ## Current system integration
 

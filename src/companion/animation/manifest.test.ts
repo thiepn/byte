@@ -18,6 +18,7 @@ function fixture(): unknown {
     name: "Test",
     nativeSize: 8,
     animationCanvas: 8,
+    preview: "/test-preview.png",
     atlas: {
       src: "/test.png",
       width: 8,
@@ -26,6 +27,21 @@ function fixture(): unknown {
       frameHeight: 8,
       columns: 1,
     },
+    paletteSlots: {
+      primary: "#112233",
+      accent: "#445566",
+    },
+    defaultPalette: "default",
+    palettes: [
+      {
+        id: "default",
+        name: "Default",
+        colors: {
+          primary: "#112233",
+          accent: "#445566",
+        },
+      },
+    ],
     frames: {
       idle: { index: 0, anchors },
     },
@@ -63,5 +79,11 @@ describe("validateCharacterManifest", () => {
     const value = fixture() as any;
     value.frames.idle.index = 2;
     expect(() => validateCharacterManifest(value)).toThrow(/outside the atlas/);
+  });
+
+  it("rejects palettes that do not cover every slot", () => {
+    const value = fixture() as any;
+    delete value.palettes[0].colors.accent;
+    expect(() => validateCharacterManifest(value)).toThrow(/missing slot/);
   });
 });

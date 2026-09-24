@@ -87,12 +87,19 @@ export interface IdleProfile {
   choices: IdleChoice[];
 }
 
+export interface PaletteDefinition {
+  id: string;
+  name: string;
+  colors: Record<string, string>;
+}
+
 export interface CharacterManifest {
   schemaVersion: 1;
   id: string;
   name: string;
   nativeSize: number;
   animationCanvas: number;
+  preview: string;
   atlas: {
     src: string;
     width: number;
@@ -101,6 +108,9 @@ export interface CharacterManifest {
     frameHeight: number;
     columns: number;
   };
+  paletteSlots: Record<string, string>;
+  defaultPalette: string;
+  palettes: PaletteDefinition[];
   frames: Record<string, SpriteFrameDefinition>;
   clips: Record<string, AnimationClipDefinition>;
   behaviors: Record<string, string>;

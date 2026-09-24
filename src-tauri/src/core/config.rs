@@ -9,7 +9,7 @@ use std::{
 };
 use tempfile::NamedTempFile;
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 2;
+pub const CURRENT_SCHEMA_VERSION: u32 = 3;
 
 pub struct ConfigStore {
     path: PathBuf,
@@ -79,7 +79,7 @@ fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
 
     match config.schema_version {
         CURRENT_SCHEMA_VERSION => Ok(config),
-        1 => {
+        1 | 2 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
             Ok(config)
         }
@@ -152,6 +152,43 @@ mod tests {
             crate::models::EdgeAnchor::Right
         );
         assert!(migrated.snapshot().companion.placements.mini.is_none());
+        assert_eq!(migrated.snapshot().companion.palette, "default");
+    }
+
+    #[test]
+    fn v2_config_adds_default_palette() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = temp.path().join("config.json");
+        let legacy = r#"{
+          "schema_version": 2,
+          "companion": {
+            "character": "MOCHI",
+            "habitat": "MEADOW",
+            "display_mode": "HABITAT",
+            "size": "MEDIUM",
+            "interaction_level": "NORMAL",
+            "edge_anchor": "RIGHT",
+            "placements": {
+              "habitat": null,
+              "perch": null,
+              "mini": null,
+              "edge": null
+            }
+          },
+          "app": {
+            "hide_in_fullscreen": true,
+            "sound_enabled": false,
+            "launch_at_startup": false,
+            "activity_history_enabled": true
+          }
+        }"#;
+        fs::write(&path, legacy).expect("write");
+
+        let migrated = ConfigStore::load(path).expect("migrate");
+
+        assert_eq!(migrated.snapshot().schema_version, CURRENT_SCHEMA_VERSION);
+        assert_eq!(migrated.snapshot().companion.character, "MOCHI");
+        assert_eq!(migrated.snapshot().companion.palette, "default");
     }
 
     #[test]

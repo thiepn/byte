@@ -10,6 +10,7 @@
   import {
     dragCompanion,
     finishMoveMode,
+    getPreferences,
     getSnapshot,
     getWindowShellState,
     showQuickPanel,
@@ -94,11 +95,21 @@
 
     const initialize = async (): Promise<void> => {
       try {
-        const manifest = await loadCharacterManifest("byte");
+        const preferences = await getPreferences();
+        if (disposed) return;
+
+        const requestedCharacter = preferences.companion.character.toLowerCase();
+        let manifest;
+        try {
+          manifest = await loadCharacterManifest(requestedCharacter);
+        } catch {
+          manifest = await loadCharacterManifest("byte");
+        }
         if (disposed) return;
 
         renderer = new CharacterCanvasRenderer(canvas, manifest);
         await renderer.load();
+        renderer.setPalette(preferences.companion.palette);
         if (disposed) return;
 
         const sessionDay = new Date().toISOString().slice(0, 10);
@@ -174,8 +185,6 @@
   onkeydown={handleKeydown}
   onpointerdown={(event) => void startMove(event)}
 >
-  <div class="dev-label">DEV RUNTIME</div>
-
   {#if moveMode}
     <div class="move-banner" aria-live="polite">
       <strong>Move Byte</strong>
@@ -235,24 +244,12 @@
   }
 
   .character-canvas {
-    width: min(82vw, 190px);
+    width: min(82vw, 82vh, 190px);
     height: auto;
     aspect-ratio: 1;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     pointer-events: none;
-  }
-
-  .dev-label {
-    position: absolute;
-    z-index: 4;
-    top: 9px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: rgba(46, 49, 57, 0.42);
-    font: 700 9px/1 "Segoe UI", sans-serif;
-    letter-spacing: 0.14em;
-    white-space: nowrap;
   }
 
   .move-banner {

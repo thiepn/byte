@@ -260,6 +260,8 @@ pub enum InteractionLevel {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CompanionPreferences {
     pub character: String,
+    #[serde(default = "default_character_palette")]
+    pub palette: String,
     pub habitat: String,
     pub display_mode: DisplayMode,
     pub size: CompanionSize,
@@ -270,10 +272,15 @@ pub struct CompanionPreferences {
     pub placements: WindowPlacements,
 }
 
+fn default_character_palette() -> String {
+    "default".into()
+}
+
 impl Default for CompanionPreferences {
     fn default() -> Self {
         Self {
             character: "BYTE".into(),
+            palette: default_character_palette(),
             habitat: "MEADOW".into(),
             display_mode: DisplayMode::Habitat,
             size: CompanionSize::Medium,
@@ -313,7 +320,7 @@ pub struct ByteConfig {
 impl Default for ByteConfig {
     fn default() -> Self {
         Self {
-            schema_version: 2,
+            schema_version: 3,
             companion: CompanionPreferences::default(),
             app: AppPreferences::default(),
         }

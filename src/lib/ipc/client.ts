@@ -10,9 +10,10 @@ import type {
 } from "../types/domain";
 
 const DEFAULT_CONFIG: ByteConfig = {
-  schema_version: 2,
+  schema_version: 3,
   companion: {
     character: "BYTE",
+    palette: "default",
     habitat: "MEADOW",
     display_mode: "HABITAT",
     size: "MEDIUM",

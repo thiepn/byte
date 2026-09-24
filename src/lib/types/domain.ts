@@ -86,6 +86,7 @@ export interface WindowPlacements {
 
 export interface CompanionPreferences {
   character: "BYTE" | "MOCHI" | "PIP" | "KIWI";
+  palette: string;
   habitat: "MEADOW" | "DESK" | "BEDROOM" | "SPACE" | "AQUARIUM" | "ROOFTOP";
   display_mode: DisplayMode;
   size: CompanionSize;

@@ -9,6 +9,9 @@ export interface HabitatManifest {
   status: "placeholder" | "production";
 }
 
+export const CHARACTER_IDS = ["byte", "mochi", "pip", "kiwi"] as const;
+export type CharacterId = (typeof CHARACTER_IDS)[number];
+
 const characterCache = new Map<string, Promise<CharacterManifest>>();
 const habitatCache = new Map<string, Promise<HabitatManifest>>();
 

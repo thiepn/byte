@@ -24,4 +24,4 @@ Personalities: Chill, Curious, Energetic.
 - Calm semantic status colors.
 - No permanent cyberpunk HUD, reticles, tiny monospace telemetry, giant gauges, or excessive neon.
 
-Programmer-art matrices are not production assets. Phase 4 uses a clearly marked CSS development placeholder only to validate the runtime shell.
+The production character layer now uses authored pixel sprite atlases for Byte, Mochi, Pip, and Kiwi. The old CSS/programmer-art placeholder has been removed. See [CHARACTERS.md](CHARACTERS.md).

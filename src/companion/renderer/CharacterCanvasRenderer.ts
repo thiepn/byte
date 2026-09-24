@@ -1,13 +1,18 @@
 import type {
   CharacterManifest,
   CosmeticAttachment,
+  PaletteDefinition,
   RenderFrame,
 } from "../animation/types";
 
+type AtlasSource = HTMLImageElement | HTMLCanvasElement;
+
 export class CharacterCanvasRenderer {
-  private context: CanvasRenderingContext2D;
-  private atlas: HTMLImageElement | null = null;
+  private readonly context: CanvasRenderingContext2D;
+  private sourceAtlas: HTMLImageElement | null = null;
+  private atlas: AtlasSource | null = null;
   private attachments: CosmeticAttachment[] = [];
+  private paletteId: string;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -20,16 +25,24 @@ export class CharacterCanvasRenderer {
     canvas.width = manifest.animationCanvas;
     canvas.height = manifest.animationCanvas;
     this.context.imageSmoothingEnabled = false;
+    this.paletteId = manifest.defaultPalette;
   }
 
   async load(): Promise<void> {
-    this.atlas = await loadImage(this.manifest.atlas.src);
+    this.sourceAtlas = await loadImage(this.manifest.atlas.src);
+    this.applyPalette(this.paletteId);
+  }
+
+  setPalette(paletteId: string): void {
+    this.paletteId = this.manifest.palettes.some((palette) => palette.id === paletteId)
+      ? paletteId
+      : this.manifest.defaultPalette;
+
+    if (this.sourceAtlas) this.applyPalette(this.paletteId);
   }
 
   setAttachments(attachments: CosmeticAttachment[]): void {
-    this.attachments = [...attachments].sort(
-      (left, right) => (left.layer ?? 1) - (right.layer ?? 1),
-    );
+    this.attachments = [...attachments];
   }
 
   render(frame: RenderFrame): void {
@@ -51,6 +64,23 @@ export class CharacterCanvasRenderer {
     for (const attachment of ordered) {
       if (this.layerFor(attachment, frame) >= 0) this.drawAttachment(attachment, frame);
     }
+  }
+
+  private applyPalette(paletteId: string): void {
+    if (!this.sourceAtlas) return;
+
+    const palette =
+      this.manifest.palettes.find((candidate) => candidate.id === paletteId) ??
+      this.manifest.palettes.find(
+        (candidate) => candidate.id === this.manifest.defaultPalette,
+      );
+
+    if (!palette) {
+      this.atlas = this.sourceAtlas;
+      return;
+    }
+
+    this.atlas = recolorAtlas(this.sourceAtlas, this.manifest, palette);
   }
 
   private drawBase(frame: RenderFrame): void {
@@ -113,6 +143,63 @@ export class CharacterCanvasRenderer {
     );
     this.context.restore();
   }
+}
+
+function recolorAtlas(
+  source: HTMLImageElement,
+  manifest: CharacterManifest,
+  palette: PaletteDefinition,
+): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = manifest.atlas.width;
+  canvas.height = manifest.atlas.height;
+
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) throw new Error("Could not create palette canvas");
+
+  context.imageSmoothingEnabled = false;
+  context.drawImage(source, 0, 0);
+
+  const image = context.getImageData(0, 0, canvas.width, canvas.height);
+  const replacements = new Map<number, [number, number, number]>();
+
+  for (const [slot, baseColor] of Object.entries(manifest.paletteSlots)) {
+    const targetColor = palette.colors[slot];
+    if (!targetColor) continue;
+
+    const [baseRed, baseGreen, baseBlue] = parseHex(baseColor);
+    const [targetRed, targetGreen, targetBlue] = parseHex(targetColor);
+    replacements.set(
+      (baseRed << 16) | (baseGreen << 8) | baseBlue,
+      [targetRed, targetGreen, targetBlue],
+    );
+  }
+
+  for (let index = 0; index < image.data.length; index += 4) {
+    if (image.data[index + 3] === 0) continue;
+
+    const key =
+      (image.data[index] << 16) |
+      (image.data[index + 1] << 8) |
+      image.data[index + 2];
+    const replacement = replacements.get(key);
+    if (!replacement) continue;
+
+    image.data[index] = replacement[0];
+    image.data[index + 1] = replacement[1];
+    image.data[index + 2] = replacement[2];
+  }
+
+  context.putImageData(image, 0, 0);
+  return canvas;
+}
+
+function parseHex(color: string): [number, number, number] {
+  return [
+    Number.parseInt(color.slice(1, 3), 16),
+    Number.parseInt(color.slice(3, 5), 16),
+    Number.parseInt(color.slice(5, 7), 16),
+  ];
 }
 
 function loadImage(source: string): Promise<HTMLImageElement> {
