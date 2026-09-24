@@ -45,6 +45,8 @@ export class CharacterAnimator {
   }
 
   setBaseBehavior(behavior: BehaviorId, source: BehaviorSource): void {
+    if (behavior === this.baseBehavior && source === this.baseSource) return;
+
     const previousBase = this.baseBehavior;
     this.baseBehavior = behavior;
     this.baseSource = source;

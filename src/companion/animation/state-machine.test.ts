@@ -113,6 +113,13 @@ describe("CharacterAnimator", () => {
     expect(animator.currentBehavior()).toBe("idle");
   });
 
+  it("does not restart an unchanged base state", () => {
+    const animator = new CharacterAnimator(manifest(), 1);
+    animator.requestBehavior({ behavior: "happy", source: "interaction" });
+    animator.setBaseBehavior("idle", "idle");
+    expect(animator.currentBehavior()).toBe("happy");
+  });
+
   it("allows a persistent critical base state to downgrade after recovery", () => {
     const animator = new CharacterAnimator(manifest(), 1);
     animator.setBaseBehavior("needs_attention", "critical");
