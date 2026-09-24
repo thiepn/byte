@@ -1,7 +1,7 @@
 use super::engine::TelemetryEngine;
 use crate::core::{diagnostics::DiagnosticEngine, error::ByteError, state::AppState};
 use std::{thread, time::Duration};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 
 #[cfg(target_os = "windows")]
 use super::windows::WindowsTelemetrySource;
@@ -31,7 +31,12 @@ fn run_worker(app: AppHandle) {
         }
 
         if let Ok(snapshot) = telemetry.sample_snapshot() {
-            state.replace_snapshot(diagnostics.evaluate(snapshot));
+            let evaluated = diagnostics.evaluate(snapshot);
+            if let Ok(Some(collection)) = state.observe_collection_system(&evaluated) {
+                let _ = app.emit_to("main", "byte://collection-updated", collection.clone());
+                let _ = app.emit_to("companion", "byte://collection-updated", collection);
+            }
+            state.replace_snapshot(evaluated);
         }
 
         if !state.lifecycle.wait_for_change_or_timeout(SAMPLE_INTERVAL) {

@@ -1,11 +1,15 @@
 use crate::{
     core::{
         activity::{ActivitySnapshot, ActivityStore},
+        collection::CollectionStore,
         config::ConfigStore,
         diagnostics::AppInspector,
         lifecycle::LifecycleCoordinator,
     },
-    models::{AppDiagnosticsSnapshot, SystemSnapshot, WindowShellState},
+    models::{
+        AppDiagnosticsSnapshot, CollectionDiscoveryKind, CollectionSnapshot, CompanionPreferences,
+        SystemSnapshot, WindowShellState,
+    },
 };
 use std::{
     sync::{Mutex, RwLock},
@@ -21,6 +25,7 @@ pub struct AppState {
     pub lifecycle: LifecycleCoordinator,
     pub window_shell: Mutex<WindowShellState>,
     activity: Mutex<ActivityStore>,
+    collection: Mutex<CollectionStore>,
     app_inspector: Mutex<AppInspector>,
     telemetry_worker: Mutex<Option<JoinHandle<()>>>,
     #[cfg(target_os = "windows")]
@@ -28,13 +33,14 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(config: ConfigStore, activity: ActivityStore) -> Self {
+    pub fn new(config: ConfigStore, activity: ActivityStore, collection: CollectionStore) -> Self {
         Self {
             snapshot: RwLock::new(SystemSnapshot::unavailable()),
             config: Mutex::new(config),
             lifecycle: LifecycleCoordinator::default(),
             window_shell: Mutex::new(WindowShellState::default()),
             activity: Mutex::new(activity),
+            collection: Mutex::new(collection),
             app_inspector: Mutex::new(AppInspector::new()),
             telemetry_worker: Mutex::new(None),
             #[cfg(target_os = "windows")]
@@ -75,6 +81,53 @@ impl AppState {
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
             .snapshot()
+    }
+
+    pub fn collection_snapshot(&self) -> Result<CollectionSnapshot, crate::core::error::ByteError> {
+        self.collection
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .snapshot()
+    }
+
+    pub fn record_collection_typing(
+        &self,
+        timestamp_epoch_ms: u64,
+    ) -> Result<Option<CollectionSnapshot>, crate::core::error::ByteError> {
+        self.collection
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .record_typing(timestamp_epoch_ms)
+    }
+
+    pub fn observe_collection_system(
+        &self,
+        snapshot: &SystemSnapshot,
+    ) -> Result<Option<CollectionSnapshot>, crate::core::error::ByteError> {
+        self.collection
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .observe_system(snapshot)
+    }
+
+    pub fn record_collection_discovery(
+        &self,
+        discovery: CollectionDiscoveryKind,
+    ) -> Result<(CollectionSnapshot, bool), crate::core::error::ByteError> {
+        self.collection
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .record_discovery(discovery)
+    }
+
+    pub fn validate_collection_preferences(
+        &self,
+        preferences: &CompanionPreferences,
+    ) -> Result<(), crate::core::error::ByteError> {
+        self.collection
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .validate_preferences(preferences)
     }
 
     pub fn inspect_apps(&self) -> AppDiagnosticsSnapshot {
@@ -129,5 +182,10 @@ impl AppState {
         #[cfg(target_os = "windows")]
         self.stop_input_runtime();
         self.stop_telemetry_worker();
+        let _ = self
+            .collection
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .flush();
     }
 }

@@ -1,8 +1,9 @@
 use crate::{
     core::{activity::ActivitySnapshot, error::ByteError, state::AppState},
     models::{
-        AppDiagnosticsSnapshot, ByteConfig, CompanionPreferences, CompanionSize, DisplayMode,
-        EdgeAnchor, RecommendedActionKind, SystemSnapshot, WindowShellState,
+        AppDiagnosticsSnapshot, ByteConfig, CollectionDiscoveryKind, CollectionSnapshot,
+        CompanionPreferences, CompanionSize, DisplayMode, EdgeAnchor, RecommendedActionKind,
+        SystemSnapshot, WindowShellState,
     },
     platform::windows::{actions, windowing},
 };
@@ -24,6 +25,25 @@ pub fn inspect_apps(state: State<'_, AppState>) -> AppDiagnosticsSnapshot {
 }
 
 #[tauri::command]
+pub fn get_collection(state: State<'_, AppState>) -> Result<CollectionSnapshot, ByteError> {
+    state.collection_snapshot()
+}
+
+#[tauri::command]
+pub fn record_collection_discovery(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    discovery: CollectionDiscoveryKind,
+) -> Result<CollectionSnapshot, ByteError> {
+    let (snapshot, changed) = state.record_collection_discovery(discovery)?;
+    if changed {
+        let _ = app.emit_to("main", "byte://collection-updated", snapshot.clone());
+        let _ = app.emit_to("companion", "byte://collection-updated", snapshot.clone());
+    }
+    Ok(snapshot)
+}
+
+#[tauri::command]
 pub fn get_preferences(state: State<'_, AppState>) -> ByteConfig {
     state
         .config
@@ -38,6 +58,8 @@ pub fn update_companion_preferences(
     state: State<'_, AppState>,
     preferences: CompanionPreferences,
 ) -> Result<ByteConfig, ByteError> {
+    state.validate_collection_preferences(&preferences)?;
+
     let config = state
         .config
         .lock()

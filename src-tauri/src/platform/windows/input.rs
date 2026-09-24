@@ -1,4 +1,7 @@
-use crate::{core::error::ByteError, models::now_epoch_ms};
+use crate::{
+    core::{error::ByteError, state::AppState},
+    models::{now_epoch_ms, CollectionSnapshot},
+};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::VecDeque,
@@ -10,7 +13,7 @@ use std::{
     thread::{self, JoinHandle},
     time::Duration,
 };
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 use windows_sys::Win32::{
     System::{LibraryLoader::GetModuleHandleW, Threading::GetCurrentThreadId},
     UI::WindowsAndMessaging::{
@@ -256,6 +259,14 @@ fn processor_loop(app: AppHandle, receiver: Receiver<RawInputMessage>) {
 
         match receiver.recv_timeout(wait) {
             Ok(RawInputMessage::Activity(activity)) => {
+                if activity.kind == RawInputKind::Keyboard {
+                    if let Ok(Some(snapshot)) = app
+                        .state::<AppState>()
+                        .record_collection_typing(activity.timestamp_epoch_ms)
+                    {
+                        emit_collection_update(&app, snapshot);
+                    }
+                }
                 emit_reactions(&app, interpreter.handle(activity));
             }
             Ok(RawInputMessage::Shutdown) => break,
@@ -265,6 +276,11 @@ fn processor_loop(app: AppHandle, receiver: Receiver<RawInputMessage>) {
             Err(RecvTimeoutError::Disconnected) => break,
         }
     }
+}
+
+fn emit_collection_update(app: &AppHandle, snapshot: CollectionSnapshot) {
+    let _ = app.emit_to("main", "byte://collection-updated", snapshot.clone());
+    let _ = app.emit_to("companion", "byte://collection-updated", snapshot);
 }
 
 fn emit_reactions(app: &AppHandle, reactions: Vec<InputReactionEvent>) {

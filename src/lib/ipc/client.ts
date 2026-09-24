@@ -3,6 +3,8 @@ import type {
   ActivitySnapshot,
   AppDiagnosticsSnapshot,
   ByteConfig,
+  CollectionDiscoveryKind,
+  CollectionSnapshot,
   CompanionPreferences,
   CompanionSize,
   DisplayMode,
@@ -147,6 +149,27 @@ export async function inspectApps(): Promise<AppDiagnosticsSnapshot> {
     };
   }
   return invoke<AppDiagnosticsSnapshot>("inspect_apps");
+}
+
+export async function getCollection(): Promise<CollectionSnapshot> {
+  if (!inTauri()) {
+    return {
+      first_seen_epoch_ms: Date.now(),
+      typing_events: 0,
+      charging_sessions: 0,
+      network_moments: 0,
+      unlocked_ids: [],
+      items: [],
+    };
+  }
+  return invoke<CollectionSnapshot>("get_collection");
+}
+
+export async function recordCollectionDiscovery(
+  discovery: CollectionDiscoveryKind,
+): Promise<CollectionSnapshot> {
+  if (!inTauri()) return getCollection();
+  return invoke<CollectionSnapshot>("record_collection_discovery", { discovery });
 }
 
 export async function getPreferences(): Promise<ByteConfig> {

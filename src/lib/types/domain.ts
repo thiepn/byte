@@ -187,3 +187,28 @@ export interface AppDiagnosticsSnapshot {
   cpu_leader: AppAttribution | null;
   memory_leader: AppAttribution | null;
 }
+
+
+export type CollectionItemKind = "COSMETIC" | "DECORATION" | "PALETTE" | "IDLE";
+export type CollectionDiscoveryKind = "RARE_A" | "RARE_B";
+
+export interface CollectionItemProgress {
+  unlock_id: string;
+  item_id: string;
+  kind: CollectionItemKind;
+  title: string;
+  description: string;
+  condition: string;
+  unlocked: boolean;
+  progress_current: number | null;
+  progress_target: number | null;
+}
+
+export interface CollectionSnapshot {
+  first_seen_epoch_ms: number;
+  typing_events: number;
+  charging_sessions: number;
+  network_moments: number;
+  unlocked_ids: string[];
+  items: CollectionItemProgress[];
+}

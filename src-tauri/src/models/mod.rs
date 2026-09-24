@@ -90,6 +90,45 @@ pub struct AppDiagnosticsSnapshot {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum CollectionItemKind {
+    Cosmetic,
+    Decoration,
+    Palette,
+    Idle,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum CollectionDiscoveryKind {
+    RareA,
+    RareB,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CollectionItemProgress {
+    pub unlock_id: String,
+    pub item_id: String,
+    pub kind: CollectionItemKind,
+    pub title: String,
+    pub description: String,
+    pub condition: String,
+    pub unlocked: bool,
+    pub progress_current: Option<u64>,
+    pub progress_target: Option<u64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CollectionSnapshot {
+    pub first_seen_epoch_ms: u64,
+    pub typing_events: u64,
+    pub charging_sessions: u64,
+    pub network_moments: u64,
+    pub unlocked_ids: Vec<String>,
+    pub items: Vec<CollectionItemProgress>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Confidence {
     Low,
     Medium,
