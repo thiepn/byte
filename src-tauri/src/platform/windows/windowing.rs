@@ -34,26 +34,34 @@ pub fn apply_capture_affinity(app: &AppHandle, exclude: bool) -> Result<(), Byte
     } else {
         WDA_NONE
     };
+    let mut last_error = None;
 
     for label in ["companion", "quick-panel", "main"] {
         let Some(window) = app.get_webview_window(label) else {
             continue;
         };
-        let hwnd = window
-            .hwnd()
-            .map_err(|error| ByteError::Window(error.to_string()))?;
+        let hwnd = match window.hwnd() {
+            Ok(hwnd) => hwnd,
+            Err(error) => {
+                last_error = Some(ByteError::Window(error.to_string()));
+                continue;
+            }
+        };
         let raw = hwnd.0 as windows_sys::Win32::Foundation::HWND;
 
         // SAFETY: the HWND belongs to this process and identifies a top-level
         // Tauri window. Affinity is limited to documented Windows values.
         if unsafe { SetWindowDisplayAffinity(raw, affinity) } == 0 {
-            return Err(ByteError::Window(format!(
+            last_error = Some(ByteError::Window(format!(
                 "Windows could not update capture exclusion for {label}"
             )));
         }
     }
 
-    Ok(())
+    match last_error {
+        Some(error) => Err(error),
+        None => Ok(()),
+    }
 }
 
 pub fn show_main_window(app: &AppHandle) -> Result<(), ByteError> {
