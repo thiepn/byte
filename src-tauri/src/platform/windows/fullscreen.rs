@@ -57,6 +57,7 @@ struct AwarenessObservation {
     user_state: Option<i32>,
     fullscreen_geometry: bool,
     foreground_app: Option<String>,
+    byte_owns_foreground: bool,
 }
 
 pub fn start(app: AppHandle) -> Result<(), ByteError> {
@@ -98,7 +99,14 @@ fn apply_observation(app: &AppHandle, observation: AwarenessObservation, initial
         .unwrap_or_else(|poisoned| poisoned.into_inner())
         .snapshot();
 
-    let reason = suppression_reason(&observation, &config.app);
+    let reason = if observation.byte_owns_foreground
+        && !observation.display_off
+        && observation.user_state != Some(QUNS_NOT_PRESENT)
+    {
+        state.desktop_awareness().reason
+    } else {
+        suppression_reason(&observation, &config.app)
+    };
     let visible = windowing::is_companion_visible(app).unwrap_or(false);
     let transition = state.update_desktop_awareness(
         reason,
@@ -146,6 +154,7 @@ fn observe() -> AwarenessObservation {
                 user_state,
                 fullscreen_geometry: false,
                 foreground_app: None,
+                byte_owns_foreground: false,
             };
         }
 
@@ -157,6 +166,7 @@ fn observe() -> AwarenessObservation {
                 user_state,
                 fullscreen_geometry: false,
                 foreground_app: None,
+                byte_owns_foreground: true,
             };
         }
 
@@ -181,6 +191,7 @@ fn observe() -> AwarenessObservation {
             user_state,
             fullscreen_geometry,
             foreground_app,
+            byte_owns_foreground: false,
         }
     }
 }
@@ -435,6 +446,7 @@ mod tests {
             user_state: None,
             fullscreen_geometry: false,
             foreground_app: Some("browser".into()),
+            byte_owns_foreground: false,
         }
     }
 
