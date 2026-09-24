@@ -15,7 +15,15 @@ const BYTE_PALETTES: &[&str] = &[
     "default", "mint", "peach", "lavender", "cream", "charcoal", "rose", "retro", "aurora",
 ];
 const MOCHI_PALETTES: &[&str] = &[
-    "default", "ginger", "tuxedo", "gray", "lavender", "strawberry", "cocoa", "snow", "aurora",
+    "default",
+    "ginger",
+    "tuxedo",
+    "gray",
+    "lavender",
+    "strawberry",
+    "cocoa",
+    "snow",
+    "aurora",
 ];
 const PIP_PALETTES: &[&str] = &[
     "default", "mint", "peach", "grape", "lemon", "rose", "aqua", "midnight", "aurora",
@@ -24,13 +32,25 @@ const KIWI_PALETTES: &[&str] = &[
     "default", "lime", "autumn", "bluebird", "lavender", "peach", "snow", "midnight", "aurora",
 ];
 
-const HEADWEAR: &[&str] = &["none", "beanie", "crown", "sprout", "night_cap", "headphones"];
+const HEADWEAR: &[&str] = &[
+    "none",
+    "beanie",
+    "crown",
+    "sprout",
+    "night_cap",
+    "headphones",
+];
 const FACE_ACCESSORY: &[&str] = &["none", "round_glasses", "star_glasses"];
 const BODY_ACCESSORY: &[&str] = &["none", "scarf", "bow_tie"];
 const BACK_ACCESSORY: &[&str] = &["none", "backpack", "wings"];
 const HAND_PROP: &[&str] = &["none", "mug", "book", "star_wand"];
 
-const LARGE_BACKGROUND: &[&str] = &["none", "pennant_banner", "memory_frame", "constellation_frame"];
+const LARGE_BACKGROUND: &[&str] = &[
+    "none",
+    "pennant_banner",
+    "memory_frame",
+    "constellation_frame",
+];
 const WALL_OR_SKY: &[&str] = &["none", "string_lights", "signal_kite", "paper_cloud"];
 const SURFACE_LEFT: &[&str] = &["none", "potted_plant", "book_stack"];
 const SURFACE_RIGHT: &[&str] = &["none", "table_lamp", "tiny_radio"];
@@ -114,9 +134,21 @@ pub fn validate_companion_preferences(preferences: &CompanionPreferences) -> Res
 
     let customization = &preferences.customization;
     require_member("headwear", &customization.headwear, HEADWEAR)?;
-    require_member("face accessory", &customization.face_accessory, FACE_ACCESSORY)?;
-    require_member("body accessory", &customization.body_accessory, BODY_ACCESSORY)?;
-    require_member("back accessory", &customization.back_accessory, BACK_ACCESSORY)?;
+    require_member(
+        "face accessory",
+        &customization.face_accessory,
+        FACE_ACCESSORY,
+    )?;
+    require_member(
+        "body accessory",
+        &customization.body_accessory,
+        BODY_ACCESSORY,
+    )?;
+    require_member(
+        "back accessory",
+        &customization.back_accessory,
+        BACK_ACCESSORY,
+    )?;
     require_member("hand prop", &customization.hand_prop, HAND_PROP)?;
 
     let decorations = &customization.decorations;
@@ -125,8 +157,16 @@ pub fn validate_companion_preferences(preferences: &CompanionPreferences) -> Res
         &decorations.large_background,
         LARGE_BACKGROUND,
     )?;
-    require_member("wall or sky decoration", &decorations.wall_or_sky, WALL_OR_SKY)?;
-    require_member("left surface decoration", &decorations.surface_left, SURFACE_LEFT)?;
+    require_member(
+        "wall or sky decoration",
+        &decorations.wall_or_sky,
+        WALL_OR_SKY,
+    )?;
+    require_member(
+        "left surface decoration",
+        &decorations.surface_left,
+        SURFACE_LEFT,
+    )?;
     require_member(
         "right surface decoration",
         &decorations.surface_right,
