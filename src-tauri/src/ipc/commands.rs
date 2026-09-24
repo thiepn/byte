@@ -2,10 +2,11 @@ use crate::{
     core::{activity::ActivitySnapshot, error::ByteError, state::AppState},
     models::{
         AppDiagnosticsSnapshot, AppPreferences, ByteConfig, CollectionDiscoveryKind,
-        CollectionSnapshot, CompanionPreferences, CompanionSize, DisplayMode, EdgeAnchor,
-        NotificationPermissionState, RecommendedActionKind, SystemSnapshot, WindowShellState,
+        CollectionSnapshot, CompanionPreferences, CompanionSize, DesktopAwarenessSnapshot,
+        DisplayMode, EdgeAnchor, NotificationPermissionState, RecommendedActionKind,
+        SystemSnapshot, WindowShellState,
     },
-    platform::windows::{actions, startup, windowing},
+    platform::windows::{actions, fullscreen, startup, windowing},
 };
 use tauri::{plugin::PermissionState, AppHandle, Emitter, State};
 use tauri_plugin_notification::NotificationExt;
@@ -59,7 +60,7 @@ pub fn get_preferences(state: State<'_, AppState>) -> ByteConfig {
 pub fn update_app_preferences(
     app: AppHandle,
     state: State<'_, AppState>,
-    preferences: AppPreferences,
+    mut preferences: AppPreferences,
 ) -> Result<ByteConfig, ByteError> {
     if !matches!(preferences.text_scale_percent, 100 | 110 | 125) {
         return Err(ByteError::Config(
@@ -77,6 +78,9 @@ pub fn update_app_preferences(
         }
     }
 
+    preferences.hidden_foreground_apps =
+        fullscreen::normalize_excluded_apps(&preferences.hidden_foreground_apps)?;
+
     let previous = state.app_preferences();
     if previous.launch_at_startup != preferences.launch_at_startup {
         startup::apply(preferences.launch_at_startup)?;
@@ -92,8 +96,15 @@ pub fn update_app_preferences(
         state.set_snapshot_unavailable();
     }
 
+    windowing::apply_capture_affinity(&app, preferences.exclude_from_capture)?;
+
     let _ = app.emit("byte://app-preferences-changed", preferences);
     Ok(config)
+}
+
+#[tauri::command]
+pub fn get_desktop_awareness(state: State<'_, AppState>) -> DesktopAwarenessSnapshot {
+    state.desktop_awareness()
 }
 
 #[tauri::command]

@@ -7,6 +7,7 @@ import type {
   CollectionSnapshot,
   CompanionPreferences,
   CompanionSize,
+  DesktopAwarenessSnapshot,
   DisplayMode,
   EdgeAnchor,
   NotificationPermissionState,
@@ -16,7 +17,7 @@ import type {
 } from "../types/domain";
 
 const DEFAULT_CONFIG: ByteConfig = {
-  schema_version: 7,
+  schema_version: 8,
   companion: {
     character: "BYTE",
     palette: "default",
@@ -50,6 +51,9 @@ const DEFAULT_CONFIG: ByteConfig = {
   },
   app: {
     hide_in_fullscreen: true,
+    hide_in_presentation: true,
+    exclude_from_capture: true,
+    hidden_foreground_apps: [],
     sound_enabled: false,
     launch_at_startup: false,
     activity_history_enabled: true,
@@ -199,6 +203,18 @@ export async function updateAppPreferences(
     return clone(browserConfig);
   }
   return invoke<ByteConfig>("update_app_preferences", { preferences });
+}
+
+export async function getDesktopAwareness(): Promise<DesktopAwarenessSnapshot> {
+  if (!inTauri()) {
+    return {
+      suppressed: false,
+      reason: null,
+      foreground_app: null,
+      capture_exclusion_enabled: browserConfig.app.exclude_from_capture,
+    };
+  }
+  return invoke<DesktopAwarenessSnapshot>("get_desktop_awareness");
 }
 
 export async function getNotificationPermission(): Promise<NotificationPermissionState> {

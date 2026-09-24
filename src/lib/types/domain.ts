@@ -129,8 +129,25 @@ export interface WindowShellState {
   click_through: boolean;
 }
 
+export type VisibilitySuppressionReason =
+  | "FULLSCREEN"
+  | "PRESENTATION"
+  | "LOCKED"
+  | "DISPLAY_SLEEP"
+  | "EXCLUDED_APP";
+
+export interface DesktopAwarenessSnapshot {
+  suppressed: boolean;
+  reason: VisibilitySuppressionReason | null;
+  foreground_app: string | null;
+  capture_exclusion_enabled: boolean;
+}
+
 export interface AppPreferences {
   hide_in_fullscreen: boolean;
+  hide_in_presentation: boolean;
+  exclude_from_capture: boolean;
+  hidden_foreground_apps: string[];
   sound_enabled: boolean;
   launch_at_startup: boolean;
   activity_history_enabled: boolean;

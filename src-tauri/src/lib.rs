@@ -120,10 +120,14 @@ pub fn run() {
                 smart_notifications,
             ));
 
+            fullscreen::start(app.handle().clone())?;
             windowing::initialize(app.handle())?;
+            windowing::apply_capture_affinity(
+                app.handle(),
+                initial_app_preferences.exclude_from_capture,
+            )?;
             let _ = startup::apply(initial_app_preferences.launch_at_startup);
             telemetry::runtime::start(app.handle().clone())?;
-            fullscreen::start(app.handle().clone())?;
 
             if let Ok(input_runtime) = InputRuntime::start(app.handle().clone()) {
                 app.state::<AppState>().install_input_runtime(input_runtime);
@@ -155,6 +159,7 @@ pub fn run() {
             ipc::commands::record_collection_discovery,
             ipc::commands::get_preferences,
             ipc::commands::update_app_preferences,
+            ipc::commands::get_desktop_awareness,
             ipc::commands::get_notification_permission,
             ipc::commands::request_notification_permission,
             ipc::commands::clear_activity_history,

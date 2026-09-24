@@ -6,6 +6,9 @@ use crate::{
     },
 };
 use tauri::{window::Monitor, AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize};
+use windows_sys::Win32::UI::WindowsAndMessaging::{
+    SetWindowDisplayAffinity, WDA_EXCLUDEFROMCAPTURE, WDA_NONE,
+};
 
 const QUICK_PANEL_LOGICAL_WIDTH: f64 = 340.0;
 const QUICK_PANEL_LOGICAL_HEIGHT: f64 = 500.0;
@@ -25,6 +28,34 @@ pub fn initialize(app: &AppHandle) -> Result<(), ByteError> {
     apply_companion_layout(app, &preferences)
 }
 
+pub fn apply_capture_affinity(app: &AppHandle, exclude: bool) -> Result<(), ByteError> {
+    let affinity = if exclude {
+        WDA_EXCLUDEFROMCAPTURE
+    } else {
+        WDA_NONE
+    };
+
+    for label in ["companion", "quick-panel", "main"] {
+        let Some(window) = app.get_webview_window(label) else {
+            continue;
+        };
+        let hwnd = window
+            .hwnd()
+            .map_err(|error| ByteError::Window(error.to_string()))?;
+        let raw = hwnd.0 as windows_sys::Win32::Foundation::HWND;
+
+        // SAFETY: the HWND belongs to this process and identifies a top-level
+        // Tauri window. Affinity is limited to documented Windows values.
+        if unsafe { SetWindowDisplayAffinity(raw, affinity) } == 0 {
+            return Err(ByteError::Window(format!(
+                "Windows could not update capture exclusion for {label}"
+            )));
+        }
+    }
+
+    Ok(())
+}
+
 pub fn show_main_window(app: &AppHandle) -> Result<(), ByteError> {
     let window = app
         .get_webview_window("main")
@@ -42,6 +73,10 @@ pub fn show_main_window(app: &AppHandle) -> Result<(), ByteError> {
 }
 
 pub fn show_quick_panel(app: &AppHandle) -> Result<(), ByteError> {
+    if app.state::<AppState>().is_visibility_suppressed() {
+        return Ok(());
+    }
+
     position_quick_panel(app)?;
 
     let panel = app
@@ -69,6 +104,10 @@ pub fn hide_quick_panel(app: &AppHandle) -> Result<(), ByteError> {
 }
 
 pub fn show_companion(app: &AppHandle) -> Result<(), ByteError> {
+    if app.state::<AppState>().is_visibility_suppressed() {
+        return Ok(());
+    }
+
     let preferences = companion_preferences(app);
     if preferences.display_mode == DisplayMode::Tray {
         return Ok(());
@@ -155,6 +194,12 @@ pub fn set_edge_anchor(app: &AppHandle, anchor: EdgeAnchor) -> Result<ByteConfig
 }
 
 pub fn begin_move_mode(app: &AppHandle) -> Result<WindowShellState, ByteError> {
+    if app.state::<AppState>().is_visibility_suppressed() {
+        return Err(ByteError::Window(
+            "Byte cannot enter Move Mode while desktop awareness is hiding it".into(),
+        ));
+    }
+
     let preferences = companion_preferences(app);
     if preferences.display_mode == DisplayMode::Tray {
         return Err(ByteError::Window(
@@ -317,6 +362,14 @@ pub fn apply_companion_layout(
     window
         .set_skip_taskbar(true)
         .map_err(|error| ByteError::Window(error.to_string()))?;
+
+    if app.state::<AppState>().is_visibility_suppressed() {
+        window
+            .hide()
+            .map_err(|error| ByteError::Window(error.to_string()))?;
+        return Ok(());
+    }
+
     window
         .show()
         .map_err(|error| ByteError::Window(error.to_string()))?;

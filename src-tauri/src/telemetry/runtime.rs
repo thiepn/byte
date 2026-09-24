@@ -43,7 +43,8 @@ fn run_worker(app: AppHandle) {
             }
 
             let issues = diagnostics.active_issues();
-            if let Some(notification) = state.next_smart_notification(
+            if !state.is_visibility_suppressed() {
+                if let Some(notification) = state.next_smart_notification(
                 evaluated.timestamp_epoch_ms,
                 issues,
                 &app_preferences,
@@ -72,6 +73,7 @@ fn run_worker(app: AppHandle) {
                             evaluated.timestamp_epoch_ms,
                         );
                     }
+                }
                 }
             }
 

@@ -9,7 +9,8 @@ use crate::{
     },
     models::{
         AppDiagnosticsSnapshot, AppPreferences, CollectionDiscoveryKind, CollectionSnapshot,
-        CompanionPreferences, SystemIssue, SystemSnapshot, WindowShellState,
+        CompanionPreferences, DesktopAwarenessSnapshot, SystemIssue, SystemSnapshot,
+        VisibilitySuppressionReason, WindowShellState,
     },
 };
 use std::{
@@ -20,11 +21,25 @@ use std::{
 #[cfg(target_os = "windows")]
 use crate::platform::windows::input::InputRuntime;
 
+#[derive(Debug, Default)]
+struct DesktopVisibilityState {
+    snapshot: DesktopAwarenessSnapshot,
+    restore_companion: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DesktopVisibilityTransition {
+    pub entered: bool,
+    pub restore_on_exit: bool,
+    pub changed: bool,
+}
+
 pub struct AppState {
     snapshot: RwLock<SystemSnapshot>,
     pub config: Mutex<ConfigStore>,
     pub lifecycle: LifecycleCoordinator,
     pub window_shell: Mutex<WindowShellState>,
+    desktop_visibility: Mutex<DesktopVisibilityState>,
     activity: Mutex<ActivityStore>,
     collection: Mutex<CollectionStore>,
     app_inspector: Mutex<AppInspector>,
@@ -48,6 +63,7 @@ impl AppState {
             config: Mutex::new(config),
             lifecycle: LifecycleCoordinator::default(),
             window_shell: Mutex::new(WindowShellState::default()),
+            desktop_visibility: Mutex::new(DesktopVisibilityState::default()),
             activity: Mutex::new(activity),
             collection: Mutex::new(collection),
             app_inspector: Mutex::new(AppInspector::new()),
@@ -115,6 +131,64 @@ impl AppState {
             .snapshot
             .write()
             .unwrap_or_else(|poisoned| poisoned.into_inner()) = SystemSnapshot::unavailable();
+    }
+
+    pub fn desktop_awareness(&self) -> DesktopAwarenessSnapshot {
+        self.desktop_visibility
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .snapshot
+            .clone()
+    }
+
+    pub fn is_visibility_suppressed(&self) -> bool {
+        self.desktop_visibility
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .snapshot
+            .suppressed
+    }
+
+    pub fn update_desktop_awareness(
+        &self,
+        reason: Option<VisibilitySuppressionReason>,
+        foreground_app: Option<String>,
+        capture_exclusion_enabled: bool,
+        companion_visible: bool,
+    ) -> DesktopVisibilityTransition {
+        let mut state = self
+            .desktop_visibility
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        let was_suppressed = state.snapshot.suppressed;
+        let suppressed = reason.is_some();
+        let entered = suppressed && !was_suppressed;
+        let exited = !suppressed && was_suppressed;
+
+        if entered {
+            state.restore_companion = companion_visible;
+        }
+
+        let next = DesktopAwarenessSnapshot {
+            suppressed,
+            reason,
+            foreground_app,
+            capture_exclusion_enabled,
+        };
+        let changed = state.snapshot != next;
+        state.snapshot = next;
+
+        let restore_on_exit = exited && state.restore_companion;
+        if exited {
+            state.restore_companion = false;
+        }
+
+        DesktopVisibilityTransition {
+            entered,
+            restore_on_exit,
+            changed,
+        }
     }
 
     pub fn collection_snapshot(&self) -> Result<CollectionSnapshot, crate::core::error::ByteError> {

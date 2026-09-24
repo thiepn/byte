@@ -461,10 +461,34 @@ fn default_text_scale_percent() -> u16 {
     100
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum VisibilitySuppressionReason {
+    Fullscreen,
+    Presentation,
+    Locked,
+    DisplaySleep,
+    ExcludedApp,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct DesktopAwarenessSnapshot {
+    pub suppressed: bool,
+    pub reason: Option<VisibilitySuppressionReason>,
+    pub foreground_app: Option<String>,
+    pub capture_exclusion_enabled: bool,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppPreferences {
     #[serde(default = "default_true")]
     pub hide_in_fullscreen: bool,
+    #[serde(default = "default_true")]
+    pub hide_in_presentation: bool,
+    #[serde(default = "default_true")]
+    pub exclude_from_capture: bool,
+    #[serde(default)]
+    pub hidden_foreground_apps: Vec<String>,
     #[serde(default)]
     pub sound_enabled: bool,
     #[serde(default)]
@@ -503,6 +527,9 @@ impl Default for AppPreferences {
     fn default() -> Self {
         Self {
             hide_in_fullscreen: true,
+            hide_in_presentation: true,
+            exclude_from_capture: true,
+            hidden_foreground_apps: Vec::new(),
             sound_enabled: false,
             launch_at_startup: false,
             activity_history_enabled: true,
@@ -533,7 +560,7 @@ pub struct ByteConfig {
 impl Default for ByteConfig {
     fn default() -> Self {
         Self {
-            schema_version: 7,
+            schema_version: 8,
             companion: CompanionPreferences::default(),
             app: AppPreferences::default(),
         }

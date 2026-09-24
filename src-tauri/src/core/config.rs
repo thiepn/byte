@@ -9,7 +9,7 @@ use std::{
 };
 use tempfile::NamedTempFile;
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 7;
+pub const CURRENT_SCHEMA_VERSION: u32 = 8;
 
 pub struct ConfigStore {
     path: PathBuf,
@@ -92,9 +92,9 @@ fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
             config.app.onboarding_completed = true;
             Ok(config)
         }
-        6 => {
+        6 | 7 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
-            // Phase 20 already persisted onboarding state; preserve it.
+            // Phase 20+ already persisted onboarding state; preserve it.
             Ok(config)
         }
         other => Err(ByteError::Config(format!(
@@ -407,6 +407,32 @@ mod tests {
         assert!(app.notification_runaway_process_enabled);
         assert!(!app.notification_quiet_mode);
         assert!(app.notification_snoozed_until_epoch_ms.is_none());
+    }
+
+    #[test]
+    fn v7_config_gains_phase_22_visibility_defaults() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = temp.path().join("config.json");
+        let config = ByteConfig {
+            schema_version: 7,
+            ..ByteConfig::default()
+        };
+        let mut value = serde_json::to_value(config).expect("serialize");
+        let app = value
+            .get_mut("app")
+            .and_then(serde_json::Value::as_object_mut)
+            .expect("app");
+        app.remove("hide_in_presentation");
+        app.remove("exclude_from_capture");
+        app.remove("hidden_foreground_apps");
+        fs::write(&path, serde_json::to_vec_pretty(&value).expect("json")).expect("write");
+
+        let migrated = ConfigStore::load(path).expect("migrate");
+        let app = migrated.snapshot().app;
+
+        assert!(app.hide_in_presentation);
+        assert!(app.exclude_from_capture);
+        assert!(app.hidden_foreground_apps.is_empty());
     }
 
     #[test]

@@ -17,6 +17,7 @@
         "url": "index.html?surface=companion",
         "width": 240,
         "height": 240,
+        "visible": false,
         "transparent": true,
         "decorations": false,
         "resizable": false,
