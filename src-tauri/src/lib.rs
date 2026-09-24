@@ -121,11 +121,11 @@ pub fn run() {
             ));
 
             fullscreen::start(app.handle().clone())?;
-            windowing::initialize(app.handle())?;
             windowing::apply_capture_affinity(
                 app.handle(),
                 initial_app_preferences.exclude_from_capture,
             )?;
+            windowing::initialize(app.handle())?;
             let _ = startup::apply(initial_app_preferences.launch_at_startup);
             telemetry::runtime::start(app.handle().clone())?;
 

@@ -305,7 +305,11 @@ pub fn normalize_excluded_apps(values: &[String]) -> Result<Vec<String>, ByteErr
 
     let mut normalized = Vec::new();
     for value in values {
-        if value.len() > 96 || value.contains(['\\', '/', ':']) {
+        if value.len() > 96
+            || value
+                .chars()
+                .any(|character| matches!(character, '\\' | '/' | ':'))
+        {
             return Err(ByteError::Config(
                 "Excluded app names must be executable names, not paths".into(),
             ));
@@ -326,11 +330,9 @@ fn normalize_app_name(value: &str) -> Option<String> {
     if trimmed.is_empty() {
         return None;
     }
-    let without_exe = trimmed
-        .strip_suffix(".exe")
-        .or_else(|| trimmed.strip_suffix(".EXE"))
-        .unwrap_or(trimmed);
-    let normalized = without_exe.trim().to_lowercase();
+    let lowercase = trimmed.to_lowercase();
+    let without_exe = lowercase.strip_suffix(".exe").unwrap_or(&lowercase);
+    let normalized = without_exe.trim().to_string();
     (!normalized.is_empty()).then_some(normalized)
 }
 
@@ -580,10 +582,15 @@ mod tests {
     #[test]
     fn excluded_app_names_are_normalized_and_deduplicated() {
         let result =
-            normalize_excluded_apps(&[" OBS64.exe ".into(), "obs64".into(), "POWERPNT.EXE".into()])
-                .expect("normalize");
+            normalize_excluded_apps(&[
+                " OBS64.exe ".into(),
+                "obs64".into(),
+                "POWERPNT.EXE".into(),
+                "Mixed.ExE".into(),
+            ])
+            .expect("normalize");
 
-        assert_eq!(result, vec!["obs64", "powerpnt"]);
+        assert_eq!(result, vec!["obs64", "powerpnt", "mixed"]);
     }
 
     #[test]
