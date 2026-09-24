@@ -111,10 +111,7 @@ impl DiagnosticEngine {
             }
         };
 
-        let needs_process_attribution = cpu_observation.high
-            || memory_observation.high
-            || cpu_active.is_some()
-            || memory_active.is_some();
+        let needs_process_attribution = cpu_active.is_some() || memory_active.is_some();
 
         if needs_process_attribution {
             self.culprits.refresh();

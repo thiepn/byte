@@ -10,7 +10,7 @@ use std::{
 use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, System};
 
 const BYTES_PER_MIB: f32 = 1_048_576.0;
-const PROCESS_REFRESH_INTERVAL: Duration = Duration::from_secs(3);
+const PROCESS_REFRESH_INTERVAL: Duration = Duration::from_secs(10);
 const APP_INSPECTION_COOLDOWN: Duration = Duration::from_millis(750);
 const FIRST_CPU_SAMPLE_DELAY: Duration = Duration::from_millis(250);
 const APP_RESULT_CAP: usize = 12;

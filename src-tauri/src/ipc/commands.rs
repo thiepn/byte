@@ -97,6 +97,7 @@ pub fn update_app_preferences(
     }
 
     windowing::apply_capture_affinity(&app, preferences.exclude_from_capture)?;
+    state.lifecycle.wake_waiters();
 
     let _ = app.emit("byte://app-preferences-changed", preferences);
     Ok(config)

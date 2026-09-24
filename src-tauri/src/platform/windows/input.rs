@@ -1,5 +1,5 @@
 use crate::{
-    core::{error::ByteError, state::AppState},
+    core::{error::ByteError, lifecycle::LifecycleState, state::AppState},
     models::{now_epoch_ms, CollectionSnapshot},
 };
 use serde::{Deserialize, Serialize};
@@ -7,6 +7,7 @@ use std::{
     collections::VecDeque,
     ptr::{null, null_mut},
     sync::{
+        atomic::{AtomicBool, Ordering},
         mpsc::{self, Receiver, RecvTimeoutError, Sender},
         Mutex, OnceLock,
     },
@@ -32,6 +33,7 @@ const SCROLL_DEBOUNCE_MS: u64 = 75;
 const PROCESSOR_MAX_SLEEP_MS: u64 = 5_000;
 
 static CALLBACK_SENDER: OnceLock<Mutex<Option<Sender<RawInputMessage>>>> = OnceLock::new();
+static INPUT_CAPTURE_ENABLED: AtomicBool = AtomicBool::new(true);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum RawInputKind {
@@ -49,6 +51,7 @@ struct RawInputActivity {
 
 enum RawInputMessage {
     Activity(RawInputActivity),
+    LifecycleChanged,
     Shutdown,
 }
 
@@ -82,6 +85,9 @@ pub struct InputRuntime {
 
 impl InputRuntime {
     pub fn start(app: AppHandle) -> Result<Self, ByteError> {
+        set_capture_enabled(!lifecycle_suspends_input(
+            app.state::<AppState>().lifecycle.current(),
+        ));
         let (raw_tx, raw_rx) = mpsc::channel::<RawInputMessage>();
         let (ready_tx, ready_rx) = mpsc::sync_channel::<Result<u32, String>>(1);
 
@@ -128,7 +134,12 @@ impl InputRuntime {
         })
     }
 
+    pub fn notify_lifecycle_changed(&self) {
+        let _ = self.control_tx.send(RawInputMessage::LifecycleChanged);
+    }
+
     pub fn stop(self) {
+        set_capture_enabled(false);
         let _ = self.control_tx.send(RawInputMessage::Shutdown);
 
         // SAFETY: the hook thread creates a message queue before reporting ready,
@@ -140,6 +151,21 @@ impl InputRuntime {
         let _ = self.hook_worker.join();
         let _ = self.processor_worker.join();
     }
+}
+
+pub fn set_capture_enabled(enabled: bool) {
+    INPUT_CAPTURE_ENABLED.store(enabled, Ordering::Release);
+}
+
+pub(crate) fn lifecycle_suspends_input(state: LifecycleState) -> bool {
+    matches!(
+        state,
+        LifecycleState::FullscreenReduced
+            | LifecycleState::Locked
+            | LifecycleState::DisplaySleep
+            | LifecycleState::SystemSleep
+            | LifecycleState::ShuttingDown
+    )
 }
 
 fn callback_sender() -> &'static Mutex<Option<Sender<RawInputMessage>>> {
@@ -159,6 +185,10 @@ fn clear_callback_sender() {
 }
 
 fn enqueue_from_hook(kind: RawInputKind) {
+    if !INPUT_CAPTURE_ENABLED.load(Ordering::Acquire) {
+        return;
+    }
+
     let sender = callback_sender()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
@@ -253,12 +283,27 @@ fn processor_loop(app: AppHandle, receiver: Receiver<RawInputMessage>) {
     let mut interpreter = InputInterpreter::new(now_epoch_ms());
 
     loop {
+        if lifecycle_suspends_input(app.state::<AppState>().lifecycle.current()) {
+            match receiver.recv() {
+                Ok(RawInputMessage::Shutdown) | Err(_) => break,
+                Ok(RawInputMessage::LifecycleChanged) => {
+                    interpreter = InputInterpreter::new(now_epoch_ms());
+                }
+                Ok(RawInputMessage::Activity(_)) => {}
+            }
+            continue;
+        }
+
         let now = now_epoch_ms();
         let timeout = interpreter.next_deadline_ms(now);
         let wait = Duration::from_millis(timeout.clamp(1, PROCESSOR_MAX_SLEEP_MS));
 
         match receiver.recv_timeout(wait) {
             Ok(RawInputMessage::Activity(activity)) => {
+                if lifecycle_suspends_input(app.state::<AppState>().lifecycle.current()) {
+                    continue;
+                }
+
                 if activity.kind == RawInputKind::Keyboard {
                     if let Ok(Some(snapshot)) = app
                         .state::<AppState>()
@@ -268,6 +313,9 @@ fn processor_loop(app: AppHandle, receiver: Receiver<RawInputMessage>) {
                     }
                 }
                 emit_reactions(&app, interpreter.handle(activity));
+            }
+            Ok(RawInputMessage::LifecycleChanged) => {
+                interpreter = InputInterpreter::new(now_epoch_ms());
             }
             Ok(RawInputMessage::Shutdown) => break,
             Err(RecvTimeoutError::Timeout) => {
@@ -552,6 +600,18 @@ mod tests {
         let resumed = interpreter.handle(raw(RawInputKind::MouseRight, 31_100));
         assert_eq!(resumed[0].kind, InputReactionKind::IdleEnd);
         assert_eq!(resumed[1].kind, InputReactionKind::MouseRight);
+    }
+
+    #[test]
+    fn input_capture_suspends_for_hidden_desktop_states() {
+        assert!(!lifecycle_suspends_input(LifecycleState::Active));
+        assert!(lifecycle_suspends_input(
+            LifecycleState::FullscreenReduced
+        ));
+        assert!(lifecycle_suspends_input(LifecycleState::Locked));
+        assert!(lifecycle_suspends_input(LifecycleState::DisplaySleep));
+        assert!(lifecycle_suspends_input(LifecycleState::SystemSleep));
+        assert!(lifecycle_suspends_input(LifecycleState::ShuttingDown));
     }
 
     #[test]

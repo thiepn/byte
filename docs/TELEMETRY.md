@@ -13,12 +13,18 @@ Phase 5 replaces the development snapshot with one production telemetry worker o
 
 ## Cadence
 
-One worker owns all sampling.
+One worker owns all sampling. Phase 23 makes its fast-signal cadence adaptive:
 
-- CPU / memory / network: every 1.5 seconds.
-- Battery: cached and refreshed every 5 seconds.
-- Thermal: cached and refreshed every 10 seconds.
-- Storage: cached and refreshed every 15 seconds.
+- NEEDS_ATTENTION / STRESSED: every 1.5 seconds.
+- BUSY: every 2.5 seconds.
+- CALM: every 5 seconds.
+- FULLSCREEN_REDUCED: every 8 seconds.
+- Monitoring disabled: a 30-second dormant wait that is interrupted immediately by preference/lifecycle changes.
+- Battery: cached and refreshed no more often than every 5 seconds.
+- Thermal: cached and refreshed no more often than every 10 seconds.
+- Storage: cached and refreshed no more often than every 15 seconds.
+
+The frontend still reads only the authoritative cache. The companion receives snapshots emitted by that worker rather than running a second 2-second polling loop.
 
 CPU is primed using sysinfo's minimum update interval because CPU usage is delta-based.
 
@@ -45,7 +51,9 @@ The returned snapshot remains CALM/NORMAL unless data is unavailable, because se
 
 The worker is owned by AppState and is joined during explicit shutdown.
 
-Display/system sleep states block on a condition variable instead of waking on a polling timer. When lifecycle state changes, the same coordinator wakes the telemetry worker.
+Lock, display-sleep, and system-sleep states block on a condition variable instead of waking on a polling timer. When lifecycle or monitoring preferences change, the same coordinator wakes the telemetry worker immediately.
+
+After a suspended state resumes, Byte rebuilds the telemetry source and diagnostic engine before sampling. This prevents stale CPU/network deltas, EWMA state, or sustained-condition timers from crossing a sleep/lock boundary.
 
 ## Privacy and network behavior
 

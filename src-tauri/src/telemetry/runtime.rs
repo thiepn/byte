@@ -1,6 +1,12 @@
 use super::engine::TelemetryEngine;
-use crate::core::{
-    diagnostics::DiagnosticEngine, error::ByteError, lifecycle::LifecycleState, state::AppState,
+use crate::{
+    core::{
+        diagnostics::DiagnosticEngine,
+        error::ByteError,
+        lifecycle::{background_work_suspended, LifecycleState},
+        state::AppState,
+    },
+    models::SystemStatus,
 };
 use std::{thread, time::Duration};
 use tauri::{AppHandle, Emitter, Manager};
@@ -9,7 +15,11 @@ use tauri_plugin_notification::NotificationExt;
 #[cfg(target_os = "windows")]
 use super::windows::WindowsTelemetrySource;
 
-pub const SAMPLE_INTERVAL: Duration = Duration::from_millis(1_500);
+const ALERT_SAMPLE_INTERVAL: Duration = Duration::from_millis(1_500);
+const BUSY_SAMPLE_INTERVAL: Duration = Duration::from_millis(2_500);
+const CALM_SAMPLE_INTERVAL: Duration = Duration::from_secs(5);
+const FULLSCREEN_SAMPLE_INTERVAL: Duration = Duration::from_secs(8);
+const MONITORING_DISABLED_INTERVAL: Duration = Duration::from_secs(30);
 
 pub fn start(app: AppHandle) -> Result<(), ByteError> {
     let worker_app = app.clone();
@@ -20,6 +30,26 @@ pub fn start(app: AppHandle) -> Result<(), ByteError> {
 
     app.state::<AppState>().install_telemetry_worker(handle);
     Ok(())
+}
+
+fn sampling_interval(
+    lifecycle: LifecycleState,
+    status: Option<SystemStatus>,
+    monitoring_enabled: bool,
+) -> Duration {
+    if !monitoring_enabled {
+        return MONITORING_DISABLED_INTERVAL;
+    }
+
+    if lifecycle == LifecycleState::FullscreenReduced {
+        return FULLSCREEN_SAMPLE_INTERVAL;
+    }
+
+    match status {
+        Some(SystemStatus::NeedsAttention | SystemStatus::Stressed) => ALERT_SAMPLE_INTERVAL,
+        Some(SystemStatus::Busy) => BUSY_SAMPLE_INTERVAL,
+        Some(SystemStatus::Calm) | None => CALM_SAMPLE_INTERVAL,
+    }
 }
 
 #[cfg(target_os = "windows")]
@@ -35,20 +65,18 @@ fn run_worker(app: AppHandle) {
         }
         let lifecycle_after_wait = state.lifecycle.current();
 
-        if matches!(
-            lifecycle_before_wait,
-            LifecycleState::DisplaySleep | LifecycleState::SystemSleep
-        ) && !matches!(
-            lifecycle_after_wait,
-            LifecycleState::DisplaySleep | LifecycleState::SystemSleep
-        ) {
+        if background_work_suspended(lifecycle_before_wait)
+            && !background_work_suspended(lifecycle_after_wait)
+        {
+            telemetry = TelemetryEngine::new(WindowsTelemetrySource::new());
             diagnostics = DiagnosticEngine::new();
             state.set_snapshot_unavailable();
         }
 
         let app_preferences = state.app_preferences();
-        if !app_preferences.system_monitoring_enabled {
+        let interval = if !app_preferences.system_monitoring_enabled {
             state.set_snapshot_unavailable();
+            sampling_interval(lifecycle_after_wait, None, false)
         } else if let Ok(snapshot) = telemetry.sample_snapshot() {
             let evaluated = diagnostics.evaluate(snapshot);
 
@@ -92,10 +120,16 @@ fn run_worker(app: AppHandle) {
                 }
             }
 
+            let status = evaluated.overall_status;
+            let event_snapshot = evaluated.clone();
             state.replace_snapshot(evaluated);
-        }
+            let _ = app.emit_to("companion", "byte://snapshot-updated", event_snapshot);
+            sampling_interval(lifecycle_after_wait, Some(status), true)
+        } else {
+            CALM_SAMPLE_INTERVAL
+        };
 
-        if !state.lifecycle.wait_for_change_or_timeout(SAMPLE_INTERVAL) {
+        if !state.lifecycle.wait_for_change_or_timeout(interval) {
             break;
         }
     }
@@ -104,4 +138,45 @@ fn run_worker(app: AppHandle) {
 #[cfg(not(target_os = "windows"))]
 fn run_worker(app: AppHandle) {
     app.state::<AppState>().lifecycle.cancel();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn calm_sampling_is_slow_and_pressure_sampling_is_fast() {
+        assert_eq!(
+            sampling_interval(LifecycleState::Active, Some(SystemStatus::Calm), true),
+            CALM_SAMPLE_INTERVAL
+        );
+        assert_eq!(
+            sampling_interval(LifecycleState::Active, Some(SystemStatus::Busy), true),
+            BUSY_SAMPLE_INTERVAL
+        );
+        assert_eq!(
+            sampling_interval(
+                LifecycleState::Active,
+                Some(SystemStatus::NeedsAttention),
+                true
+            ),
+            ALERT_SAMPLE_INTERVAL
+        );
+    }
+
+    #[test]
+    fn fullscreen_and_disabled_monitoring_use_low_power_cadence() {
+        assert_eq!(
+            sampling_interval(
+                LifecycleState::FullscreenReduced,
+                Some(SystemStatus::NeedsAttention),
+                true
+            ),
+            FULLSCREEN_SAMPLE_INTERVAL
+        );
+        assert_eq!(
+            sampling_interval(LifecycleState::Active, Some(SystemStatus::Calm), false),
+            MONITORING_DISABLED_INTERVAL
+        );
+    }
 }

@@ -258,9 +258,7 @@ The companion Tauri window is configured initially hidden. Desktop awareness tak
 
 ### Power boundary
 
-Console display-off immediately hides Byte.
-
-Phase 22 intentionally does not suspend telemetry, animation, input, or other workers when the display turns off. That coordinated performance behavior belongs to **Phase 23 — Power & Performance Hardening**.
+Console display-off immediately hides Byte. Phase 23 extends that boundary into coordinated worker suspension and reduced cadences; see the power/performance section below.
 
 
 ## Phase 22 display-sleep suspension
@@ -274,3 +272,38 @@ The companion receives `byte://lifecycle-changed` and stops animation/particle a
 Fullscreen/presentation suppression remains `FULLSCREEN_REDUCED`: visibility can be hidden while telemetry continues.
 
 Restore from any suppression reason requires a 1.5-second continuously clear observation window before the shell may show a previously visible companion again.
+
+
+## Phase 23 power and performance hardening
+
+Phase 23 keeps Byte lightweight by reducing work at the source rather than adding a cosmetic “eco mode.”
+
+### Adaptive telemetry
+
+The single authoritative telemetry worker remains the only hardware sampler. Its cadence now follows semantic load:
+
+- NEEDS_ATTENTION / STRESSED: 1.5 s
+- BUSY: 2.5 s
+- CALM: 5 s
+- FULLSCREEN_REDUCED: 8 s
+- monitoring disabled: 30 s dormant wait, immediately interruptible
+
+LOCKED, DISPLAY_SLEEP, and SYSTEM_SLEEP block telemetry on the shared LifecycleCoordinator condition variable. Resume reconstructs both the WindowsTelemetrySource and DiagnosticEngine before producing a fresh snapshot.
+
+### Input and rendering
+
+Global input capture is gated before hook callbacks allocate timestamps or send channel messages. FULLSCREEN_REDUCED, LOCKED, DISPLAY_SLEEP, SYSTEM_SLEEP, and SHUTTING_DOWN disable that path and place the interpreter on a blocking control receive.
+
+The companion no longer polls get_snapshot every two seconds. Telemetry publishes byte://snapshot-updated from the authoritative worker. The companion subscribes while active, unsubscribes from the shared animation scheduler whenever desktop awareness hides it, and refreshes once on resume.
+
+The main application keeps its cache-only refresh loop only while its window has focus. The Quick Panel already refreshes only while open.
+
+### Expensive process work
+
+Process attribution remains lazy. A raw transient high CPU/memory observation no longer starts an all-process scan. Attribution begins only after a CPU or memory condition has become a sustained issue, and repeated attribution scans are rate-limited to 10 seconds. The Apps surface remains explicit/on-demand.
+
+### Sleep sentinel
+
+The desktop-awareness worker cannot disappear completely because it owns the display-power message window and must notice recovery. It is therefore the single low-frequency sentinel: 500 ms while active, 1 s while fullscreen-reduced, and 2 s while locked/display-sleeping/system-sleeping. Its wait is lifecycle-cancellable so shutdown does not wait for the timeout.
+
+See [PERFORMANCE.md](PERFORMANCE.md).

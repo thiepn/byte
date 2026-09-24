@@ -63,13 +63,17 @@ impl LifecycleCoordinator {
         self.cancelled.load(Ordering::Acquire)
     }
 
+    pub fn wake_waiters(&self) {
+        self.changed.notify_all();
+    }
+
     pub fn wait_until_sampling_allowed(&self) -> bool {
         let mut state = self
             .state
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
 
-        while is_sampling_suspended(*state) && !self.is_cancelled() {
+        while background_work_suspended(*state) && !self.is_cancelled() {
             state = self
                 .changed
                 .wait(state)
@@ -97,16 +101,31 @@ impl LifecycleCoordinator {
     }
 }
 
-fn is_sampling_suspended(state: LifecycleState) -> bool {
+pub fn background_work_suspended(state: LifecycleState) -> bool {
     matches!(
         state,
-        LifecycleState::DisplaySleep | LifecycleState::SystemSleep | LifecycleState::ShuttingDown
+        LifecycleState::Locked
+            | LifecycleState::DisplaySleep
+            | LifecycleState::SystemSleep
+            | LifecycleState::ShuttingDown
     )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn locked_and_sleep_states_suspend_background_sampling() {
+        assert!(!background_work_suspended(LifecycleState::Active));
+        assert!(!background_work_suspended(
+            LifecycleState::FullscreenReduced
+        ));
+        assert!(background_work_suspended(LifecycleState::Locked));
+        assert!(background_work_suspended(LifecycleState::DisplaySleep));
+        assert!(background_work_suspended(LifecycleState::SystemSleep));
+        assert!(background_work_suspended(LifecycleState::ShuttingDown));
+    }
 
     #[test]
     fn cancellation_moves_lifecycle_to_shutdown() {
