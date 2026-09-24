@@ -33,8 +33,9 @@ use windows_sys::Win32::{
         Shell::SHQueryUserNotificationState,
         WindowsAndMessaging::{
             CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GetForegroundWindow,
-            GetWindowRect, GetWindowThreadProcessId, PeekMessageW, RegisterClassW, TranslateMessage,
-            HWND_MESSAGE, MSG, PBT_POWERSETTINGCHANGE, PM_REMOVE, WM_POWERBROADCAST, WNDCLASSW,
+            GetWindowRect, GetWindowThreadProcessId, PeekMessageW, RegisterClassW,
+            TranslateMessage, HWND_MESSAGE, MSG, PBT_POWERSETTINGCHANGE, PM_REMOVE,
+            WM_POWERBROADCAST, WNDCLASSW,
         },
     },
 };
@@ -180,7 +181,8 @@ fn observe() -> AwarenessObservation {
             } else {
                 let mut info: MONITORINFO = std::mem::zeroed();
                 info.cbSize = size_of::<MONITORINFO>() as u32;
-                GetMonitorInfoW(monitor, &mut info) != 0 && rect_matches(window_rect, info.rcMonitor)
+                GetMonitorInfoW(monitor, &mut info) != 0
+                    && rect_matches(window_rect, info.rcMonitor)
             }
         } else {
             false
@@ -211,15 +213,18 @@ fn suppression_reason(
     if observation
         .foreground_app
         .as_deref()
-        .map(|name| preferences.hidden_foreground_apps.iter().any(|item| item == name))
+        .map(|name| {
+            preferences
+                .hidden_foreground_apps
+                .iter()
+                .any(|item| item == name)
+        })
         .unwrap_or(false)
     {
         return Some(VisibilitySuppressionReason::ExcludedApp);
     }
 
-    if preferences.hide_in_presentation
-        && observation.user_state == Some(QUNS_PRESENTATION_MODE)
-    {
+    if preferences.hide_in_presentation && observation.user_state == Some(QUNS_PRESENTATION_MODE) {
         return Some(VisibilitySuppressionReason::Presentation);
     }
 
@@ -362,11 +367,8 @@ impl PowerEventWindow {
                 return None;
             }
 
-            let power_notification = RegisterPowerSettingNotification(
-                hwnd as _,
-                &GUID_CONSOLE_DISPLAY_STATE,
-                0,
-            );
+            let power_notification =
+                RegisterPowerSettingNotification(hwnd as _, &GUID_CONSOLE_DISPLAY_STATE, 0);
             if power_notification.is_null() {
                 let _ = DestroyWindow(hwnd);
                 return None;
@@ -408,17 +410,17 @@ unsafe extern "system" fn power_window_proc(
     wparam: WPARAM,
     lparam: LPARAM,
 ) -> LRESULT {
-    if message == WM_POWERBROADCAST
-        && wparam as u32 == PBT_POWERSETTINGCHANGE
-        && lparam != 0
-    {
+    if message == WM_POWERBROADCAST && wparam as u32 == PBT_POWERSETTINGCHANGE && lparam != 0 {
         // SAFETY: Windows documents lParam for PBT_POWERSETTINGCHANGE as a
         // valid POWERBROADCAST_SETTING pointer for the duration of the call.
         let setting = unsafe { &*(lparam as *const POWERBROADCAST_SETTING) };
         if setting.PowerSetting == GUID_CONSOLE_DISPLAY_STATE && setting.DataLength >= 4 {
             let data = setting.Data.as_ptr() as *const u32;
             let value = unsafe { std::ptr::read_unaligned(data) };
-            if matches!(value, DISPLAY_OFF as u32 | DISPLAY_ON as u32 | DISPLAY_DIMMED as u32) {
+            if matches!(
+                value,
+                DISPLAY_OFF as u32 | DISPLAY_ON as u32 | DISPLAY_DIMMED as u32
+            ) {
                 DISPLAY_STATE.store(value as u8, Ordering::Release);
             }
         }
@@ -527,12 +529,9 @@ mod tests {
 
     #[test]
     fn excluded_app_names_are_normalized_and_deduplicated() {
-        let result = normalize_excluded_apps(&[
-            " OBS64.exe ".into(),
-            "obs64".into(),
-            "POWERPNT.EXE".into(),
-        ])
-        .expect("normalize");
+        let result =
+            normalize_excluded_apps(&[" OBS64.exe ".into(), "obs64".into(), "POWERPNT.EXE".into()])
+                .expect("normalize");
 
         assert_eq!(result, vec!["obs64", "powerpnt"]);
     }

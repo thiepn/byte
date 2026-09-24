@@ -45,35 +45,35 @@ fn run_worker(app: AppHandle) {
             let issues = diagnostics.active_issues();
             if !state.is_visibility_suppressed() {
                 if let Some(notification) = state.next_smart_notification(
-                evaluated.timestamp_epoch_ms,
-                issues,
-                &app_preferences,
-            ) {
-                let permission_granted = app
-                    .notification()
-                    .permission_state()
-                    .map(|state| state == tauri::plugin::PermissionState::Granted)
-                    .unwrap_or(false);
-
-                if permission_granted {
-                    let builder = app
+                    evaluated.timestamp_epoch_ms,
+                    issues,
+                    &app_preferences,
+                ) {
+                    let permission_granted = app
                         .notification()
-                        .builder()
-                        .title(&notification.title)
-                        .body(&notification.body);
-                    let builder = if app_preferences.sound_enabled {
-                        builder
-                    } else {
-                        builder.silent()
-                    };
+                        .permission_state()
+                        .map(|state| state == tauri::plugin::PermissionState::Granted)
+                        .unwrap_or(false);
 
-                    if builder.show().is_ok() {
-                        let _ = state.mark_smart_notification_sent(
-                            &notification,
-                            evaluated.timestamp_epoch_ms,
-                        );
+                    if permission_granted {
+                        let builder = app
+                            .notification()
+                            .builder()
+                            .title(&notification.title)
+                            .body(&notification.body);
+                        let builder = if app_preferences.sound_enabled {
+                            builder
+                        } else {
+                            builder.silent()
+                        };
+
+                        if builder.show().is_ok() {
+                            let _ = state.mark_smart_notification_sent(
+                                &notification,
+                                evaluated.timestamp_epoch_ms,
+                            );
+                        }
                     }
-                }
                 }
             }
 
