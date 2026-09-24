@@ -1,6 +1,10 @@
 use crate::{
     core::{error::ByteError, state::AppState},
-    models::{ByteConfig, CompanionPreferences, SystemSnapshot},
+    models::{
+        ByteConfig, CompanionPreferences, CompanionSize, DisplayMode, EdgeAnchor, SystemSnapshot,
+        WindowShellState,
+    },
+    platform::windows::windowing,
 };
 use tauri::{AppHandle, Manager, State};
 
@@ -20,65 +24,89 @@ pub fn get_preferences(state: State<'_, AppState>) -> ByteConfig {
 
 #[tauri::command]
 pub fn update_companion_preferences(
+    app: AppHandle,
     state: State<'_, AppState>,
     preferences: CompanionPreferences,
 ) -> Result<ByteConfig, ByteError> {
-    state
+    let config = state
         .config
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
-        .update_companion(preferences)
+        .update_companion(preferences)?;
+
+    windowing::apply_companion_layout(&app, &config.companion)?;
+    Ok(config)
 }
 
-fn show(app: &AppHandle, label: &str, focus: bool) -> Result<(), ByteError> {
-    let window = app
-        .get_webview_window(label)
-        .ok_or_else(|| ByteError::Window(format!("window '{label}' is unavailable")))?;
+#[tauri::command]
+pub fn get_window_shell_state(app: AppHandle) -> WindowShellState {
+    windowing::shell_state(&app)
+}
 
-    window
-        .show()
-        .map_err(|error| ByteError::Window(error.to_string()))?;
-    if focus {
-        window
-            .set_focus()
-            .map_err(|error| ByteError::Window(error.to_string()))?;
-    }
-    Ok(())
+#[tauri::command]
+pub fn set_display_mode(app: AppHandle, mode: DisplayMode) -> Result<ByteConfig, ByteError> {
+    windowing::set_display_mode(&app, mode)
+}
+
+#[tauri::command]
+pub fn set_companion_size(
+    app: AppHandle,
+    size: CompanionSize,
+) -> Result<ByteConfig, ByteError> {
+    windowing::set_companion_size(&app, size)
+}
+
+#[tauri::command]
+pub fn set_edge_anchor(app: AppHandle, anchor: EdgeAnchor) -> Result<ByteConfig, ByteError> {
+    windowing::set_edge_anchor(&app, anchor)
+}
+
+#[tauri::command]
+pub fn begin_move_mode(app: AppHandle) -> Result<WindowShellState, ByteError> {
+    windowing::begin_move_mode(&app)
+}
+
+#[tauri::command]
+pub fn drag_companion(app: AppHandle) -> Result<WindowShellState, ByteError> {
+    windowing::drag_companion(&app)
+}
+
+#[tauri::command]
+pub fn finish_move_mode(app: AppHandle) -> Result<WindowShellState, ByteError> {
+    windowing::finish_move_mode(&app)
+}
+
+#[tauri::command]
+pub fn set_companion_click_through(
+    app: AppHandle,
+    enabled: bool,
+) -> Result<WindowShellState, ByteError> {
+    windowing::set_click_through(&app, enabled)
 }
 
 #[tauri::command]
 pub fn show_main_window(app: AppHandle) -> Result<(), ByteError> {
-    show(&app, "main", true)
+    windowing::show_main_window(&app)
 }
 
 #[tauri::command]
 pub fn show_quick_panel(app: AppHandle) -> Result<(), ByteError> {
-    show(&app, "quick-panel", true)
+    windowing::show_quick_panel(&app)
 }
 
 #[tauri::command]
 pub fn hide_quick_panel(app: AppHandle) -> Result<(), ByteError> {
-    let window = app
-        .get_webview_window("quick-panel")
-        .ok_or_else(|| ByteError::Window("quick panel is unavailable".into()))?;
-    window
-        .hide()
-        .map_err(|error| ByteError::Window(error.to_string()))
+    windowing::hide_quick_panel(&app)
 }
 
 #[tauri::command]
 pub fn show_companion(app: AppHandle) -> Result<(), ByteError> {
-    show(&app, "companion", false)
+    windowing::show_companion(&app)
 }
 
 #[tauri::command]
 pub fn hide_companion(app: AppHandle) -> Result<(), ByteError> {
-    let window = app
-        .get_webview_window("companion")
-        .ok_or_else(|| ByteError::Window("companion window is unavailable".into()))?;
-    window
-        .hide()
-        .map_err(|error| ByteError::Window(error.to_string()))
+    windowing::hide_companion(&app)
 }
 
 #[tauri::command]

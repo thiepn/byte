@@ -1,6 +1,6 @@
 use crate::{
     core::{config::ConfigStore, lifecycle::LifecycleCoordinator},
-    models::SystemSnapshot,
+    models::{SystemSnapshot, WindowShellState},
 };
 use std::{
     sync::{Mutex, RwLock},
@@ -11,6 +11,7 @@ pub struct AppState {
     snapshot: RwLock<SystemSnapshot>,
     pub config: Mutex<ConfigStore>,
     pub lifecycle: LifecycleCoordinator,
+    pub window_shell: Mutex<WindowShellState>,
     telemetry_worker: Mutex<Option<JoinHandle<()>>>,
 }
 
@@ -20,6 +21,7 @@ impl AppState {
             snapshot: RwLock::new(SystemSnapshot::unavailable()),
             config: Mutex::new(config),
             lifecycle: LifecycleCoordinator::default(),
+            window_shell: Mutex::new(WindowShellState::default()),
             telemetry_worker: Mutex::new(None),
         }
     }

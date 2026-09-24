@@ -196,6 +196,51 @@ pub enum DisplayMode {
     Tray,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum EdgeAnchor {
+    Left,
+    #[default]
+    Right,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SavedPlacement {
+    pub monitor_name: Option<String>,
+    pub x: f32,
+    pub y: f32,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct WindowPlacements {
+    pub habitat: Option<SavedPlacement>,
+    pub perch: Option<SavedPlacement>,
+    pub mini: Option<SavedPlacement>,
+    pub edge: Option<SavedPlacement>,
+}
+
+impl WindowPlacements {
+    pub fn get(&self, mode: DisplayMode) -> Option<&SavedPlacement> {
+        match mode {
+            DisplayMode::Habitat => self.habitat.as_ref(),
+            DisplayMode::Perch => self.perch.as_ref(),
+            DisplayMode::Mini => self.mini.as_ref(),
+            DisplayMode::Edge => self.edge.as_ref(),
+            DisplayMode::Tray => None,
+        }
+    }
+
+    pub fn set(&mut self, mode: DisplayMode, placement: SavedPlacement) {
+        match mode {
+            DisplayMode::Habitat => self.habitat = Some(placement),
+            DisplayMode::Perch => self.perch = Some(placement),
+            DisplayMode::Mini => self.mini = Some(placement),
+            DisplayMode::Edge => self.edge = Some(placement),
+            DisplayMode::Tray => {}
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CompanionSize {
@@ -219,6 +264,10 @@ pub struct CompanionPreferences {
     pub display_mode: DisplayMode,
     pub size: CompanionSize,
     pub interaction_level: InteractionLevel,
+    #[serde(default)]
+    pub edge_anchor: EdgeAnchor,
+    #[serde(default)]
+    pub placements: WindowPlacements,
 }
 
 impl Default for CompanionPreferences {
@@ -229,6 +278,8 @@ impl Default for CompanionPreferences {
             display_mode: DisplayMode::Habitat,
             size: CompanionSize::Medium,
             interaction_level: InteractionLevel::Normal,
+            edge_anchor: EdgeAnchor::Right,
+            placements: WindowPlacements::default(),
         }
     }
 }
@@ -262,9 +313,24 @@ pub struct ByteConfig {
 impl Default for ByteConfig {
     fn default() -> Self {
         Self {
-            schema_version: 1,
+            schema_version: 2,
             companion: CompanionPreferences::default(),
             app: AppPreferences::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct WindowShellState {
+    pub move_mode: bool,
+    pub click_through: bool,
+}
+
+impl Default for WindowShellState {
+    fn default() -> Self {
+        Self {
+            move_mode: false,
+            click_through: false,
         }
     }
 }

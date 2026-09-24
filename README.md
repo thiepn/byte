@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–6 are implemented.
+Phases 1–7 are implemented.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -18,6 +18,10 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Human-friendly diagnostics distinguish CALM, BUSY, STRESSED, and NEEDS_ATTENTION.
 - CPU/memory process attribution is lazy and only names a culprit when confidence is meaningful.
 - Issues use sustained timing, hysteresis, recovery, priority, and safe recommended actions.
+- Native windowing supports Habitat, Perch, Mini, Edge, and Tray modes with DPI-safe sizing.
+- Companion placement is saved per mode as monitor-relative coordinates and restored safely after display changes.
+- Perch uses the Windows work area so it stays taskbar-aware.
+- Move Mode, native dragging, click-through, tray controls, and adjacent Quick Panel placement are implemented.
 - Global-input types represent anonymous activity only.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
 
@@ -48,5 +52,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Architecture](docs/ARCHITECTURE.md)
 - [Telemetry engine](docs/TELEMETRY.md)
 - [System intelligence](docs/DIAGNOSTICS.md)
+- [Native windowing](docs/WINDOWING.md)
 
-Next: Phase 7 — Desktop Windowing & Native Shell.
+Next: Phase 8 — Character Animation Runtime.

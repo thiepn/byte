@@ -9,7 +9,7 @@ use std::{
 };
 use tempfile::NamedTempFile;
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 1;
+pub const CURRENT_SCHEMA_VERSION: u32 = 2;
 
 pub struct ConfigStore {
     path: PathBuf,
@@ -23,9 +23,9 @@ impl ConfigStore {
         }
 
         let config = match fs::read_to_string(&path) {
-            Ok(raw) => match serde_json::from_str::<ByteConfig>(&raw) {
-                Ok(value) if value.schema_version == CURRENT_SCHEMA_VERSION => value,
-                Ok(_) | Err(_) => {
+            Ok(raw) => match decode_and_migrate(&raw) {
+                Ok(value) => value,
+                Err(_) => {
                     quarantine_corrupt_config(&path);
                     ByteConfig::default()
                 }
@@ -52,6 +52,15 @@ impl ConfigStore {
         Ok(self.config.clone())
     }
 
+    pub fn update_companion_with(
+        &mut self,
+        update: impl FnOnce(&mut CompanionPreferences),
+    ) -> Result<ByteConfig, ByteError> {
+        update(&mut self.config.companion);
+        self.save()?;
+        Ok(self.config.clone())
+    }
+
     pub fn save(&self) -> Result<(), ByteError> {
         let parent = self.path.parent().unwrap_or_else(|| Path::new("."));
         fs::create_dir_all(parent)?;
@@ -62,6 +71,21 @@ impl ConfigStore {
         temp.persist(&self.path)
             .map_err(|error| ByteError::Io(error.error.to_string()))?;
         Ok(())
+    }
+}
+
+fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
+    let mut config = serde_json::from_str::<ByteConfig>(raw)?;
+
+    match config.schema_version {
+        CURRENT_SCHEMA_VERSION => Ok(config),
+        1 => {
+            config.schema_version = CURRENT_SCHEMA_VERSION;
+            Ok(config)
+        }
+        other => Err(ByteError::Config(format!(
+            "Unsupported configuration schema version: {other}"
+        ))),
     }
 }
 
@@ -92,6 +116,21 @@ mod tests {
             reloaded.snapshot().companion.display_mode,
             DisplayMode::Mini
         );
+    }
+
+    #[test]
+    fn v1_config_migrates_without_losing_companion_preferences() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = temp.path().join("config.json");
+        let mut legacy = ByteConfig::default();
+        legacy.schema_version = 1;
+        legacy.companion.display_mode = DisplayMode::Mini;
+        fs::write(&path, serde_json::to_vec_pretty(&legacy).expect("serialize")).expect("write");
+
+        let migrated = ConfigStore::load(path).expect("migrate");
+
+        assert_eq!(migrated.snapshot().schema_version, CURRENT_SCHEMA_VERSION);
+        assert_eq!(migrated.snapshot().companion.display_mode, DisplayMode::Mini);
     }
 
     #[test]

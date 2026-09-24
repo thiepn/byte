@@ -49,13 +49,17 @@ Process scanning is lazy and only runs while CPU or memory is in a high candidat
 
 The Windows input boundary exposes keyboard activity, left click, right click, and scroll only. Its public event type cannot represent key identity or text.
 
-## Windows
+## Windows shell
 
-- companion: transparent desktop surface.
-- quick-panel: compact status surface.
+Phase 7 promotes windowing into a dedicated Windows platform service.
+
+- companion: one reusable transparent desktop surface for Habitat, Perch, Mini, Edge, and hidden Tray modes.
+- quick-panel: compact status surface positioned beside the companion or inside the primary work area.
 - main: normal application window.
 
-Closing main hides it so tray/companion operation continues.
+The shell service owns monitor selection, DPI-aware physical sizing, taskbar-aware work areas, normalized placement persistence, safe off-screen recovery, Move Mode, native dragging, click-through state, and tray-driven display-mode changes.
+
+Closing main hides it so tray/companion operation continues. See [WINDOWING.md](WINDOWING.md).
 
 ## Persistence
 

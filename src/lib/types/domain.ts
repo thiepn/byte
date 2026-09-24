@@ -69,6 +69,20 @@ export interface SystemSnapshot {
 export type DisplayMode = "HABITAT" | "PERCH" | "MINI" | "EDGE" | "TRAY";
 export type CompanionSize = "SMALL" | "MEDIUM" | "LARGE";
 export type InteractionLevel = "QUIET" | "NORMAL" | "PLAYFUL";
+export type EdgeAnchor = "LEFT" | "RIGHT";
+
+export interface SavedPlacement {
+  monitor_name: string | null;
+  x: number;
+  y: number;
+}
+
+export interface WindowPlacements {
+  habitat: SavedPlacement | null;
+  perch: SavedPlacement | null;
+  mini: SavedPlacement | null;
+  edge: SavedPlacement | null;
+}
 
 export interface CompanionPreferences {
   character: "BYTE" | "MOCHI" | "PIP" | "KIWI";
@@ -76,6 +90,13 @@ export interface CompanionPreferences {
   display_mode: DisplayMode;
   size: CompanionSize;
   interaction_level: InteractionLevel;
+  edge_anchor: EdgeAnchor;
+  placements: WindowPlacements;
+}
+
+export interface WindowShellState {
+  move_mode: boolean;
+  click_through: boolean;
 }
 
 export interface AppPreferences {

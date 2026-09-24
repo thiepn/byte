@@ -5,27 +5,40 @@ pub mod platform;
 pub mod telemetry;
 
 use core::{config::ConfigStore, state::AppState};
+use models::DisplayMode;
+use platform::windows::windowing;
 use tauri::{
-    menu::{MenuBuilder, MenuItemBuilder},
-    tray::TrayIconBuilder,
+    menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder},
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Manager,
 };
 
-fn show_window(app: &tauri::AppHandle, label: &str, focus: bool) {
-    if let Some(window) = app.get_webview_window(label) {
-        let _ = window.show();
-        if focus {
-            let _ = window.set_focus();
-        }
-    }
-}
-
 fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let open = MenuItemBuilder::with_id("open", "Open Byte").build(app)?;
-    let toggle = MenuItemBuilder::with_id("toggle", "Show Companion").build(app)?;
+    let toggle = MenuItemBuilder::with_id("toggle", "Show / Hide Companion").build(app)?;
+    let move_byte = MenuItemBuilder::with_id("move", "Move Byte").build(app)?;
+    let click_through =
+        MenuItemBuilder::with_id("click-through", "Toggle Click Through").build(app)?;
+
+    let habitat = MenuItemBuilder::with_id("mode-habitat", "Habitat").build(app)?;
+    let perch = MenuItemBuilder::with_id("mode-perch", "Perch").build(app)?;
+    let mini = MenuItemBuilder::with_id("mode-mini", "Mini").build(app)?;
+    let edge = MenuItemBuilder::with_id("mode-edge", "Edge").build(app)?;
+    let tray_only = MenuItemBuilder::with_id("mode-tray", "Tray Only").build(app)?;
+    let display_mode = SubmenuBuilder::new(app, "Display Mode")
+        .items(&[&habitat, &perch, &mini, &edge, &tray_only])
+        .build()?;
+
     let quit = MenuItemBuilder::with_id("quit", "Quit Byte").build(app)?;
     let menu = MenuBuilder::new(app)
-        .items(&[&open, &toggle, &quit])
+        .items(&[
+            &open,
+            &toggle,
+            &move_byte,
+            &click_through,
+            &display_mode,
+            &quit,
+        ])
         .build()?;
 
     let mut tray = TrayIconBuilder::new()
@@ -38,13 +51,48 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     }
 
     tray.on_menu_event(|app, event| match event.id().as_ref() {
-        "open" => show_window(app, "main", true),
-        "toggle" => show_window(app, "companion", false),
+        "open" => {
+            let _ = windowing::show_main_window(app);
+        }
+        "toggle" => {
+            let _ = windowing::toggle_companion(app);
+        }
+        "move" => {
+            let _ = windowing::begin_move_mode(app);
+        }
+        "click-through" => {
+            let _ = windowing::toggle_click_through(app);
+        }
+        "mode-habitat" => {
+            let _ = windowing::set_display_mode(app, DisplayMode::Habitat);
+        }
+        "mode-perch" => {
+            let _ = windowing::set_display_mode(app, DisplayMode::Perch);
+        }
+        "mode-mini" => {
+            let _ = windowing::set_display_mode(app, DisplayMode::Mini);
+        }
+        "mode-edge" => {
+            let _ = windowing::set_display_mode(app, DisplayMode::Edge);
+        }
+        "mode-tray" => {
+            let _ = windowing::set_display_mode(app, DisplayMode::Tray);
+        }
         "quit" => {
             app.state::<AppState>().stop_telemetry_worker();
             app.exit(0);
         }
         _ => {}
+    })
+    .on_tray_icon_event(|tray, event| {
+        if let TrayIconEvent::Click {
+            button: MouseButton::Left,
+            button_state: MouseButtonState::Up,
+            ..
+        } = event
+        {
+            let _ = windowing::show_quick_panel(tray.app_handle());
+        }
     })
     .build(app)?;
 
@@ -58,6 +106,7 @@ pub fn run() {
             let config = ConfigStore::load(config_path)?;
             app.manage(AppState::new(config));
 
+            windowing::initialize(app.handle())?;
             telemetry::runtime::start(app.handle().clone())?;
             setup_tray(app)?;
 
@@ -77,6 +126,14 @@ pub fn run() {
             ipc::commands::get_snapshot,
             ipc::commands::get_preferences,
             ipc::commands::update_companion_preferences,
+            ipc::commands::get_window_shell_state,
+            ipc::commands::set_display_mode,
+            ipc::commands::set_companion_size,
+            ipc::commands::set_edge_anchor,
+            ipc::commands::begin_move_mode,
+            ipc::commands::drag_companion,
+            ipc::commands::finish_move_mode,
+            ipc::commands::set_companion_click_through,
             ipc::commands::show_main_window,
             ipc::commands::show_quick_panel,
             ipc::commands::hide_quick_panel,
