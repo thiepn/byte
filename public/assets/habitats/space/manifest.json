@@ -1,74 +1,74 @@
 {
   "schemaVersion": 1,
-  "id": "meadow",
-  "name": "Meadow",
+  "id": "space",
+  "name": "Space",
   "canvas": {
     "width": 256,
     "height": 256
   },
   "characterAnchor": {
     "x": 128,
-    "y": 216
+    "y": 214
   },
   "palettes": [
     {
       "id": "MORNING",
       "colors": {
-        "sky": "#f7cfa0",
-        "far": "#d6b486",
-        "ground": "#78ad68",
-        "ground2": "#5f9253",
-        "accent": "#f0b55d",
-        "warm": "#ffe7a0",
-        "shadow": "#33413b",
-        "light": "#f9f4dc",
-        "signal": "#8fd2df",
-        "low": "#676f68"
+        "sky": "#293a55",
+        "far": "#344a6b",
+        "ground": "#6e778c",
+        "ground2": "#555d70",
+        "accent": "#66b4d8",
+        "warm": "#f2bb61",
+        "shadow": "#1e2634",
+        "light": "#e9f5ff",
+        "signal": "#7ed2e3",
+        "low": "#485164"
       }
     },
     {
       "id": "DAY",
       "colors": {
-        "sky": "#98d6ec",
-        "far": "#79b9d4",
-        "ground": "#69aa5b",
-        "ground2": "#4f8e48",
-        "accent": "#efb24e",
-        "warm": "#fff0a8",
-        "shadow": "#2f4038",
-        "light": "#fff8df",
-        "signal": "#76c8dc",
-        "low": "#606d64"
+        "sky": "#1d3150",
+        "far": "#294363",
+        "ground": "#626d85",
+        "ground2": "#4b566d",
+        "accent": "#5caed5",
+        "warm": "#efb556",
+        "shadow": "#182334",
+        "light": "#edf8ff",
+        "signal": "#72c9dc",
+        "low": "#414b60"
       }
     },
     {
       "id": "EVENING",
       "colors": {
-        "sky": "#d88979",
-        "far": "#aa6e72",
-        "ground": "#658b55",
-        "ground2": "#4e7247",
-        "accent": "#eaa35e",
-        "warm": "#ffd69b",
-        "shadow": "#3c3941",
-        "light": "#f5d8bd",
-        "signal": "#8cb7c6",
-        "low": "#5a5960"
+        "sky": "#342c50",
+        "far": "#49375f",
+        "ground": "#6e617c",
+        "ground2": "#574c67",
+        "accent": "#7aa2d2",
+        "warm": "#df9c58",
+        "shadow": "#211e31",
+        "light": "#ead8f4",
+        "signal": "#7ab5d0",
+        "low": "#50475d"
       }
     },
     {
       "id": "NIGHT",
       "colors": {
-        "sky": "#26364d",
-        "far": "#35435d",
-        "ground": "#355b48",
-        "ground2": "#29483a",
-        "accent": "#d39d52",
-        "warm": "#e9df9e",
-        "shadow": "#202936",
-        "light": "#d9dfc7",
-        "signal": "#73aabb",
-        "low": "#454b52"
+        "sky": "#151b31",
+        "far": "#202844",
+        "ground": "#434d69",
+        "ground2": "#343c56",
+        "accent": "#5a8cc2",
+        "warm": "#d68e49",
+        "shadow": "#101523",
+        "light": "#dce7ff",
+        "signal": "#6198bb",
+        "low": "#32394d"
       }
     }
   ],
@@ -101,31 +101,45 @@
       "primitives": [
         {
           "kind": "CIRCLE",
-          "x": 45,
-          "y": 82,
-          "radius": 55,
-          "color": "far"
+          "x": 48,
+          "y": 42,
+          "radius": 3,
+          "color": "light"
         },
         {
           "kind": "CIRCLE",
-          "x": 112,
-          "y": 70,
-          "radius": 72,
-          "color": "far"
+          "x": 92,
+          "y": 74,
+          "radius": 2,
+          "color": "signal"
         },
         {
           "kind": "CIRCLE",
-          "x": 206,
-          "y": 92,
-          "radius": 62,
+          "x": 191,
+          "y": 49,
+          "radius": 4,
+          "color": "light"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 220,
+          "y": 96,
+          "radius": 2,
+          "color": "signal"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 44,
+          "y": 120,
+          "radius": 24,
           "color": "far"
         },
         {
           "kind": "CIRCLE",
           "x": 210,
-          "y": 45,
-          "radius": 15,
-          "color": "warm"
+          "y": 28,
+          "radius": 18,
+          "color": "ground2"
         }
       ]
     },
@@ -361,34 +375,16 @@
       "primitives": [
         {
           "kind": "CIRCLE",
-          "x": 32,
-          "y": 215,
-          "radius": 8,
-          "color": "accent"
+          "x": 128,
+          "y": 216,
+          "radius": 45,
+          "color": "ground"
         },
         {
           "kind": "CIRCLE",
-          "x": 224,
-          "y": 217,
-          "radius": 7,
-          "color": "accent"
-        },
-        {
-          "kind": "LINE",
-          "x1": 20,
-          "y1": 224,
-          "x2": 24,
-          "y2": 205,
-          "width": 3,
-          "color": "ground2"
-        },
-        {
-          "kind": "LINE",
-          "x1": 236,
-          "y1": 226,
-          "x2": 231,
-          "y2": 204,
-          "width": 3,
+          "x": 128,
+          "y": 208,
+          "radius": 39,
           "color": "ground2"
         }
       ]
@@ -474,24 +470,20 @@
       "reaction": "CHARGING"
     },
     {
-      "id": "fireflies",
+      "id": "stars",
       "plane": "BACK",
       "color": "light",
-      "maxCount": 4,
+      "maxCount": 5,
       "radius": 1.5,
-      "speed": 5,
-      "drift": 7,
+      "speed": 2,
+      "drift": 2,
       "direction": "FLOAT",
       "region": {
-        "x": 18,
-        "y": 35,
-        "width": 220,
-        "height": 130
-      },
-      "time": [
-        "EVENING",
-        "NIGHT"
-      ]
+        "x": 10,
+        "y": 12,
+        "width": 236,
+        "height": 145
+      }
     }
   ],
   "reactions": [

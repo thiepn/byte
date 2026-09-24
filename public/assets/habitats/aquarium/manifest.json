@@ -1,74 +1,74 @@
 {
   "schemaVersion": 1,
-  "id": "meadow",
-  "name": "Meadow",
+  "id": "aquarium",
+  "name": "Aquarium",
   "canvas": {
     "width": 256,
     "height": 256
   },
   "characterAnchor": {
     "x": 128,
-    "y": 216
+    "y": 218
   },
   "palettes": [
     {
       "id": "MORNING",
       "colors": {
-        "sky": "#f7cfa0",
-        "far": "#d6b486",
-        "ground": "#78ad68",
-        "ground2": "#5f9253",
-        "accent": "#f0b55d",
-        "warm": "#ffe7a0",
-        "shadow": "#33413b",
-        "light": "#f9f4dc",
-        "signal": "#8fd2df",
-        "low": "#676f68"
+        "sky": "#a7dce0",
+        "far": "#7ac4cc",
+        "ground": "#579b93",
+        "ground2": "#427a74",
+        "accent": "#e79a67",
+        "warm": "#f3d487",
+        "shadow": "#284a4b",
+        "light": "#e8fbf7",
+        "signal": "#88d7df",
+        "low": "#527172"
       }
     },
     {
       "id": "DAY",
       "colors": {
-        "sky": "#98d6ec",
-        "far": "#79b9d4",
-        "ground": "#69aa5b",
-        "ground2": "#4f8e48",
-        "accent": "#efb24e",
-        "warm": "#fff0a8",
-        "shadow": "#2f4038",
-        "light": "#fff8df",
-        "signal": "#76c8dc",
-        "low": "#606d64"
+        "sky": "#78ced9",
+        "far": "#52b5c3",
+        "ground": "#498f87",
+        "ground2": "#366f6a",
+        "accent": "#e58f5f",
+        "warm": "#f1ca79",
+        "shadow": "#214447",
+        "light": "#e5fbf8",
+        "signal": "#6ed1dc",
+        "low": "#48696a"
       }
     },
     {
       "id": "EVENING",
       "colors": {
-        "sky": "#d88979",
-        "far": "#aa6e72",
-        "ground": "#658b55",
-        "ground2": "#4e7247",
-        "accent": "#eaa35e",
-        "warm": "#ffd69b",
-        "shadow": "#3c3941",
-        "light": "#f5d8bd",
-        "signal": "#8cb7c6",
-        "low": "#5a5960"
+        "sky": "#5c93aa",
+        "far": "#4b7891",
+        "ground": "#47766f",
+        "ground2": "#375e5a",
+        "accent": "#d68167",
+        "warm": "#e7b96f",
+        "shadow": "#243b45",
+        "light": "#d7efea",
+        "signal": "#69aec0",
+        "low": "#485b62"
       }
     },
     {
       "id": "NIGHT",
       "colors": {
-        "sky": "#26364d",
-        "far": "#35435d",
-        "ground": "#355b48",
-        "ground2": "#29483a",
-        "accent": "#d39d52",
-        "warm": "#e9df9e",
-        "shadow": "#202936",
-        "light": "#d9dfc7",
-        "signal": "#73aabb",
-        "low": "#454b52"
+        "sky": "#193848",
+        "far": "#245266",
+        "ground": "#315d5a",
+        "ground2": "#284a48",
+        "accent": "#b96c59",
+        "warm": "#cfa55f",
+        "shadow": "#152d37",
+        "light": "#cce4df",
+        "signal": "#4c879b",
+        "low": "#354950"
       }
     }
   ],
@@ -100,32 +100,44 @@
       ],
       "primitives": [
         {
-          "kind": "CIRCLE",
-          "x": 45,
-          "y": 82,
-          "radius": 55,
+          "kind": "RECT",
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 180,
           "color": "far"
         },
         {
+          "kind": "LINE",
+          "x1": 25,
+          "y1": 175,
+          "x2": 17,
+          "y2": 130,
+          "width": 6,
+          "color": "ground2"
+        },
+        {
+          "kind": "LINE",
+          "x1": 232,
+          "y1": 175,
+          "x2": 238,
+          "y2": 126,
+          "width": 7,
+          "color": "ground2"
+        },
+        {
           "kind": "CIRCLE",
-          "x": 112,
-          "y": 70,
-          "radius": 72,
-          "color": "far"
+          "x": 55,
+          "y": 164,
+          "radius": 18,
+          "color": "shadow"
         },
         {
           "kind": "CIRCLE",
           "x": 206,
-          "y": 92,
-          "radius": 62,
-          "color": "far"
-        },
-        {
-          "kind": "CIRCLE",
-          "x": 210,
-          "y": 45,
-          "radius": 15,
-          "color": "warm"
+          "y": 164,
+          "radius": 14,
+          "color": "shadow"
         }
       ]
     },
@@ -360,36 +372,36 @@
       ],
       "primitives": [
         {
+          "kind": "LINE",
+          "x1": 18,
+          "y1": 238,
+          "x2": 27,
+          "y2": 198,
+          "width": 5,
+          "color": "ground2"
+        },
+        {
+          "kind": "LINE",
+          "x1": 238,
+          "y1": 238,
+          "x2": 228,
+          "y2": 194,
+          "width": 5,
+          "color": "ground2"
+        },
+        {
           "kind": "CIRCLE",
-          "x": 32,
-          "y": 215,
+          "x": 36,
+          "y": 226,
           "radius": 8,
           "color": "accent"
         },
         {
           "kind": "CIRCLE",
-          "x": 224,
-          "y": 217,
+          "x": 218,
+          "y": 228,
           "radius": 7,
           "color": "accent"
-        },
-        {
-          "kind": "LINE",
-          "x1": 20,
-          "y1": 224,
-          "x2": 24,
-          "y2": 205,
-          "width": 3,
-          "color": "ground2"
-        },
-        {
-          "kind": "LINE",
-          "x1": 236,
-          "y1": 226,
-          "x2": 231,
-          "y2": 204,
-          "width": 3,
-          "color": "ground2"
         }
       ]
     }
@@ -447,7 +459,7 @@
       "radius": 2,
       "speed": 22,
       "drift": 5,
-      "direction": "FLOAT",
+      "direction": "RIGHT",
       "region": {
         "x": 20,
         "y": 35,
@@ -474,24 +486,20 @@
       "reaction": "CHARGING"
     },
     {
-      "id": "fireflies",
+      "id": "bubbles",
       "plane": "BACK",
       "color": "light",
-      "maxCount": 4,
-      "radius": 1.5,
-      "speed": 5,
-      "drift": 7,
-      "direction": "FLOAT",
+      "maxCount": 5,
+      "radius": 2,
+      "speed": 10,
+      "drift": 3,
+      "direction": "UP",
       "region": {
-        "x": 18,
-        "y": 35,
-        "width": 220,
-        "height": 130
-      },
-      "time": [
-        "EVENING",
-        "NIGHT"
-      ]
+        "x": 20,
+        "y": 40,
+        "width": 216,
+        "height": 150
+      }
     }
   ],
   "reactions": [

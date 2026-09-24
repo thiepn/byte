@@ -1,16 +1,20 @@
 import { validateCharacterManifest } from "../animation/manifest";
 import type { CharacterManifest } from "../animation/types";
-
-export interface HabitatManifest {
-  id: string;
-  name: string;
-  layers: string[];
-  decorationSlots: string[];
-  status: "placeholder" | "production";
-}
+import { validateHabitatManifest } from "../habitats/manifest";
+import type { HabitatManifest } from "../habitats/types";
 
 export const CHARACTER_IDS = ["byte", "mochi", "pip", "kiwi"] as const;
 export type CharacterId = (typeof CHARACTER_IDS)[number];
+
+export const HABITAT_IDS = [
+  "meadow",
+  "desk",
+  "bedroom",
+  "space",
+  "aquarium",
+  "rooftop",
+] as const;
+export type HabitatId = (typeof HABITAT_IDS)[number];
 
 const characterCache = new Map<string, Promise<CharacterManifest>>();
 const habitatCache = new Map<string, Promise<HabitatManifest>>();
@@ -47,8 +51,9 @@ export function loadHabitatManifest(id: string): Promise<HabitatManifest> {
   const request = fetch(habitatManifestUrl(id))
     .then((response) => {
       if (!response.ok) throw new Error("Habitat manifest unavailable");
-      return response.json() as Promise<HabitatManifest>;
+      return response.json() as Promise<unknown>;
     })
+    .then(validateHabitatManifest)
     .catch((error) => {
       habitatCache.delete(id);
       throw error;

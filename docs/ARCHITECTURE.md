@@ -91,3 +91,14 @@ Phase 8 adds a manifest-driven character engine in the Svelte companion layer. O
 System telemetry never references sprite frames. The companion maps cached system state to semantic behaviors and the character manifest decides how those behaviors look.
 
 See [ANIMATION_RUNTIME.md](ANIMATION_RUNTIME.md).
+
+
+## Habitat rendering runtime
+
+Phase 11 adds a manifest-driven habitat engine around the character renderer.
+
+The companion scene is composed as habitat back canvas → grounded character canvas → habitat front canvas. Habitat geometry, four local-time palettes, semantic system-reaction layers, decoration slots, and sparse particles are data-driven.
+
+The habitat particle engine shares the Phase 8 scheduler and is globally capped, so environments do not add an independent frame loop. Mini/Edge remain character-only, while Perch renders only its minimal platform/status layers.
+
+See [HABITAT_RUNTIME.md](HABITAT_RUNTIME.md).

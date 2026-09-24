@@ -1,14 +1,21 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-  import { loadCharacterManifest } from "../assets/registry";
+  import { loadCharacterManifest, loadHabitatManifest } from "../assets/registry";
   import { CharacterAnimator } from "../animation/state-machine";
   import { animationScheduler } from "../animation/scheduler";
   import { systemBehaviorForSnapshot } from "../animation/system-behavior";
   import { applyInputReaction } from "../animation/input-reactions";
+  import type { CharacterManifest, RenderFrame } from "../animation/types";
   import type { InputReactionEvent } from "../../lib/types/input";
+  import type { DisplayMode } from "../../lib/types/domain";
   import { hashSeed } from "../animation/random";
+  import { HabitatParticleEngine } from "../habitats/particles";
+  import { currentTimeOfDay } from "../habitats/time";
+  import { habitatReactionsForSnapshot } from "../habitats/reactions";
+  import type { HabitatRenderState } from "../habitats/types";
   import { CharacterCanvasRenderer } from "./CharacterCanvasRenderer";
+  import { HabitatCanvasRenderer } from "./HabitatCanvasRenderer";
   import {
     dragCompanion,
     finishMoveMode,
@@ -18,9 +25,33 @@
     showQuickPanel,
   } from "../../lib/ipc/client";
 
-  let canvas: HTMLCanvasElement;
+  const EMPTY_REACTIONS = {
+    BUSY: 0,
+    MEMORY_PRESSURE: 0,
+    THERMAL: 0,
+    LOW_BATTERY: 0,
+    CHARGING: 0,
+    NETWORK: 0,
+  };
+
+  let characterCanvas: HTMLCanvasElement;
+  let habitatBackCanvas: HTMLCanvasElement;
+  let habitatFrontCanvas: HTMLCanvasElement;
+
   let animator: CharacterAnimator | null = null;
-  let renderer: CharacterCanvasRenderer | null = null;
+  let characterRenderer: CharacterCanvasRenderer | null = null;
+  let habitatRenderer: HabitatCanvasRenderer | null = null;
+  let particleEngine: HabitatParticleEngine | null = null;
+  let characterManifest: CharacterManifest | null = null;
+
+  let displayMode: DisplayMode = "HABITAT";
+  let habitatState: HabitatRenderState = {
+    timeOfDay: currentTimeOfDay(),
+    reactions: { ...EMPTY_REACTIONS },
+    reducedMotion: false,
+    displayMode,
+  };
+
   let pressed = false;
   let moveMode = false;
   let dragging = false;
@@ -76,15 +107,54 @@
     }
   }
 
-  async function refreshSystemBehavior(): Promise<void> {
-    if (!animator) return;
+  function positionCharacter(frame: RenderFrame): void {
+    if (!habitatRenderer || !characterManifest) return;
 
+    const ground = frame.anchors.ground;
+    if (!ground) return;
+
+    const position = habitatRenderer.characterPosition(
+      ground.x,
+      ground.y,
+      characterManifest.animationCanvas,
+      displayMode,
+    );
+
+    characterCanvas.style.left = position.left;
+    characterCanvas.style.top = position.top;
+    characterCanvas.style.transform =
+      `translate(${position.translateX}, ${position.translateY})`;
+  }
+
+  function renderFrame(deltaMs: number): void {
+    if (!animator || !characterRenderer) return;
+
+    const frame = animator.tick(deltaMs);
+    characterRenderer.render(frame);
+    positionCharacter(frame);
+
+    if (habitatRenderer && particleEngine) {
+      const particles = particleEngine.update(deltaMs, habitatState);
+      habitatRenderer.render(habitatState, particles);
+    }
+  }
+
+  async function refreshSystemState(): Promise<void> {
     try {
       const snapshot = await getSnapshot();
-      const request = systemBehaviorForSnapshot(snapshot);
-      animator.setBaseBehavior(request.behavior, request.source);
+
+      if (animator) {
+        const request = systemBehaviorForSnapshot(snapshot);
+        animator.setBaseBehavior(request.behavior, request.source);
+      }
+
+      habitatState = {
+        ...habitatState,
+        timeOfDay: currentTimeOfDay(),
+        reactions: habitatReactionsForSnapshot(snapshot),
+      };
     } catch {
-      // Keep the last known behavior. Telemetry failures should not break rendering.
+      // Keep the last known character/habitat state if cached telemetry is unavailable.
     }
   }
 
@@ -93,57 +163,83 @@
     let unsubscribeAnimation: (() => void) | null = null;
     let systemTimer: number | null = null;
     let mediaQuery: MediaQueryList | null = null;
-    const unlisteners: UnlistenFn[] = [];
+    const cleanups: Array<() => void> = [];
 
     const initialize = async (): Promise<void> => {
       try {
         const preferences = await getPreferences();
         if (disposed) return;
 
-        const requestedCharacter = preferences.companion.character.toLowerCase();
-        let manifest;
-        try {
-          manifest = await loadCharacterManifest(requestedCharacter);
-        } catch {
-          manifest = await loadCharacterManifest("byte");
-        }
-        if (disposed) return;
+        displayMode = preferences.companion.display_mode;
+        habitatState = {
+          ...habitatState,
+          displayMode,
+          timeOfDay: currentTimeOfDay(),
+        };
 
-        renderer = new CharacterCanvasRenderer(canvas, manifest);
-        await renderer.load();
-        renderer.setPalette(preferences.companion.palette);
+        const requestedCharacter = preferences.companion.character.toLowerCase();
+        const requestedHabitat = preferences.companion.habitat.toLowerCase();
+
+        try {
+          characterManifest = await loadCharacterManifest(requestedCharacter);
+        } catch {
+          characterManifest = await loadCharacterManifest("byte");
+        }
+
+        let habitatManifest;
+        try {
+          habitatManifest = await loadHabitatManifest(requestedHabitat);
+        } catch {
+          habitatManifest = await loadHabitatManifest("meadow");
+        }
+
+        if (disposed || !characterManifest) return;
+
+        characterRenderer = new CharacterCanvasRenderer(
+          characterCanvas,
+          characterManifest,
+        );
+        habitatRenderer = new HabitatCanvasRenderer(
+          habitatBackCanvas,
+          habitatFrontCanvas,
+          habitatManifest,
+        );
+
+        await characterRenderer.load();
+        characterRenderer.setPalette(preferences.companion.palette);
         if (disposed) return;
 
         const sessionDay = new Date().toISOString().slice(0, 10);
-        animator = new CharacterAnimator(
-          manifest,
-          hashSeed(`${manifest.id}:${sessionDay}`),
-        );
+        const characterSeed = hashSeed(`${characterManifest.id}:${sessionDay}`);
+        const habitatSeed = hashSeed(`${habitatManifest.id}:${sessionDay}`);
+
+        animator = new CharacterAnimator(characterManifest, characterSeed);
+        particleEngine = new HabitatParticleEngine(habitatManifest, habitatSeed);
 
         mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
         animator.setReducedMotion(mediaQuery.matches);
+        habitatState = { ...habitatState, reducedMotion: mediaQuery.matches };
 
         const onMotionChange = (event: MediaQueryListEvent): void => {
           animator?.setReducedMotion(event.matches);
+          habitatState = { ...habitatState, reducedMotion: event.matches };
         };
         mediaQuery.addEventListener("change", onMotionChange);
+        cleanups.push(() => mediaQuery?.removeEventListener("change", onMotionChange));
 
         unsubscribeAnimation = animationScheduler.subscribe(({ deltaMs }) => {
-          if (!animator || !renderer) return;
-          renderer.render(animator.tick(deltaMs));
+          renderFrame(deltaMs);
         });
 
-        renderer.render(animator.frame());
-        await refreshSystemBehavior();
+        characterRenderer.render(animator.frame());
+        positionCharacter(animator.frame());
+        habitatRenderer.render(habitatState, particleEngine.update(0, habitatState));
+
+        await refreshSystemState();
 
         systemTimer = window.setInterval(() => {
-          void refreshSystemBehavior();
+          void refreshSystemState();
         }, 2000);
-
-        const cleanupMotion = (): void => {
-          mediaQuery?.removeEventListener("change", onMotionChange);
-        };
-        unlisteners.push(cleanupMotion as UnlistenFn);
       } catch {
         runtimeError = true;
       }
@@ -156,18 +252,28 @@
     if (isTauri()) {
       void listen<boolean>("byte://move-mode-changed", (event) => {
         if (!disposed) moveMode = event.payload;
-      }).then((unlisten) => {
+      }).then((unlisten: UnlistenFn) => {
         if (disposed) unlisten();
-        else unlisteners.push(unlisten);
+        else cleanups.push(unlisten);
+      });
+
+      void listen<DisplayMode>("byte://display-mode-changed", (event) => {
+        if (disposed) return;
+        displayMode = event.payload;
+        habitatState = { ...habitatState, displayMode };
+        if (animator) positionCharacter(animator.frame());
+      }).then((unlisten: UnlistenFn) => {
+        if (disposed) unlisten();
+        else cleanups.push(unlisten);
       });
 
       void listen<InputReactionEvent>("byte://input-reaction", (event) => {
         if (!disposed && animator) {
           applyInputReaction(animator, event.payload);
         }
-      }).then((unlisten) => {
+      }).then((unlisten: UnlistenFn) => {
         if (disposed) unlisten();
-        else unlisteners.push(unlisten);
+        else cleanups.push(unlisten);
       });
     }
 
@@ -177,9 +283,12 @@
       disposed = true;
       unsubscribeAnimation?.();
       if (systemTimer != null) window.clearInterval(systemTimer);
-      for (const unlisten of unlisteners) unlisten();
+      for (const cleanup of cleanups) cleanup();
       animator = null;
-      renderer = null;
+      characterRenderer = null;
+      habitatRenderer = null;
+      particleEngine = null;
+      characterManifest = null;
     };
   });
 </script>
@@ -189,6 +298,8 @@
   class:pressed
   class:move-mode={moveMode}
   class:dragging
+  class:habitat-mode={displayMode === "HABITAT"}
+  class:perch-mode={displayMode === "PERCH"}
   role="button"
   tabindex="0"
   aria-label={moveMode ? "Move Byte" : "Open Byte status"}
@@ -196,6 +307,12 @@
   onkeydown={handleKeydown}
   onpointerdown={(event) => void startMove(event)}
 >
+  <canvas
+    bind:this={habitatBackCanvas}
+    class="habitat-canvas habitat-back"
+    aria-hidden="true"
+  ></canvas>
+
   {#if moveMode}
     <div class="move-banner" aria-live="polite">
       <strong>Move Byte</strong>
@@ -209,10 +326,16 @@
   {/if}
 
   {#if runtimeError}
-    <div class="runtime-error" role="status">Character preview unavailable</div>
+    <div class="runtime-error" role="status">Companion preview unavailable</div>
   {:else}
-    <canvas bind:this={canvas} class="character-canvas" aria-hidden="true"></canvas>
+    <canvas bind:this={characterCanvas} class="character-canvas" aria-hidden="true"></canvas>
   {/if}
+
+  <canvas
+    bind:this={habitatFrontCanvas}
+    class="habitat-canvas habitat-front"
+    aria-hidden="true"
+  ></canvas>
 </div>
 
 <style>
@@ -228,8 +351,6 @@
     transform: translateY(0);
     transition: transform 120ms ease;
     user-select: none;
-    display: grid;
-    place-items: center;
   }
 
   .scene:focus-visible {
@@ -254,13 +375,41 @@
     cursor: grabbing;
   }
 
+  .habitat-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    pointer-events: none;
+  }
+
+  .habitat-back {
+    z-index: 0;
+  }
+
+  .habitat-front {
+    z-index: 3;
+  }
+
   .character-canvas {
+    position: absolute;
+    z-index: 2;
     width: min(82vw, 82vh, 190px);
     height: auto;
     aspect-ratio: 1;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     pointer-events: none;
+  }
+
+  .habitat-mode .character-canvas {
+    width: min(44vw, 44vh, 112px);
+  }
+
+  .perch-mode .character-canvas {
+    width: min(58vw, 72vh, 98px);
   }
 
   .move-banner {
@@ -309,6 +458,11 @@
   }
 
   .runtime-error {
+    position: absolute;
+    z-index: 4;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     padding: 8px 10px;
     border-radius: var(--radius-button);
     background: var(--surface-overlay);
