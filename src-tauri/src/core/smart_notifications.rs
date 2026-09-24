@@ -87,10 +87,7 @@ impl SmartNotificationEngine {
         preferences: &AppPreferences,
     ) -> Option<SmartNotification> {
         let candidates = eligible_candidates(now, issues, preferences);
-        let current = candidates
-            .iter()
-            .map(|candidate| candidate.fingerprint.clone())
-            .collect::<BTreeSet<_>>();
+        let current = active_incident_fingerprints(issues);
         self.handled_active
             .retain(|fingerprint| current.contains(fingerprint));
 
@@ -161,6 +158,22 @@ impl SmartNotificationEngine {
     }
 }
 
+fn active_incident_fingerprints(issues: &[SystemIssue]) -> BTreeSet<String> {
+    issues
+        .iter()
+        .map(|issue| {
+            let category = match issue.category {
+                IssueCategory::Memory => NotificationCategory::Memory,
+                IssueCategory::Thermal => NotificationCategory::Thermal,
+                IssueCategory::Storage => NotificationCategory::Storage,
+                IssueCategory::Battery => NotificationCategory::Battery,
+                IssueCategory::Cpu => NotificationCategory::RunawayProcess,
+            };
+            incident_fingerprint(category, issue)
+        })
+        .collect()
+}
+
 fn eligible_candidates(
     now: u64,
     issues: &[SystemIssue],
@@ -227,7 +240,7 @@ fn candidate_for_issue(
 }
 
 fn build_notification(category: NotificationCategory, issue: &SystemIssue) -> SmartNotification {
-    let fingerprint = format!("{:?}:{}:{}", category, issue.id, issue.started_at_epoch_ms);
+    let fingerprint = incident_fingerprint(category, issue);
 
     let title = match category {
         NotificationCategory::Memory => "Byte: memory is critically low".into(),
@@ -267,6 +280,10 @@ fn build_notification(category: NotificationCategory, issue: &SystemIssue) -> Sm
         title,
         body,
     }
+}
+
+fn incident_fingerprint(category: NotificationCategory, issue: &SystemIssue) -> String {
+    format!("{:?}:{}:{}", category, issue.id, issue.started_at_epoch_ms)
 }
 
 fn category_priority(category: NotificationCategory) -> u8 {
@@ -430,6 +447,24 @@ mod tests {
 
         assert!(engine.evaluate(2_000, &[memory], &prefs).is_none());
         assert!(engine.evaluate(3_000, &[], &prefs).is_none());
+    }
+
+    #[test]
+    fn duplicate_suppression_survives_non_recovery_severity_dip() {
+        let (_temp, mut engine) = engine();
+        let prefs = AppPreferences::default();
+        let critical = issue(IssueCategory::Memory, ResourceState::Critical, 0);
+        let first = engine.evaluate(1_000, &[critical.clone()], &prefs).expect("first");
+        engine.mark_sent(&first, 1_000).expect("record");
+
+        let high_same_incident = issue(IssueCategory::Memory, ResourceState::High, 0);
+        assert!(engine
+            .evaluate(2_000, &[high_same_incident], &prefs)
+            .is_none());
+
+        assert!(engine
+            .evaluate(5 * HOUR_MS, &[critical], &prefs)
+            .is_none());
     }
 
     #[test]
