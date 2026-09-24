@@ -54,18 +54,24 @@ fn run_worker(app: AppHandle) {
                     .map(|state| state == tauri::plugin::PermissionState::Granted)
                     .unwrap_or(false);
 
-                if permission_granted
-                    && app
+                if permission_granted {
+                    let builder = app
                         .notification()
                         .builder()
                         .title(&notification.title)
-                        .body(&notification.body)
-                        .silent(!app_preferences.sound_enabled)
-                        .show()
-                        .is_ok()
-                {
-                    let _ = state
-                        .mark_smart_notification_sent(&notification, evaluated.timestamp_epoch_ms);
+                        .body(&notification.body);
+                    let builder = if app_preferences.sound_enabled {
+                        builder
+                    } else {
+                        builder.silent()
+                    };
+
+                    if builder.show().is_ok() {
+                        let _ = state.mark_smart_notification_sent(
+                            &notification,
+                            evaluated.timestamp_epoch_ms,
+                        );
+                    }
                 }
             }
 
