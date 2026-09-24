@@ -11,6 +11,9 @@ import {
 function preferences(): AppPreferences {
   return {
     hide_in_fullscreen: true,
+    hide_in_presentation: true,
+    exclude_from_capture: true,
+    hidden_foreground_apps: [],
     sound_enabled: false,
     launch_at_startup: false,
     activity_history_enabled: true,
