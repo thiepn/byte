@@ -209,8 +209,7 @@ fn observe_memory(resource: &ResourceSummary) -> Observation {
         || (resource.value >= 90.0 && available.map(|value| value <= 2.0).unwrap_or(false));
     let critical = resource.value >= 99.0
         || (resource.value >= 96.0 && available.map(|value| value <= 1.0).unwrap_or(false));
-    let recovered =
-        resource.value <= 88.0 || available.map(|value| value >= 2.5).unwrap_or(false);
+    let recovered = resource.value <= 88.0 || available.map(|value| value >= 2.5).unwrap_or(false);
 
     Observation {
         elevated,
