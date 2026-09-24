@@ -64,6 +64,8 @@
   } from "../companion/customization/catalog";
   import { PERSONALITY_CHOICES } from "../companion/personality/profiles";
   import CustomizationStudio from "./customize/CustomizationStudio.svelte";
+  import Onboarding from "./settings/Onboarding.svelte";
+  import SettingsSurface from "./settings/SettingsSurface.svelte";
 
   type View = "overview" | "activity" | "apps" | "customize" | "settings";
   type ActivityFilter = "ALL" | ActivityEventKind;
@@ -341,6 +343,15 @@
   });
 </script>
 
+{#if preferences && !preferences.app.onboarding_completed}
+  <Onboarding
+    {preferences}
+    onComplete={(next) => {
+      preferences = next;
+      view = "overview";
+    }}
+  />
+{:else}
 <div class="app-shell">
   <aside class="sidebar" aria-label="Byte navigation">
     <div class="brand">
@@ -640,25 +651,19 @@
       {/if}
 
     {:else if view === "settings"}
-      <section class="page">
-        <p class="eyebrow">Current local configuration</p>
-        <h1>Settings</h1>
-        <p class="lede">This surface summarizes the settings already active in Byte. System integration and onboarding controls are handled in their dedicated later phase.</p>
-        {#if preferences}
-          <div class="settings-grid">
-            <article class="settings-card"><span>Activity history</span><strong>{preferences.app.activity_history_enabled ? "On" : "Off"}</strong><small>Meaningful events are stored locally.</small></article>
-            <article class="settings-card"><span>Fullscreen behavior</span><strong>{preferences.app.hide_in_fullscreen ? "Hide Byte" : "Keep visible"}</strong><small>Stored preference.</small></article>
-            <article class="settings-card"><span>Launch at startup</span><strong>{preferences.app.launch_at_startup ? "On" : "Off"}</strong><small>Stored preference.</small></article>
-            <article class="settings-card"><span>Sound</span><strong>{preferences.app.sound_enabled ? "On" : "Off"}</strong><small>Stored preference.</small></article>
-            <article class="settings-card"><span>Personality</span><strong>{preferences.companion.personality.toLowerCase()}</strong><small>{preferences.companion.interaction_level.toLowerCase()} interaction level.</small></article>
-            <article class="settings-card"><span>Presentation</span><strong>{preferences.companion.display_mode.toLowerCase()}</strong><small>{preferences.companion.size.toLowerCase()} companion size.</small></article>
-          </div>
-          <button class="secondary-button" onclick={() => (view = "customize")}>Open companion customization</button>
-        {/if}
-      </section>
+      {#if preferences}
+        <SettingsSurface
+          {preferences}
+          onSaved={(next) => {
+            preferences = next;
+          }}
+          onOpenCustomize={() => (view = "customize")}
+        />
+      {/if}
     {/if}
   </main>
 </div>
+{/if}
 
 <style>
   .app-shell { min-height: 100vh; display: grid; grid-template-columns: 196px 1fr; background: var(--surface-base); color: var(--text-primary); }

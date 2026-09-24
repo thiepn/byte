@@ -316,6 +316,7 @@
     <CustomizationPreview
       preferences={draft}
       unlockedIdleBehaviors={unlockedIdleBehaviors()}
+      forceReducedMotion={preferences.app.reduce_motion}
     />
 
     <div class="save-state" class:error={Boolean(saveError)}>

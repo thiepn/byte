@@ -29,6 +29,7 @@
 
   export let preferences: CompanionPreferences;
   export let unlockedIdleBehaviors: string[] = [];
+  export let forceReducedMotion = false;
 
   const EMPTY_REACTIONS = {
     BUSY: 0,
@@ -197,9 +198,9 @@
   onMount(() => {
     mounted = true;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    reducedMotion = media.matches;
+    reducedMotion = forceReducedMotion || media.matches;
     const onMotion = (event: MediaQueryListEvent) => {
-      reducedMotion = event.matches;
+      reducedMotion = forceReducedMotion || event.matches;
       animator?.setReducedMotion(event.matches);
       render(0);
     };

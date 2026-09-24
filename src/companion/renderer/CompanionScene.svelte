@@ -9,6 +9,7 @@
   import type { CharacterManifest, RenderFrame } from "../animation/types";
   import type { InputReactionEvent } from "../../lib/types/input";
   import type {
+    AppPreferences,
     CollectionSnapshot,
     CompanionPreferences,
     DisplayMode,
@@ -75,6 +76,7 @@
   let runtimeError = false;
   let suppressClickUntil = 0;
   let lastObservedBehavior = "";
+  let forceReducedMotion = false;
 
   function isTauri(): boolean {
     return "__TAURI_INTERNALS__" in window;
@@ -256,7 +258,7 @@
           nextCharacterManifest,
           hashSeed(`${nextCharacterManifest.id}:${sessionDay}`),
         );
-        animator.setReducedMotion(mediaQuery?.matches ?? false);
+        animator.setReducedMotion(forceReducedMotion || (mediaQuery?.matches ?? false));
       }
 
       personalityDirector = nextPersonalityDirector;
@@ -319,8 +321,9 @@
         };
 
         const onMotionChange = (event: MediaQueryListEvent): void => {
-          animator?.setReducedMotion(event.matches);
-          habitatState = { ...habitatState, reducedMotion: event.matches };
+          const reduced = forceReducedMotion || event.matches;
+          animator?.setReducedMotion(reduced);
+          habitatState = { ...habitatState, reducedMotion: reduced };
         };
         mediaQuery.addEventListener("change", onMotionChange);
         cleanups.push(() =>
@@ -329,6 +332,11 @@
 
         const preferences = await getPreferences();
         if (disposed) return;
+        forceReducedMotion = preferences.app.reduce_motion;
+        habitatState = {
+          ...habitatState,
+          reducedMotion: forceReducedMotion || (mediaQuery?.matches ?? false),
+        };
         await applyVisualPreferences(preferences.companion);
         if (disposed) return;
 
@@ -363,6 +371,17 @@
         displayMode = event.payload;
         habitatState = { ...habitatState, displayMode };
         if (animator) positionCharacter(animator.frame());
+      }).then((unlisten: UnlistenFn) => {
+        if (disposed) unlisten();
+        else cleanups.push(unlisten);
+      });
+
+      void listen<AppPreferences>("byte://app-preferences-changed", (event) => {
+        if (disposed) return;
+        forceReducedMotion = event.payload.reduce_motion;
+        const reduced = forceReducedMotion || (mediaQuery?.matches ?? false);
+        animator?.setReducedMotion(reduced);
+        habitatState = { ...habitatState, reducedMotion: reduced };
       }).then((unlisten: UnlistenFn) => {
         if (disposed) unlisten();
         else cleanups.push(unlisten);
