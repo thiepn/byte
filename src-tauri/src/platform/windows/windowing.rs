@@ -8,7 +8,7 @@ use crate::{
 use tauri::{window::Monitor, AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize};
 
 const QUICK_PANEL_LOGICAL_WIDTH: f64 = 340.0;
-const QUICK_PANEL_LOGICAL_HEIGHT: f64 = 390.0;
+const QUICK_PANEL_LOGICAL_HEIGHT: f64 = 500.0;
 const PANEL_GAP_LOGICAL: f64 = 10.0;
 const DEFAULT_MARGIN_LOGICAL: f64 = 18.0;
 
@@ -52,7 +52,9 @@ pub fn show_quick_panel(app: &AppHandle) -> Result<(), ByteError> {
         .map_err(|error| ByteError::Window(error.to_string()))?;
     panel
         .set_focus()
-        .map_err(|error| ByteError::Window(error.to_string()))
+        .map_err(|error| ByteError::Window(error.to_string()))?;
+    let _ = app.emit_to("quick-panel", "byte://quick-panel-opened", true);
+    Ok(())
 }
 
 pub fn hide_quick_panel(app: &AppHandle) -> Result<(), ByteError> {
@@ -61,7 +63,9 @@ pub fn hide_quick_panel(app: &AppHandle) -> Result<(), ByteError> {
         .ok_or_else(|| ByteError::Window("quick panel is unavailable".into()))?;
     panel
         .hide()
-        .map_err(|error| ByteError::Window(error.to_string()))
+        .map_err(|error| ByteError::Window(error.to_string()))?;
+    let _ = app.emit_to("quick-panel", "byte://quick-panel-closed", true);
+    Ok(())
 }
 
 pub fn show_companion(app: &AppHandle) -> Result<(), ByteError> {

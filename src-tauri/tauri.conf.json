@@ -29,7 +29,7 @@
         "title": "Byte",
         "url": "index.html?surface=quick-panel",
         "width": 340,
-        "height": 390,
+        "height": 500,
         "visible": false,
         "decorations": false,
         "resizable": false,

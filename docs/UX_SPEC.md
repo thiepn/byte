@@ -18,6 +18,12 @@ The full app has exactly five main destinations: Overview, Activity, Apps, Custo
 
 Byte may react to anonymous keyboard activity, clicks, scrolling, local pointer entry, petting, dragging, charging, network activity, workload, and rare idle events. Global cursor coordinates are not collected. Chill, Curious, and Energetic change low-priority pacing and expression while diagnostic meaning remains stable. There are no feeding, cleaning, death, streak, happiness-maintenance, or recurring chore systems.
 
+## Quick Panel
+
+Clicking Byte opens a compact 340×500 explanation-and-action surface. It shows the current product state, at most one primary issue, a compact resource overview, one safe recommended action when available, and essential companion/window controls.
+
+The Quick Panel is cache-only and does not trigger hardware sampling. It closes on focus loss and keeps detailed investigation in the full application rather than growing into a Task Manager replacement.
+
 ## Alerts
 
 Transient spikes do not notify. Sustained meaningful conditions progress from observation to visual reaction to in-app explanation and only then to native notification when justified. Cooldowns and duplicate suppression are mandatory.

@@ -5,6 +5,7 @@ import type {
   CompanionSize,
   DisplayMode,
   EdgeAnchor,
+  RecommendedActionKind,
   SystemSnapshot,
   WindowShellState,
 } from "../types/domain";
@@ -95,6 +96,13 @@ export async function updateCompanionPreferences(
     return clone(browserConfig);
   }
   return invoke<ByteConfig>("update_companion_preferences", { preferences });
+}
+
+export async function executeRecommendedAction(
+  action: RecommendedActionKind,
+): Promise<void> {
+  if (!inTauri()) return;
+  await invoke("execute_recommended_action", { action });
 }
 
 export async function getWindowShellState(): Promise<WindowShellState> {

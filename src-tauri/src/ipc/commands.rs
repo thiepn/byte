@@ -1,10 +1,10 @@
 use crate::{
     core::{error::ByteError, state::AppState},
     models::{
-        ByteConfig, CompanionPreferences, CompanionSize, DisplayMode, EdgeAnchor, SystemSnapshot,
-        WindowShellState,
+        ByteConfig, CompanionPreferences, CompanionSize, DisplayMode, EdgeAnchor,
+        RecommendedActionKind, SystemSnapshot, WindowShellState,
     },
-    platform::windows::windowing,
+    platform::windows::{actions, windowing},
 };
 use tauri::{AppHandle, Emitter, State};
 
@@ -41,6 +41,16 @@ pub fn update_companion_preferences(
         config.companion.clone(),
     );
     Ok(config)
+}
+
+#[tauri::command]
+pub fn execute_recommended_action(
+    app: AppHandle,
+    action: RecommendedActionKind,
+) -> Result<(), ByteError> {
+    actions::execute(&app, action)?;
+    let _ = windowing::hide_quick_panel(&app);
+    Ok(())
 }
 
 #[tauri::command]

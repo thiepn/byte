@@ -131,6 +131,7 @@ pub fn run() {
             ipc::commands::get_snapshot,
             ipc::commands::get_preferences,
             ipc::commands::update_companion_preferences,
+            ipc::commands::execute_recommended_action,
             ipc::commands::get_window_shell_state,
             ipc::commands::set_display_mode,
             ipc::commands::set_companion_size,
