@@ -157,8 +157,8 @@ try {
     throw "Byte.exe still exists after uninstall."
   }
 
-  $startupValue = Get-ItemPropertyValue -Path $runKey -Name "Byte" -ErrorAction SilentlyContinue
-  if ($null -ne $startupValue) {
+  $runProperties = Get-ItemProperty -Path $runKey -ErrorAction SilentlyContinue
+  if ($null -ne $runProperties -and $runProperties.PSObject.Properties.Name -contains "Byte") {
     throw "Byte startup registration survived uninstall."
   }
 
