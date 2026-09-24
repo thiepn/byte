@@ -33,3 +33,12 @@ Phase 12 promotes all six scenes to production: denser authored compositions, lo
 The scenes remain cozy pixel-art worlds rather than technical dashboards. System health is communicated through environmental metaphors, not numeric overlays.
 
 See [HABITAT_PRODUCTION.md](HABITAT_PRODUCTION.md).
+
+
+## Customization Studio
+
+Phase 18 treats customization as a playful visual surface rather than conventional settings.
+
+The production layout uses a large sticky preview beside a category editor. Choice cards emphasize imagery, color, habitat tone, and selected state. Dense form rows and generic dropdowns are avoided.
+
+The preview reuses Byte's actual animation, habitat, cosmetic, decoration, palette, personality, and particle systems so the Studio is representative of the desktop companion rather than a separate mock renderer.

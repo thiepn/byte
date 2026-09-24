@@ -93,3 +93,14 @@ It is not part of the telemetry loop. The only IPC entrypoint, inspect_apps, cau
 AppInspector shares Byte's process-name aggregation and CPU normalization rules but never mutates the authoritative SystemSnapshot or DiagnosticEngine state.
 
 The frontend receives an AppDiagnosticsSnapshot containing at most 12 aggregate app rows plus optional CPU and memory leader attribution. No executable paths, command lines, window titles, or process-management capability cross IPC.
+
+
+## Customization Studio
+
+Phase 18 remains frontend-driven over the existing CompanionPreferences IPC.
+
+CustomizationStudio owns an optimistic in-memory view of the current preferences and serializes writes through update_companion_preferences. Rapid user changes are queued so older full-preference writes cannot finish after and overwrite a newer choice.
+
+The preview is not a second companion engine. It instantiates the same CharacterAnimator, CharacterCanvasRenderer, HabitatCanvasRenderer, HabitatParticleEngine, semantic attachment system, personality idle profile, and local-time habitat state used by the desktop companion.
+
+Studio Undo/Redo is session-only UI history and is not persisted as a second source of truth.

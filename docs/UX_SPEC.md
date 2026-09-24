@@ -30,7 +30,7 @@ The main application keeps exactly five destinations: Overview, Activity, Apps, 
 
 Phase 16 makes Overview and Activity production surfaces. Overview shows current state plus CPU, memory, storage, battery, network, and best-effort thermal context with small bounded session trends. Activity stores meaningful events rather than raw telemetry rows.
 
-Apps remains deliberately conservative until its diagnostics phase: it only surfaces the current confidently attributed culprit when one already exists. Settings summarizes current configuration without prematurely adding later system-integration controls.
+Apps uses an explicit on-demand diagnostic scan rather than a background leaderboard. Customize is a first-class Studio with a large animated preview and visual controls; every selection persists immediately without an Apply step. Settings summarizes current configuration without prematurely adding later system-integration controls.
 
 ## Alerts
 

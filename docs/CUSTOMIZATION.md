@@ -103,3 +103,25 @@ There is:
 The character and habitat still render on the shared 12 FPS companion scheduler.
 
 Next: Phase 14 — Personality & Ambient Behavior.
+
+
+## Phase 18 Studio layer
+
+Phase 18 does not replace the Phase 13 persistence model. It turns that model into the intended full Customization Studio.
+
+The Studio adds:
+
+- a large live animated preview using the production character and habitat renderers
+- character-focus / full-habitat preview switching
+- manual Happy, Curious, Typing, and Sleep reaction previews
+- visual category navigation rather than one long settings form
+- curated built-in looks
+- complete visual browsing for characters, palettes, cosmetics, habitats, decorations, personalities, display modes, and size
+- instant optimistic changes with serialized persistence
+- Undo and Redo for the current Studio session
+- outfit, decor, and whole-look reset paths
+- clear local save state
+
+All Studio operations write the existing CompanionPreferences shape. There is no parallel draft file or second customization database.
+
+See [CUSTOMIZATION_STUDIO.md](CUSTOMIZATION_STUDIO.md).
