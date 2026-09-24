@@ -37,8 +37,10 @@ pub fn record_collection_discovery(
 ) -> Result<CollectionSnapshot, ByteError> {
     let (snapshot, changed) = state.record_collection_discovery(discovery)?;
     if changed {
+        // A rare idle discovery should be allowed to finish naturally. The
+        // Studio refreshes immediately; companion celebrations are reserved
+        // for non-discovery milestone unlocks emitted by input/telemetry.
         let _ = app.emit_to("main", "byte://collection-updated", snapshot.clone());
-        let _ = app.emit_to("companion", "byte://collection-updated", snapshot.clone());
     }
     Ok(snapshot)
 }

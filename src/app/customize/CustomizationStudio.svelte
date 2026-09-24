@@ -285,11 +285,13 @@
     void refreshCollection();
     let unlisten: UnlistenFn | null = null;
 
-    void listen<CollectionSnapshot>("byte://collection-updated", (event) => {
-      collection = event.payload;
-    }).then((cleanup) => {
-      unlisten = cleanup;
-    });
+    if ("__TAURI_INTERNALS__" in window) {
+      void listen<CollectionSnapshot>("byte://collection-updated", (event) => {
+        collection = event.payload;
+      }).then((cleanup) => {
+        unlisten = cleanup;
+      });
+    }
 
     return () => unlisten?.();
   });
