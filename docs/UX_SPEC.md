@@ -103,3 +103,26 @@ Normal CPU load, normal memory use, ordinary network activity, collection progre
 Smart Notifications evaluate all active diagnostic issues rather than only the primary issue shown in compact UI.
 
 Users can disable individual categories, enable notification Quiet mode, or snooze for one hour, four hours, or until 08:00 the next local day. Snooze/Quiet mode affects OS notifications only; in-app diagnostic state remains current.
+
+
+## Fullscreen, gaming & presentation awareness
+
+Phase 22 centralizes whether Byte is allowed to appear on the desktop.
+
+Byte suppresses the companion and Quick Panel when appropriate for:
+
+- fullscreen applications and games
+- Windows presentation/busy state when configured
+- the locked/not-present desktop
+- console display-off state
+- user-configured foreground application exclusions
+
+The companion remembers whether it was visible before a suppression interval and restores only when appropriate. Tray mode and an already-user-hidden companion are not overridden.
+
+Showing Byte, opening the Quick Panel, entering Move Mode, or reapplying window layout cannot bypass an active suppression state.
+
+Screen sharing is handled with Windows capture exclusion rather than a hard-coded list of conferencing/recording apps. The option is enabled by default and applies to Byte's trusted windows. It is a privacy/convenience measure for supported Windows capture paths, not a DRM or absolute content-security mechanism.
+
+Custom foreground exclusions store normalized executable names only. Byte does not store executable paths or window titles for this feature.
+
+Display-off currently guarantees visibility suppression. Phase 23 owns deeper worker/rendering/telemetry suspension and power-performance coordination.

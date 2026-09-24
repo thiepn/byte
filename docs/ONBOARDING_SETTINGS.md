@@ -50,7 +50,7 @@ Finishing writes the existing CompanionPreferences and AppPreferences; there is 
 
 ## Migration
 
-ByteConfig schema version is now **7**.
+ByteConfig schema version is now **8**.
 
 Existing schema versions 1–5 gain Phase 20 defaults and are migrated with onboarding marked complete. This prevents an upgrade from interrupting an already configured user with first-run setup.
 
@@ -62,20 +62,27 @@ Byte writes only the current user's Windows Run key. Disabling the setting remov
 
 The app also reapplies the stored startup preference during launch so an executable move/update can refresh the registered path.
 
-## Fullscreen behavior
+## Desktop awareness
 
-Byte now detects foreground fullscreen windows on Windows.
+Phase 22 expands the original fullscreen setting into a complete desktop-awareness layer.
 
-When **Hide during fullscreen** is enabled:
+Settings now exposes:
 
-- entering a real fullscreen foreground window hides the companion
-- the Quick Panel is dismissed
-- leaving fullscreen restores the companion
-- Tray mode stays Tray mode
-- ordinary maximized windows that leave the taskbar/work area visible are not treated as fullscreen
-- Byte's own windows are ignored
+- Hide for fullscreen games & video
+- Hide during presentation mode
+- Keep Byte out of screen capture
+- optional foreground-app exclusions
+- a live awareness status readout
 
-The check is lightweight and runs roughly every 750 ms.
+Lock/not-present and console display-off hiding are always active safety/convenience behavior.
+
+Fullscreen recognition combines monitor geometry with Windows fullscreen Direct3D state. Presentation handling uses Windows presentation/busy state. Ordinary maximized windows are not treated as fullscreen merely because they fill the normal work area.
+
+Byte's own foreground windows preserve any existing external suppression instead of accidentally restoring the companion over the fullscreen/presentation app behind them.
+
+Screen capture uses Windows capture exclusion rather than maintaining a list of conferencing/recording tools.
+
+See [DESKTOP_AWARENESS.md](DESKTOP_AWARENESS.md).
 
 ## System monitoring
 
@@ -169,4 +176,4 @@ Phase 20 is complete when an unfamiliar user can:
 - reopen onboarding
 - reach customization and releases from Settings
 
-Next: **Phase 22 — Fullscreen, Gaming & Presentation Awareness**.
+Next: **Phase 23 — Power & Performance Hardening**.

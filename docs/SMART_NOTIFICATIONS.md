@@ -212,3 +212,12 @@ Phase 21 does not add:
 - auto-remediation
 
 Phase 22 continues with **Fullscreen, Gaming & Presentation Awareness**, focusing on lifecycle/overlay hardening beyond the basic fullscreen hide/restore primitive already introduced in Phase 20.
+
+
+## Phase 22 awareness suppression
+
+Smart Notifications are not emitted while desktop awareness is suppressing Byte for fullscreen, presentation, lock/not-present, display-off, or a user-selected excluded foreground app.
+
+The candidate is not marked delivered merely because it was suppressed. If the sustained issue is still eligible after the awareness condition ends, normal notification evaluation may notify then.
+
+This keeps Byte quiet during games/presentations without weakening the underlying diagnostics.

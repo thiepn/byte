@@ -107,6 +107,33 @@ Phase 7 moves the local config schema from v1 to v2.
 
 Existing v1 config is migrated in place and preserves the user's current companion settings. New placement and Edge fields receive defaults. Unknown future schema versions are rejected and quarantined rather than silently interpreted.
 
+## Desktop-awareness guard
+
+Phase 22 adds a centralized suppression invariant around the shell.
+
+While desktop awareness is suppressing Byte:
+
+- companion show requests become no-ops
+- Quick Panel show requests become no-ops
+- Move Mode is rejected
+- display-mode/layout changes can update persisted geometry but do not reveal the companion
+
+When suppression begins, Byte records whether the companion was actually visible. When the condition ends, it restores only if that recorded state says Byte itself hid the companion.
+
+This is deliberately stronger than placing hide/show calls only inside the fullscreen watcher because tray actions, Quick Panel actions, customization changes, and settings updates all share the same guard.
+
+## Capture exclusion
+
+By default, Byte applies Windows capture exclusion to companion, Quick Panel, and main windows.
+
+The option can be changed in Settings. Capture exclusion is kept separate from local visibility: a user can keep Byte visible on their own desktop while supported Windows capture paths omit it.
+
+## Phase 22 awareness inputs
+
+The awareness worker combines foreground geometry, Windows notification/presentation state, console display power state, and optional normalized foreground-app exclusions.
+
+The stored exclusion list contains executable names only; no paths or window titles are persisted.
+
 ## Deferred work
 
-Fullscreen/presentation auto-hide and Windows lock/display-power event wiring belong to Phase 22. Phase 7 establishes the lifecycle and windowing primitives those features will use.
+Phase 23 owns coordinated sleep/performance behavior: worker suspension, visibility-aware rendering, adaptive telemetry cadence, and deeper idle/display-sleep power optimization.

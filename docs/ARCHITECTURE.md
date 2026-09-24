@@ -134,9 +134,9 @@ The backend validates known Phase 19 gated selections before persisting Companio
 
 ## Phase 20 application settings and Windows integration
 
-ByteConfig schema version 6 expands AppPreferences with onboarding, monitoring, notification, and accessibility state.
+Phase 20 introduced onboarding, monitoring, notification, and accessibility state. The current ByteConfig schema is version 8 after later Phase 21–22 preference additions.
 
-New installs default to onboarding incomplete. Config versions 1–5 migrate to schema 6 with onboarding marked complete so existing users are not forced through first-run setup.
+New installs default to onboarding incomplete. Installations predating Phase 20 migrate with onboarding marked complete so existing users are not forced through first-run setup.
 
 The `update_app_preferences` command is the single persisted app-settings mutation path. It validates supported text-scale values, applies current-user startup registration when that setting changes, clears the cached system snapshot when monitoring is disabled, and broadcasts `byte://app-preferences-changed` to all Byte windows.
 
@@ -150,11 +150,7 @@ No administrator privilege, scheduled task, service, or machine-wide registry en
 
 ### Fullscreen awareness
 
-A lightweight Windows worker checks the foreground window approximately every 750 ms.
-
-It ignores Byte's own windows and treats a foreground window as fullscreen only when its outer rectangle matches the monitor rectangle within a two-pixel tolerance. When fullscreen auto-hide is enabled, Byte hides the companion and Quick Panel, then restores the companion after fullscreen ends. Tray mode is never overridden.
-
-The lifecycle coordinator enters `FULLSCREEN_REDUCED` while a fullscreen foreground window is active.
+Phase 20 introduced basic foreground-rectangle fullscreen hiding. Phase 22 replaces that narrow watcher with the broader desktop-awareness service described below.
 
 ### Monitoring
 
@@ -206,3 +202,62 @@ Notification delivery occurs only when the OS notification permission is granted
 Notification sound obeys Byte's existing Sound setting.
 
 Phase 21 does not implement app-hang detection because Byte currently has no reliable local signal that can distinguish a hung application from a deliberately non-responsive/background application without increasing false positives.
+
+
+## Desktop awareness
+
+Phase 22 replaces one-purpose fullscreen hiding with a native `DesktopAwarenessSnapshot` owned by AppState.
+
+The Windows awareness worker combines:
+
+- foreground window/monitor geometry
+- `SHQueryUserNotificationState` fullscreen Direct3D / busy / presentation / not-present state
+- foreground executable name when an app-specific exclusion check is needed
+- `GUID_CONSOLE_DISPLAY_STATE` power-setting notifications through a message-only Windows window
+
+Visibility suppression reasons are explicit:
+
+- FULLSCREEN
+- PRESENTATION
+- LOCKED
+- DISPLAY_SLEEP
+- EXCLUDED_APP
+
+AppState stores both the current awareness snapshot and whether the companion was actually visible when suppression began. On recovery, Byte restores only when it had hidden a visible companion. This prevents suppression from overriding Tray mode or a companion the user had already hidden.
+
+Windowing treats suppression as an invariant:
+
+- `show_companion` cannot reveal Byte while suppressed
+- `show_quick_panel` cannot reveal the panel while suppressed
+- Move Mode cannot start while suppressed
+- `apply_companion_layout` keeps the companion hidden while suppressed
+- Smart Notifications do not fire while desktop awareness says Byte should remain unobtrusive
+
+When Byte's own main window temporarily becomes foreground, the awareness service preserves the prior external suppression state rather than concluding that a game/presentation ended.
+
+### Capture exclusion
+
+Phase 22 applies Windows `SetWindowDisplayAffinity(WDA_EXCLUDEFROMCAPTURE)` by default to companion, Quick Panel, and main windows.
+
+This avoids relying on heuristics such as named Zoom/Teams/OBS processes to infer when screen sharing is active. The setting can be disabled. It is a best-effort Windows capture exclusion for supported capture paths, not a content-security guarantee.
+
+### Foreground exclusions
+
+Users may store up to 32 executable-name exclusions. The backend:
+
+- strips a trailing `.exe`
+- lowercases and deduplicates names
+- rejects paths and colon/slash/backslash input
+- stores no window title or executable path
+
+Foreground process paths are queried transiently only long enough to extract the executable stem; the full path is discarded.
+
+### Startup flash prevention
+
+The companion Tauri window is configured initially hidden. Desktop awareness takes its first observation before normal companion layout is shown, preventing a one-frame overlay flash when Byte launches while a fullscreen/presentation/lock condition is already active.
+
+### Power boundary
+
+Console display-off immediately hides Byte.
+
+Phase 22 intentionally does not suspend telemetry, animation, input, or other workers when the display turns off. That coordinated performance behavior belongs to **Phase 23 — Power & Performance Hardening**.
