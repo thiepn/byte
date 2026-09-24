@@ -62,7 +62,12 @@ struct AwarenessObservation {
 }
 
 pub fn start(app: AppHandle) -> Result<(), ByteError> {
-    apply_observation(&app, observe(), true);
+    let inspect_foreground_app = !app
+        .state::<AppState>()
+        .app_preferences()
+        .hidden_foreground_apps
+        .is_empty();
+    apply_observation(&app, observe(inspect_foreground_app), true);
 
     let worker_app = app.clone();
     let worker = thread::Builder::new()
@@ -87,7 +92,11 @@ fn run(app: AppHandle) {
             window.pump_messages();
         }
 
-        apply_observation(&app, observe(), false);
+        let inspect_foreground_app = !state
+            .app_preferences()
+            .hidden_foreground_apps
+            .is_empty();
+        apply_observation(&app, observe(inspect_foreground_app), false);
         thread::sleep(POLL_INTERVAL);
     }
 }
@@ -109,9 +118,13 @@ fn apply_observation(app: &AppHandle, observation: AwarenessObservation, initial
         suppression_reason(&observation, &config.app)
     };
     let visible = windowing::is_companion_visible(app).unwrap_or(false);
+    let visible_foreground_app =
+        (reason == Some(VisibilitySuppressionReason::ExcludedApp))
+            .then(|| observation.foreground_app.clone())
+            .flatten();
     let transition = state.update_desktop_awareness(
         reason,
-        observation.foreground_app.clone(),
+        visible_foreground_app,
         config.app.exclude_from_capture,
         visible,
     );
@@ -141,7 +154,7 @@ fn apply_observation(app: &AppHandle, observation: AwarenessObservation, initial
     }
 }
 
-fn observe() -> AwarenessObservation {
+fn observe(inspect_foreground_app: bool) -> AwarenessObservation {
     let display_off = DISPLAY_STATE.load(Ordering::Acquire) == DISPLAY_OFF;
     let user_state = user_notification_state();
 
@@ -171,7 +184,9 @@ fn observe() -> AwarenessObservation {
             };
         }
 
-        let foreground_app = process_name(process_id);
+        let foreground_app = inspect_foreground_app
+            .then(|| process_name(process_id))
+            .flatten();
 
         let mut window_rect: RECT = std::mem::zeroed();
         let fullscreen_geometry = if GetWindowRect(window, &mut window_rect) != 0 {
