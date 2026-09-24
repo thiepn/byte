@@ -1,8 +1,4 @@
-use crate::{
-    core::error::ByteError,
-    models::RecommendedActionKind,
-    platform::windows::windowing,
-};
+use crate::{core::error::ByteError, models::RecommendedActionKind, platform::windows::windowing};
 use std::{ffi::OsStr, iter, os::windows::ffi::OsStrExt, ptr::null};
 use tauri::AppHandle;
 use windows_sys::Win32::{
