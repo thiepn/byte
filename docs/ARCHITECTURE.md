@@ -76,3 +76,12 @@ Characters and habitats remain manifest-driven. Phase 5 does not change the Phas
 ## Validation
 
 Windows CI runs frontend type checks/tests/build plus Rust format/tests/clippy/check. Telemetry fixtures cover healthy data, changing load, and absent optional sensors.
+
+
+## Character animation runtime
+
+Phase 8 adds a manifest-driven character engine in the Svelte companion layer. One shared scheduler drives semantic animation state, transition clips, idle selection, reduced-motion behavior, frame anchors, and canvas rendering.
+
+System telemetry never references sprite frames. The companion maps cached system state to semantic behaviors and the character manifest decides how those behaviors look.
+
+See [ANIMATION_RUNTIME.md](ANIMATION_RUNTIME.md).

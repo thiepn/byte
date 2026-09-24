@@ -1,16 +1,27 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+  import { loadCharacterManifest } from "../assets/registry";
+  import { CharacterAnimator } from "../animation/state-machine";
+  import { animationScheduler } from "../animation/scheduler";
+  import { systemBehaviorForSnapshot } from "../animation/system-behavior";
+  import { hashSeed } from "../animation/random";
+  import { CharacterCanvasRenderer } from "./CharacterCanvasRenderer";
   import {
     dragCompanion,
     finishMoveMode,
+    getSnapshot,
     getWindowShellState,
     showQuickPanel,
   } from "../../lib/ipc/client";
 
+  let canvas: HTMLCanvasElement;
+  let animator: CharacterAnimator | null = null;
+  let renderer: CharacterCanvasRenderer | null = null;
   let pressed = false;
   let moveMode = false;
   let dragging = false;
+  let runtimeError = false;
   let suppressClickUntil = 0;
 
   function isTauri(): boolean {
@@ -19,6 +30,11 @@
 
   async function openPanel(): Promise<void> {
     if (moveMode || dragging || Date.now() < suppressClickUntil) return;
+
+    animator?.requestBehavior({
+      behavior: "mouse_click",
+      source: "interaction",
+    });
 
     pressed = true;
     try {
@@ -57,9 +73,68 @@
     }
   }
 
+  async function refreshSystemBehavior(): Promise<void> {
+    if (!animator) return;
+
+    try {
+      const snapshot = await getSnapshot();
+      const request = systemBehaviorForSnapshot(snapshot);
+      animator.setBaseBehavior(request.behavior, request.source);
+    } catch {
+      // Keep the last known behavior. Telemetry failures should not break rendering.
+    }
+  }
+
   onMount(() => {
-    const unlisteners: UnlistenFn[] = [];
     let disposed = false;
+    let unsubscribeAnimation: (() => void) | null = null;
+    let systemTimer: number | null = null;
+    let mediaQuery: MediaQueryList | null = null;
+    const unlisteners: UnlistenFn[] = [];
+
+    const initialize = async (): Promise<void> => {
+      try {
+        const manifest = await loadCharacterManifest("byte");
+        if (disposed) return;
+
+        renderer = new CharacterCanvasRenderer(canvas, manifest);
+        await renderer.load();
+        if (disposed) return;
+
+        const sessionDay = new Date().toISOString().slice(0, 10);
+        animator = new CharacterAnimator(
+          manifest,
+          hashSeed(`${manifest.id}:${sessionDay}`),
+        );
+
+        mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+        animator.setReducedMotion(mediaQuery.matches);
+
+        const onMotionChange = (event: MediaQueryListEvent): void => {
+          animator?.setReducedMotion(event.matches);
+        };
+        mediaQuery.addEventListener("change", onMotionChange);
+
+        unsubscribeAnimation = animationScheduler.subscribe(({ deltaMs }) => {
+          if (!animator || !renderer) return;
+          renderer.render(animator.tick(deltaMs));
+        });
+
+        renderer.render(animator.frame());
+        await refreshSystemBehavior();
+
+        systemTimer = window.setInterval(() => {
+          void refreshSystemBehavior();
+        }, 2000);
+
+        const cleanupMotion = (): void => {
+          mediaQuery?.removeEventListener("change", onMotionChange);
+        };
+        unlisteners.push(cleanupMotion as UnlistenFn);
+      } catch {
+        runtimeError = true;
+      }
+    };
 
     void getWindowShellState().then((shell) => {
       if (!disposed) moveMode = shell.move_mode;
@@ -74,9 +149,15 @@
       });
     }
 
+    void initialize();
+
     return () => {
       disposed = true;
+      unsubscribeAnimation?.();
+      if (systemTimer != null) window.clearInterval(systemTimer);
       for (const unlisten of unlisteners) unlisten();
+      animator = null;
+      renderer = null;
     };
   });
 </script>
@@ -93,7 +174,7 @@
   onkeydown={handleKeydown}
   onpointerdown={(event) => void startMove(event)}
 >
-  <div class="dev-label">DEV</div>
+  <div class="dev-label">DEV RUNTIME</div>
 
   {#if moveMode}
     <div class="move-banner" aria-live="polite">
@@ -107,14 +188,11 @@
     </div>
   {/if}
 
-  <div class="byte" aria-hidden="true">
-    <div class="antenna left"></div>
-    <div class="antenna right"></div>
-    <div class="head"><div class="visor"><span class="eye"></span><span class="eye"></span></div></div>
-    <div class="body"></div>
-    <div class="feet"><span></span><span></span></div>
-  </div>
-  <div class="ground" aria-hidden="true"></div>
+  {#if runtimeError}
+    <div class="runtime-error" role="status">Character preview unavailable</div>
+  {:else}
+    <canvas bind:this={canvas} class="character-canvas" aria-hidden="true"></canvas>
+  {/if}
 </div>
 
 <style>
@@ -130,6 +208,8 @@
     transform: translateY(0);
     transition: transform 120ms ease;
     user-select: none;
+    display: grid;
+    place-items: center;
   }
 
   .scene:focus-visible {
@@ -154,14 +234,25 @@
     cursor: grabbing;
   }
 
+  .character-canvas {
+    width: min(82vw, 190px);
+    height: auto;
+    aspect-ratio: 1;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    pointer-events: none;
+  }
+
   .dev-label {
     position: absolute;
-    top: 16px;
+    z-index: 4;
+    top: 9px;
     left: 50%;
     transform: translateX(-50%);
-    color: rgba(46, 49, 57, 0.45);
-    font: 700 10px/1 "Segoe UI", sans-serif;
-    letter-spacing: 0.18em;
+    color: rgba(46, 49, 57, 0.42);
+    font: 700 9px/1 "Segoe UI", sans-serif;
+    letter-spacing: 0.14em;
+    white-space: nowrap;
   }
 
   .move-banner {
@@ -209,103 +300,17 @@
     cursor: pointer;
   }
 
-  .byte {
-    position: absolute;
-    left: 50%;
-    top: 48%;
-    width: 96px;
-    height: 98px;
-    transform: translate(-50%, -50%);
+  .runtime-error {
+    padding: 8px 10px;
+    border-radius: var(--radius-button);
+    background: var(--surface-overlay);
+    color: var(--text-secondary);
+    font-size: 11px;
   }
 
-  .head {
-    position: absolute;
-    left: 10px;
-    top: 14px;
-    width: 76px;
-    height: 58px;
-    border: 5px solid #2d3038;
-    border-radius: 20px;
-    background: #77bdeb;
-    box-shadow: inset 7px 7px 0 #c5e8fc;
-  }
-
-  .visor {
-    position: absolute;
-    left: 13px;
-    top: 18px;
-    width: 40px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    border-radius: 7px;
-    background: #2d3038;
-  }
-
-  .eye {
-    width: 7px;
-    height: 7px;
-    border-radius: 2px;
-    background: #d7f0ff;
-  }
-
-  .antenna {
-    position: absolute;
-    top: 2px;
-    width: 5px;
-    height: 20px;
-    border-radius: 3px;
-    background: #2d3038;
-    transform-origin: bottom;
-    z-index: -1;
-  }
-
-  .antenna.left {
-    left: 25px;
-    transform: rotate(-24deg);
-  }
-
-  .antenna.right {
-    right: 25px;
-    transform: rotate(24deg);
-  }
-
-  .body {
-    position: absolute;
-    left: 25px;
-    top: 68px;
-    width: 46px;
-    height: 22px;
-    border: 5px solid #2d3038;
-    border-radius: 9px;
-    background: #77bdeb;
-  }
-
-  .feet {
-    position: absolute;
-    left: 28px;
-    top: 88px;
-    width: 40px;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .feet span {
-    width: 13px;
-    height: 7px;
-    border-radius: 4px 4px 2px 2px;
-    background: #2d3038;
-  }
-
-  .ground {
-    position: absolute;
-    left: 50%;
-    bottom: 22px;
-    width: 126px;
-    height: 16px;
-    transform: translateX(-50%);
-    border-radius: 50%;
-    background: rgba(45, 48, 56, 0.13);
+  @media (prefers-reduced-motion: reduce) {
+    .scene {
+      transition: none;
+    }
   }
 </style>

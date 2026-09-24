@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–7 are implemented.
+Phases 1–8 are implemented.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -22,6 +22,7 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Companion placement is saved per mode as monitor-relative coordinates and restored safely after display changes.
 - Perch uses the Windows work area so it stays taskbar-aware.
 - Move Mode, native dragging, click-through, tray controls, and adjacent Quick Panel placement are implemented.
+- Character animation is manifest-driven with one shared 12 FPS scheduler, semantic behavior priorities, transitions, reduced-motion fallbacks, deterministic idle scheduling, anchors, and canvas sprite rendering.
 - Global-input types represent anonymous activity only.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
 
@@ -53,5 +54,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Telemetry engine](docs/TELEMETRY.md)
 - [System intelligence](docs/DIAGNOSTICS.md)
 - [Native windowing](docs/WINDOWING.md)
+- [Character animation runtime](docs/ANIMATION_RUNTIME.md)
 
-Next: Phase 8 — Character Animation Runtime.
+Next: Phase 9 — Character Production.

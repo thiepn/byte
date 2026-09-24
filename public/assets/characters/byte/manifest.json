@@ -1,9 +1,627 @@
 {
+  "schemaVersion": 1,
   "id": "byte",
   "name": "Byte",
   "nativeSize": 48,
   "animationCanvas": 64,
-  "animations": ["idle", "blink", "sleep", "wake", "move_left", "move_right", "typing_left", "typing_right", "typing_fast", "mouse_click", "scroll", "pet", "happy", "busy", "stressed", "hot", "memory_pressure", "low_battery", "charging", "network_activity", "needs_attention"],
-  "anchors": ["head", "face", "body", "back", "left_hand", "right_hand", "ground"],
+  "atlas": {
+    "src": "/assets/characters/byte/dev-atlas.png",
+    "width": 512,
+    "height": 64,
+    "frameWidth": 64,
+    "frameHeight": 64,
+    "columns": 8
+  },
+  "frames": {
+    "idle": {
+      "index": 0,
+      "anchors": {
+        "head": {
+          "x": 32,
+          "y": 14
+        },
+        "face": {
+          "x": 32,
+          "y": 27
+        },
+        "body": {
+          "x": 32,
+          "y": 45
+        },
+        "back": {
+          "x": 32,
+          "y": 44,
+          "layer": -1
+        },
+        "left_hand": {
+          "x": 18,
+          "y": 46
+        },
+        "right_hand": {
+          "x": 46,
+          "y": 46
+        },
+        "ground": {
+          "x": 32,
+          "y": 55
+        }
+      }
+    },
+    "blink": {
+      "index": 1,
+      "anchors": {
+        "head": {
+          "x": 32,
+          "y": 14
+        },
+        "face": {
+          "x": 32,
+          "y": 27
+        },
+        "body": {
+          "x": 32,
+          "y": 45
+        },
+        "back": {
+          "x": 32,
+          "y": 44,
+          "layer": -1
+        },
+        "left_hand": {
+          "x": 18,
+          "y": 46
+        },
+        "right_hand": {
+          "x": 46,
+          "y": 46
+        },
+        "ground": {
+          "x": 32,
+          "y": 55
+        }
+      }
+    },
+    "sleep": {
+      "index": 2,
+      "anchors": {
+        "head": {
+          "x": 32,
+          "y": 16
+        },
+        "face": {
+          "x": 32,
+          "y": 29
+        },
+        "body": {
+          "x": 32,
+          "y": 47
+        },
+        "back": {
+          "x": 32,
+          "y": 46,
+          "layer": -1
+        },
+        "left_hand": {
+          "x": 19,
+          "y": 48
+        },
+        "right_hand": {
+          "x": 45,
+          "y": 48
+        },
+        "ground": {
+          "x": 32,
+          "y": 57
+        }
+      }
+    },
+    "type_left": {
+      "index": 3,
+      "anchors": {
+        "head": {
+          "x": 32,
+          "y": 14
+        },
+        "face": {
+          "x": 32,
+          "y": 27
+        },
+        "body": {
+          "x": 32,
+          "y": 45
+        },
+        "back": {
+          "x": 32,
+          "y": 44,
+          "layer": -1
+        },
+        "left_hand": {
+          "x": 16,
+          "y": 49
+        },
+        "right_hand": {
+          "x": 46,
+          "y": 46
+        },
+        "ground": {
+          "x": 32,
+          "y": 55
+        }
+      }
+    },
+    "type_right": {
+      "index": 4,
+      "anchors": {
+        "head": {
+          "x": 32,
+          "y": 14
+        },
+        "face": {
+          "x": 32,
+          "y": 27
+        },
+        "body": {
+          "x": 32,
+          "y": 45
+        },
+        "back": {
+          "x": 32,
+          "y": 44,
+          "layer": -1
+        },
+        "left_hand": {
+          "x": 18,
+          "y": 46
+        },
+        "right_hand": {
+          "x": 48,
+          "y": 49
+        },
+        "ground": {
+          "x": 32,
+          "y": 55
+        }
+      }
+    },
+    "happy": {
+      "index": 5,
+      "anchors": {
+        "head": {
+          "x": 32,
+          "y": 12
+        },
+        "face": {
+          "x": 32,
+          "y": 25
+        },
+        "body": {
+          "x": 32,
+          "y": 43
+        },
+        "back": {
+          "x": 32,
+          "y": 42,
+          "layer": -1
+        },
+        "left_hand": {
+          "x": 17,
+          "y": 38
+        },
+        "right_hand": {
+          "x": 47,
+          "y": 38
+        },
+        "ground": {
+          "x": 32,
+          "y": 53
+        }
+      }
+    },
+    "busy": {
+      "index": 6,
+      "anchors": {
+        "head": {
+          "x": 32,
+          "y": 14
+        },
+        "face": {
+          "x": 32,
+          "y": 27
+        },
+        "body": {
+          "x": 32,
+          "y": 45
+        },
+        "back": {
+          "x": 32,
+          "y": 44,
+          "layer": -1
+        },
+        "left_hand": {
+          "x": 18,
+          "y": 44
+        },
+        "right_hand": {
+          "x": 46,
+          "y": 44
+        },
+        "ground": {
+          "x": 32,
+          "y": 55
+        }
+      }
+    },
+    "alert": {
+      "index": 7,
+      "anchors": {
+        "head": {
+          "x": 32,
+          "y": 14
+        },
+        "face": {
+          "x": 32,
+          "y": 27
+        },
+        "body": {
+          "x": 32,
+          "y": 45
+        },
+        "back": {
+          "x": 32,
+          "y": 44,
+          "layer": -1
+        },
+        "left_hand": {
+          "x": 18,
+          "y": 46
+        },
+        "right_hand": {
+          "x": 46,
+          "y": 46
+        },
+        "ground": {
+          "x": 32,
+          "y": 55
+        }
+      }
+    }
+  },
+  "clips": {
+    "idle": {
+      "frames": [
+        {
+          "frame": "idle",
+          "durationMs": 600
+        }
+      ],
+      "loop": true,
+      "reducedMotionFrame": "idle"
+    },
+    "blink": {
+      "frames": [
+        {
+          "frame": "idle",
+          "durationMs": 80
+        },
+        {
+          "frame": "blink",
+          "durationMs": 90
+        },
+        {
+          "frame": "idle",
+          "durationMs": 100
+        }
+      ],
+      "loop": false,
+      "reducedMotionFrame": "blink",
+      "reducedMotionDurationMs": 120
+    },
+    "sleep_enter": {
+      "frames": [
+        {
+          "frame": "idle",
+          "durationMs": 120
+        },
+        {
+          "frame": "sleep",
+          "durationMs": 180
+        }
+      ],
+      "loop": false,
+      "reducedMotionFrame": "sleep",
+      "reducedMotionDurationMs": 160
+    },
+    "sleep": {
+      "frames": [
+        {
+          "frame": "sleep",
+          "durationMs": 900
+        }
+      ],
+      "loop": true,
+      "reducedMotionFrame": "sleep"
+    },
+    "wake": {
+      "frames": [
+        {
+          "frame": "sleep",
+          "durationMs": 120
+        },
+        {
+          "frame": "idle",
+          "durationMs": 160
+        }
+      ],
+      "loop": false,
+      "reducedMotionFrame": "idle",
+      "reducedMotionDurationMs": 150
+    },
+    "type_left": {
+      "frames": [
+        {
+          "frame": "type_left",
+          "durationMs": 90
+        },
+        {
+          "frame": "idle",
+          "durationMs": 70
+        }
+      ],
+      "loop": false,
+      "reducedMotionFrame": "type_left",
+      "reducedMotionDurationMs": 100
+    },
+    "type_right": {
+      "frames": [
+        {
+          "frame": "type_right",
+          "durationMs": 90
+        },
+        {
+          "frame": "idle",
+          "durationMs": 70
+        }
+      ],
+      "loop": false,
+      "reducedMotionFrame": "type_right",
+      "reducedMotionDurationMs": 100
+    },
+    "typing_fast": {
+      "frames": [
+        {
+          "frame": "type_left",
+          "durationMs": 70
+        },
+        {
+          "frame": "type_right",
+          "durationMs": 70
+        }
+      ],
+      "loop": true,
+      "reducedMotionFrame": "idle"
+    },
+    "happy": {
+      "frames": [
+        {
+          "frame": "happy",
+          "durationMs": 160
+        },
+        {
+          "frame": "idle",
+          "durationMs": 100
+        }
+      ],
+      "loop": false,
+      "reducedMotionFrame": "happy",
+      "reducedMotionDurationMs": 150
+    },
+    "busy": {
+      "frames": [
+        {
+          "frame": "busy",
+          "durationMs": 220
+        },
+        {
+          "frame": "idle",
+          "durationMs": 140
+        }
+      ],
+      "loop": true,
+      "reducedMotionFrame": "busy"
+    },
+    "stressed": {
+      "frames": [
+        {
+          "frame": "busy",
+          "durationMs": 180
+        },
+        {
+          "frame": "alert",
+          "durationMs": 180
+        }
+      ],
+      "loop": true,
+      "reducedMotionFrame": "busy"
+    },
+    "alert_enter": {
+      "frames": [
+        {
+          "frame": "busy",
+          "durationMs": 100
+        },
+        {
+          "frame": "alert",
+          "durationMs": 120
+        }
+      ],
+      "loop": false,
+      "reducedMotionFrame": "alert",
+      "reducedMotionDurationMs": 120
+    },
+    "alert": {
+      "frames": [
+        {
+          "frame": "alert",
+          "durationMs": 260
+        },
+        {
+          "frame": "idle",
+          "durationMs": 120
+        }
+      ],
+      "loop": true,
+      "reducedMotionFrame": "alert"
+    },
+    "click": {
+      "frames": [
+        {
+          "frame": "happy",
+          "durationMs": 100
+        },
+        {
+          "frame": "idle",
+          "durationMs": 80
+        }
+      ],
+      "loop": false,
+      "reducedMotionFrame": "happy",
+      "reducedMotionDurationMs": 100
+    },
+    "generic_reaction": {
+      "frames": [
+        {
+          "frame": "happy",
+          "durationMs": 130
+        },
+        {
+          "frame": "idle",
+          "durationMs": 90
+        }
+      ],
+      "loop": false,
+      "reducedMotionFrame": "happy",
+      "reducedMotionDurationMs": 110
+    },
+    "hot": {
+      "frames": [
+        {
+          "frame": "busy",
+          "durationMs": 180
+        },
+        {
+          "frame": "alert",
+          "durationMs": 220
+        }
+      ],
+      "loop": true,
+      "reducedMotionFrame": "busy"
+    },
+    "memory_pressure": {
+      "frames": [
+        {
+          "frame": "alert",
+          "durationMs": 230
+        },
+        {
+          "frame": "busy",
+          "durationMs": 170
+        }
+      ],
+      "loop": true,
+      "reducedMotionFrame": "alert"
+    },
+    "low_battery": {
+      "frames": [
+        {
+          "frame": "sleep",
+          "durationMs": 500
+        },
+        {
+          "frame": "alert",
+          "durationMs": 160
+        }
+      ],
+      "loop": true,
+      "reducedMotionFrame": "sleep"
+    },
+    "network": {
+      "frames": [
+        {
+          "frame": "happy",
+          "durationMs": 130
+        },
+        {
+          "frame": "idle",
+          "durationMs": 130
+        }
+      ],
+      "loop": false,
+      "reducedMotionFrame": "idle",
+      "reducedMotionDurationMs": 100
+    }
+  },
+  "behaviors": {
+    "idle": "idle",
+    "blink": "blink",
+    "look_left": "generic_reaction",
+    "look_right": "generic_reaction",
+    "sleep": "sleep",
+    "wake": "wake",
+    "move_left": "generic_reaction",
+    "move_right": "generic_reaction",
+    "typing_left": "type_left",
+    "typing_right": "type_right",
+    "typing_fast": "typing_fast",
+    "mouse_click": "click",
+    "right_click": "click",
+    "scroll": "generic_reaction",
+    "pet": "happy",
+    "happy": "happy",
+    "surprised": "alert",
+    "curious": "blink",
+    "annoyed": "alert",
+    "busy": "busy",
+    "stressed": "stressed",
+    "hot": "hot",
+    "memory_pressure": "memory_pressure",
+    "low_battery": "low_battery",
+    "charging": "happy",
+    "network_activity": "network",
+    "needs_attention": "alert"
+  },
+  "transitions": {
+    "idle>sleep": "sleep_enter",
+    "sleep>wake": "wake",
+    "idle>needs_attention": "alert_enter",
+    "busy>needs_attention": "alert_enter",
+    "stressed>needs_attention": "alert_enter"
+  },
+  "idleProfile": {
+    "minDelayMs": 4500,
+    "maxDelayMs": 10000,
+    "choices": [
+      {
+        "behavior": "blink",
+        "weight": 7
+      },
+      {
+        "behavior": "curious",
+        "weight": 3
+      },
+      {
+        "behavior": "happy",
+        "weight": 1
+      }
+    ]
+  },
+  "anchors": [
+    "head",
+    "face",
+    "body",
+    "back",
+    "left_hand",
+    "right_hand",
+    "ground"
+  ],
   "status": "placeholder"
 }
