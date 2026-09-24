@@ -1,5 +1,12 @@
 use crate::{
-    core::error::ByteError,
+    core::{
+        error::ByteError,
+        persistence::{read_bounded_text, BoundedText},
+        security::{
+            normalize_and_validate_app_preferences, normalize_and_validate_config,
+            validate_companion_preferences,
+        },
+    },
     models::{AppPreferences, ByteConfig, CompanionPreferences},
 };
 use std::{
@@ -10,6 +17,7 @@ use std::{
 use tempfile::NamedTempFile;
 
 pub const CURRENT_SCHEMA_VERSION: u32 = 8;
+const MAX_CONFIG_FILE_BYTES: u64 = 256 * 1024;
 
 pub struct ConfigStore {
     path: PathBuf,
@@ -22,16 +30,19 @@ impl ConfigStore {
             fs::create_dir_all(parent)?;
         }
 
-        let config = match fs::read_to_string(&path) {
-            Ok(raw) => match decode_and_migrate(&raw) {
+        let config = match read_bounded_text(&path, MAX_CONFIG_FILE_BYTES)? {
+            BoundedText::Present(raw) => match decode_and_migrate(&raw) {
                 Ok(value) => value,
                 Err(_) => {
                     quarantine_corrupt_config(&path);
                     ByteConfig::default()
                 }
             },
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => ByteConfig::default(),
-            Err(error) => return Err(error.into()),
+            BoundedText::Invalid => {
+                quarantine_corrupt_config(&path);
+                ByteConfig::default()
+            }
+            BoundedText::Missing => ByteConfig::default(),
         };
 
         let store = Self { path, config };
@@ -47,8 +58,12 @@ impl ConfigStore {
         &mut self,
         preferences: CompanionPreferences,
     ) -> Result<ByteConfig, ByteError> {
-        self.config.companion = preferences;
-        self.save()?;
+        validate_companion_preferences(&preferences)?;
+
+        let mut next = self.config.clone();
+        next.companion = preferences;
+        self.save_config(&next)?;
+        self.config = next;
         Ok(self.config.clone())
     }
 
@@ -56,21 +71,32 @@ impl ConfigStore {
         &mut self,
         update: impl FnOnce(&mut CompanionPreferences),
     ) -> Result<ByteConfig, ByteError> {
-        update(&mut self.config.companion);
-        self.save()?;
+        let mut next = self.config.clone();
+        update(&mut next.companion);
+        validate_companion_preferences(&next.companion)?;
+        self.save_config(&next)?;
+        self.config = next;
         Ok(self.config.clone())
     }
 
-    pub fn update_app(&mut self, preferences: AppPreferences) -> Result<ByteConfig, ByteError> {
-        self.config.app = preferences;
-        self.save()?;
+    pub fn update_app(&mut self, mut preferences: AppPreferences) -> Result<ByteConfig, ByteError> {
+        normalize_and_validate_app_preferences(&mut preferences)?;
+
+        let mut next = self.config.clone();
+        next.app = preferences;
+        self.save_config(&next)?;
+        self.config = next;
         Ok(self.config.clone())
     }
 
     pub fn save(&self) -> Result<(), ByteError> {
+        self.save_config(&self.config)
+    }
+
+    fn save_config(&self, config: &ByteConfig) -> Result<(), ByteError> {
         let parent = self.path.parent().unwrap_or_else(|| Path::new("."));
         fs::create_dir_all(parent)?;
-        let payload = serde_json::to_vec_pretty(&self.config)?;
+        let payload = serde_json::to_vec_pretty(config)?;
         let mut temp = NamedTempFile::new_in(parent)?;
         temp.write_all(&payload)?;
         temp.as_file_mut().sync_all()?;
@@ -84,23 +110,26 @@ fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
     let mut config = serde_json::from_str::<ByteConfig>(raw)?;
 
     match config.schema_version {
-        CURRENT_SCHEMA_VERSION => Ok(config),
+        CURRENT_SCHEMA_VERSION => {}
         1..=5 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
             // Installations predating Phase 20 already passed through Byte
             // without onboarding. Do not force first-run setup on them.
             config.app.onboarding_completed = true;
-            Ok(config)
         }
         6 | 7 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
             // Phase 20+ already persisted onboarding state; preserve it.
-            Ok(config)
         }
-        other => Err(ByteError::Config(format!(
-            "Unsupported configuration schema version: {other}"
-        ))),
+        other => {
+            return Err(ByteError::Config(format!(
+                "Unsupported configuration schema version: {other}"
+            )));
+        }
     }
+
+    normalize_and_validate_config(&mut config)?;
+    Ok(config)
 }
 
 fn quarantine_corrupt_config(path: &Path) {
@@ -135,6 +164,20 @@ mod tests {
             reloaded.snapshot().companion.customization.headwear,
             "beanie"
         );
+    }
+
+    #[test]
+    fn rejected_companion_mutation_does_not_poison_in_memory_state() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = temp.path().join("config.json");
+        let mut store = ConfigStore::load(path).expect("load");
+
+        let result = store.update_companion_with(|preferences| {
+            preferences.character = "../../invalid".into();
+        });
+
+        assert!(result.is_err());
+        assert_eq!(store.snapshot().companion.character, "BYTE");
     }
 
     #[test]
@@ -433,6 +476,20 @@ mod tests {
         assert!(app.hide_in_presentation);
         assert!(app.exclude_from_capture);
         assert!(app.hidden_foreground_apps.is_empty());
+    }
+
+    #[test]
+    fn semantically_invalid_config_is_quarantined_before_defaults_are_restored() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = temp.path().join("config.json");
+        let mut value = serde_json::to_value(ByteConfig::default()).expect("serialize");
+        value["companion"]["character"] = serde_json::Value::String("../../escape".into());
+        fs::write(&path, serde_json::to_vec_pretty(&value).expect("json")).expect("write");
+
+        let store = ConfigStore::load(path.clone()).expect("recover");
+
+        assert_eq!(store.snapshot().companion.character, "BYTE");
+        assert!(path.with_extension("corrupt.json").exists());
     }
 
     #[test]

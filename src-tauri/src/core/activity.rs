@@ -1,6 +1,9 @@
 use crate::{
-    core::error::ByteError,
-    models::{ResourceState, SystemIssue, SystemSnapshot},
+    core::{
+        error::ByteError,
+        persistence::{read_bounded_text, BoundedText},
+    },
+    models::{IssueCategory, ResourceState, SystemIssue, SystemSnapshot},
 };
 use serde::{Deserialize, Serialize};
 use std::{
@@ -15,6 +18,7 @@ const EVENT_CAP: usize = 200;
 const TREND_CAP: usize = 240;
 const TREND_INTERVAL_MS: u64 = 15_000;
 const ACTIVITY_SCHEMA_VERSION: u32 = 1;
+const MAX_ACTIVITY_FILE_BYTES: u64 = 512 * 1024;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -81,8 +85,8 @@ impl ActivityStore {
             fs::create_dir_all(parent)?;
         }
 
-        let events = match fs::read_to_string(&path) {
-            Ok(raw) => serde_json::from_str::<PersistedActivity>(&raw)
+        let events = match read_bounded_text(&path, MAX_ACTIVITY_FILE_BYTES)? {
+            BoundedText::Present(raw) => serde_json::from_str::<PersistedActivity>(&raw)
                 .ok()
                 .filter(|value| value.schema_version == ACTIVITY_SCHEMA_VERSION)
                 .map(|value| {
@@ -97,8 +101,7 @@ impl ActivityStore {
                         .collect::<VecDeque<_>>()
                 })
                 .unwrap_or_default(),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => VecDeque::new(),
-            Err(error) => return Err(error.into()),
+            BoundedText::Invalid | BoundedText::Missing => VecDeque::new(),
         };
 
         let next_id = events
@@ -227,7 +230,7 @@ impl ActivityStore {
                 ActivityEventKind::IssueOpened,
                 issue_tone(issue),
                 issue.headline.clone(),
-                issue.explanation.clone(),
+                persisted_issue_detail(issue),
             );
             changed = true;
         }
@@ -313,6 +316,18 @@ impl ActivityStore {
     }
 }
 
+fn persisted_issue_detail(issue: &SystemIssue) -> String {
+    match issue.category {
+        IssueCategory::Cpu => {
+            "Byte detected sustained processor pressure. Current app attribution is not stored in Activity history.".into()
+        }
+        IssueCategory::Memory => {
+            "Byte detected sustained memory pressure. Current app attribution is not stored in Activity history.".into()
+        }
+        _ => issue.explanation.clone(),
+    }
+}
+
 fn snapshot_ready(snapshot: &SystemSnapshot) -> bool {
     snapshot.cpu.state != ResourceState::Unknown || snapshot.memory.state != ResourceState::Unknown
 }
@@ -330,8 +345,8 @@ fn issue_tone(issue: &SystemIssue) -> ActivityTone {
 mod tests {
     use super::*;
     use crate::models::{
-        BatterySummary, Confidence, IssueCategory, NetworkSummary, RecommendedAction,
-        RecommendedActionKind, ResourceSummary, SystemStatus,
+        BatterySummary, Confidence, IssueCategory, NetworkSummary, ProcessSummary,
+        RecommendedAction, RecommendedActionKind, ResourceSummary, SystemStatus,
     };
 
     fn resource(value: f32, state: ResourceState) -> ResourceSummary {
@@ -382,6 +397,23 @@ mod tests {
             }),
             started_at_epoch_ms: 20_000,
         }
+    }
+
+    #[test]
+    fn persisted_cpu_and_memory_events_omit_process_names() {
+        let mut current = issue();
+        current.category = IssueCategory::Cpu;
+        current.culprit = Some(ProcessSummary {
+            name: "SensitiveApp".into(),
+            pid: Some(7),
+            cpu_percent: Some(80.0),
+            memory_mb: Some(500.0),
+        });
+        current.explanation = "SensitiveApp is currently responsible for CPU use.".into();
+
+        let detail = persisted_issue_detail(&current);
+        assert!(!detail.contains("SensitiveApp"));
+        assert!(detail.contains("not stored"));
     }
 
     #[test]

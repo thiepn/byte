@@ -339,3 +339,30 @@ Move Mode clears its shell flag before placement persistence/layout recovery. If
 Placement saving and Quick Panel adjacency use the same monitor fallback chain already used by the main companion layout.
 
 See [ACCESSIBILITY_RESILIENCE.md](ACCESSIBILITY_RESILIENCE.md).
+
+
+## Phase 25 security and privacy hardening
+
+Phase 25 treats each WebView as a separate authority boundary instead of granting one shared frontend capability.
+
+Tauri application commands are declared through the build-time AppManifest, producing ACL permissions for every registered command. The production configuration explicitly enables only three capabilities:
+
+- main-window
+- quick-panel-window
+- companion-window
+
+Because explicit capability identifiers are configured, the legacy broad capability file is not loaded.
+
+Frontend event permissions are listen/unlisten only; webviews are not granted generic event emission.
+
+No webview receives generic filesystem, shell, process, window creation, menu, tray, image, resource, or notification-plugin authority.
+
+The CSP is local-only, Tauri's CSP rewriting remains enabled, the asset protocol remains disabled, and Object.prototype is frozen before frontend code.
+
+Native preference mutations pass semantic validation in addition to serde deserialization. ConfigStore repeats that validation before persistence so internal callers cannot accidentally bypass the same invariants.
+
+Persisted JSON is size-bounded before UTF-8 conversion/deserialization. CPU/memory process attribution is no longer written into Activity event details, and native notifications do not expose process names or exact readings.
+
+CI pins its GitHub Actions to commit SHAs and runs npm + RustSec dependency audits in addition to the existing type/test/build/fmt/clippy/check gates.
+
+See [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md).

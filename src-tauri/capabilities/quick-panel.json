@@ -1,0 +1,24 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "quick-panel-window",
+  "description": "Quick Panel access limited to cached status and companion controls.",
+  "windows": [
+    "quick-panel"
+  ],
+  "local": true,
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "allow-get-snapshot",
+    "allow-get-preferences",
+    "allow-get-window-shell-state",
+    "allow-execute-recommended-action",
+    "allow-set-display-mode",
+    "allow-begin-move-mode",
+    "allow-set-companion-click-through",
+    "allow-hide-quick-panel"
+  ],
+  "platforms": [
+    "windows"
+  ]
+}
