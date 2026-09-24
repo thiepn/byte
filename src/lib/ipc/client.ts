@@ -10,7 +10,7 @@ import type {
 } from "../types/domain";
 
 const DEFAULT_CONFIG: ByteConfig = {
-  schema_version: 4,
+  schema_version: 5,
   companion: {
     character: "BYTE",
     palette: "default",
@@ -18,6 +18,7 @@ const DEFAULT_CONFIG: ByteConfig = {
     display_mode: "HABITAT",
     size: "MEDIUM",
     interaction_level: "NORMAL",
+    personality: "CURIOUS",
     edge_anchor: "RIGHT",
     placements: {
       habitat: null,

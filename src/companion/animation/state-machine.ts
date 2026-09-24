@@ -6,6 +6,7 @@ import {
   type BehaviorRequest,
   type BehaviorSource,
   type CharacterManifest,
+  type IdleProfile,
   type RenderFrame,
 } from "./types";
 
@@ -26,6 +27,7 @@ export class CharacterAnimator {
   private active: Playback;
   private reducedMotion = false;
   private readonly random: SeededRandom;
+  private idleProfile: IdleProfile;
   private idleCountdownMs = 0;
 
   constructor(
@@ -33,6 +35,7 @@ export class CharacterAnimator {
     seed = hashSeed(manifest.id),
   ) {
     this.random = new SeededRandom(seed);
+    this.idleProfile = this.normalizeIdleProfile(manifest.idleProfile);
     this.active = this.createPlayback("idle", "idle", null);
     this.resetIdleCountdown();
   }
@@ -42,6 +45,11 @@ export class CharacterAnimator {
     this.active.frameCursor = 0;
     this.active.frameElapsedMs = 0;
     this.active.reducedElapsedMs = 0;
+  }
+
+  setIdleProfile(profile: IdleProfile): void {
+    this.idleProfile = this.normalizeIdleProfile(profile);
+    this.resetIdleCountdown();
   }
 
   setBaseBehavior(behavior: BehaviorId, source: BehaviorSource): void {
@@ -252,7 +260,7 @@ export class CharacterAnimator {
   }
 
   private chooseIdleBehavior(): BehaviorId | null {
-    const choices = this.manifest.idleProfile.choices;
+    const choices = this.idleProfile.choices;
     const totalWeight = choices.reduce((sum, choice) => sum + choice.weight, 0);
     if (totalWeight <= 0) return null;
 
@@ -265,7 +273,29 @@ export class CharacterAnimator {
   }
 
   private resetIdleCountdown(): void {
-    const idle = this.manifest.idleProfile;
+    const idle = this.idleProfile;
     this.idleCountdownMs = this.random.between(idle.minDelayMs, idle.maxDelayMs);
+  }
+
+  private normalizeIdleProfile(profile: IdleProfile): IdleProfile {
+    const fallback = this.manifest.idleProfile;
+    const minimum = Number.isFinite(profile.minDelayMs)
+      ? Math.max(500, profile.minDelayMs)
+      : fallback.minDelayMs;
+    const requestedMaximum = Number.isFinite(profile.maxDelayMs)
+      ? Math.max(500, profile.maxDelayMs)
+      : fallback.maxDelayMs;
+    const choices = profile.choices.filter(
+      (choice) =>
+        Number.isFinite(choice.weight) &&
+        choice.weight > 0 &&
+        Boolean(this.manifest.behaviors[choice.behavior]),
+    );
+
+    return {
+      minDelayMs: minimum,
+      maxDelayMs: Math.max(minimum, requestedMaximum),
+      choices: choices.length > 0 ? choices : [...fallback.choices],
+    };
   }
 }

@@ -1,9 +1,11 @@
 import type { CharacterAnimator } from "./state-machine";
 import type { InputReactionEvent } from "../../lib/types/input";
+import type { PersonalityDirector } from "../personality/profiles";
 
 export function applyInputReaction(
   animator: CharacterAnimator,
   event: InputReactionEvent,
+  personality?: PersonalityDirector,
 ): void {
   switch (event.kind) {
     case "TYPING_TAP_LEFT":
@@ -17,10 +19,12 @@ export function applyInputReaction(
       break;
     case "TYPING_FAST_STOP":
       animator.releaseSource("input");
+      personality?.onFastTypingStop(animator);
       break;
     case "MOUSE_LEFT":
       if (animator.currentBehavior() !== "typing_fast") {
         animator.requestBehavior({ behavior: "mouse_click", source: "input" });
+        personality?.onMouseLeft(event.timestamp_epoch_ms, animator);
       }
       break;
     case "MOUSE_RIGHT":
@@ -34,11 +38,19 @@ export function applyInputReaction(
       }
       break;
     case "IDLE_START":
-      animator.requestBehavior({ behavior: "sleep", source: "personality" });
+      if (personality) {
+        personality.onIdleStart(animator);
+      } else {
+        animator.requestBehavior({ behavior: "sleep", source: "personality" });
+      }
       break;
     case "IDLE_END":
-      animator.releaseSource("personality");
-      animator.requestBehavior({ behavior: "wake", source: "input" });
+      if (personality) {
+        personality.onIdleEnd(animator);
+      } else {
+        animator.releaseSource("personality");
+        animator.requestBehavior({ behavior: "wake", source: "input" });
+      }
       break;
   }
 }

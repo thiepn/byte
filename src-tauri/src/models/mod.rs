@@ -257,6 +257,15 @@ pub enum InteractionLevel {
     Playful,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Personality {
+    Chill,
+    #[default]
+    Curious,
+    Energetic,
+}
+
 fn none_selection() -> String {
     "none".into()
 }
@@ -329,6 +338,8 @@ pub struct CompanionPreferences {
     pub size: CompanionSize,
     pub interaction_level: InteractionLevel,
     #[serde(default)]
+    pub personality: Personality,
+    #[serde(default)]
     pub edge_anchor: EdgeAnchor,
     #[serde(default)]
     pub placements: WindowPlacements,
@@ -349,6 +360,7 @@ impl Default for CompanionPreferences {
             display_mode: DisplayMode::Habitat,
             size: CompanionSize::Medium,
             interaction_level: InteractionLevel::Normal,
+            personality: Personality::Curious,
             edge_anchor: EdgeAnchor::Right,
             placements: WindowPlacements::default(),
             customization: CompanionCustomization::default(),
@@ -385,7 +397,7 @@ pub struct ByteConfig {
 impl Default for ByteConfig {
     fn default() -> Self {
         Self {
-            schema_version: 4,
+            schema_version: 5,
             companion: CompanionPreferences::default(),
             app: AppPreferences::default(),
         }

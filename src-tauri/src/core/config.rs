@@ -9,7 +9,7 @@ use std::{
 };
 use tempfile::NamedTempFile;
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 4;
+pub const CURRENT_SCHEMA_VERSION: u32 = 5;
 
 pub struct ConfigStore {
     path: PathBuf,
@@ -79,7 +79,7 @@ fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
 
     match config.schema_version {
         CURRENT_SCHEMA_VERSION => Ok(config),
-        1..=3 => {
+        1..=4 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
             Ok(config)
         }
@@ -158,6 +158,10 @@ mod tests {
         );
         assert!(migrated.snapshot().companion.placements.mini.is_none());
         assert_eq!(migrated.snapshot().companion.palette, "default");
+        assert_eq!(
+            migrated.snapshot().companion.personality,
+            crate::models::Personality::Curious
+        );
         assert_eq!(migrated.snapshot().companion.customization.headwear, "none");
     }
 
@@ -244,6 +248,62 @@ mod tests {
         assert_eq!(companion.habitat, "ROOFTOP");
         assert_eq!(companion.customization.back_accessory, "none");
         assert_eq!(companion.customization.decorations.surface_left, "none");
+    }
+
+    #[test]
+    fn v4_config_gains_default_personality_without_losing_customization() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = temp.path().join("config.json");
+        let legacy = r#"{
+          "schema_version": 4,
+          "companion": {
+            "character": "BYTE",
+            "palette": "mint",
+            "habitat": "DESK",
+            "display_mode": "HABITAT",
+            "size": "MEDIUM",
+            "interaction_level": "NORMAL",
+            "edge_anchor": "RIGHT",
+            "placements": {
+              "habitat": null,
+              "perch": null,
+              "mini": null,
+              "edge": null
+            },
+            "customization": {
+              "headwear": "beanie",
+              "face_accessory": "none",
+              "body_accessory": "scarf",
+              "back_accessory": "none",
+              "hand_prop": "mug",
+              "decorations": {
+                "large_background": "pennant_banner",
+                "wall_or_sky": "none",
+                "surface_left": "potted_plant",
+                "surface_right": "none",
+                "small_prop": "none",
+                "ambient": "star_mobile"
+              }
+            }
+          },
+          "app": {
+            "hide_in_fullscreen": true,
+            "sound_enabled": false,
+            "launch_at_startup": false,
+            "activity_history_enabled": true
+          }
+        }"#;
+        fs::write(&path, legacy).expect("write");
+
+        let migrated = ConfigStore::load(path).expect("migrate");
+        let companion = migrated.snapshot().companion;
+
+        assert_eq!(companion.personality, crate::models::Personality::Curious);
+        assert_eq!(companion.customization.headwear, "beanie");
+        assert_eq!(
+            companion.customization.decorations.large_background,
+            "pennant_banner"
+        );
     }
 
     #[test]

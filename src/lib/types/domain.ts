@@ -69,6 +69,7 @@ export interface SystemSnapshot {
 export type DisplayMode = "HABITAT" | "PERCH" | "MINI" | "EDGE" | "TRAY";
 export type CompanionSize = "SMALL" | "MEDIUM" | "LARGE";
 export type InteractionLevel = "QUIET" | "NORMAL" | "PLAYFUL";
+export type Personality = "CHILL" | "CURIOUS" | "ENERGETIC";
 export type EdgeAnchor = "LEFT" | "RIGHT";
 
 export interface SavedPlacement {
@@ -109,6 +110,7 @@ export interface CompanionPreferences {
   display_mode: DisplayMode;
   size: CompanionSize;
   interaction_level: InteractionLevel;
+  personality: Personality;
   edge_anchor: EdgeAnchor;
   placements: WindowPlacements;
   customization: CompanionCustomization;
