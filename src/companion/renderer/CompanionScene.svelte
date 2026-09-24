@@ -9,6 +9,7 @@
   import type { CharacterManifest, RenderFrame } from "../animation/types";
   import type { InputReactionEvent } from "../../lib/types/input";
   import type {
+    CollectionSnapshot,
     CompanionPreferences,
     DisplayMode,
   } from "../../lib/types/domain";
@@ -33,6 +34,7 @@
     getPreferences,
     getSnapshot,
     getWindowShellState,
+    recordCollectionDiscovery,
     showQuickPanel,
   } from "../../lib/ipc/client";
 
@@ -72,6 +74,7 @@
   let dragging = false;
   let runtimeError = false;
   let suppressClickUntil = 0;
+  let lastObservedBehavior = "";
 
   function isTauri(): boolean {
     return "__TAURI_INTERNALS__" in window;
@@ -154,6 +157,15 @@
     personalityDirector?.tick(deltaMs, animator);
     const frame = animator.tick(deltaMs);
     characterRenderer.render(frame);
+
+    if (frame.behavior !== lastObservedBehavior) {
+      lastObservedBehavior = frame.behavior;
+      if (frame.source === "idle" && frame.behavior === "rare_a") {
+        void recordCollectionDiscovery("RARE_A");
+      } else if (frame.source === "idle" && frame.behavior === "rare_b") {
+        void recordCollectionDiscovery("RARE_B");
+      }
+    }
     positionCharacter(frame);
 
     if (habitatRenderer && particleEngine) {
@@ -362,6 +374,18 @@
           if (!disposed) void applyVisualPreferences(event.payload);
         },
       ).then((unlisten: UnlistenFn) => {
+        if (disposed) unlisten();
+        else cleanups.push(unlisten);
+      });
+
+      void listen<CollectionSnapshot>("byte://collection-updated", () => {
+        if (!disposed && animator) {
+          animator.requestBehavior({
+            behavior: "happy",
+            source: "personality",
+          });
+        }
+      }).then((unlisten: UnlistenFn) => {
         if (disposed) unlisten();
         else cleanups.push(unlisten);
       });

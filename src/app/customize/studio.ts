@@ -11,6 +11,7 @@ import {
 
 export type StudioSection =
   | "LOOKS"
+  | "COLLECTION"
   | "CHARACTER"
   | "OUTFIT"
   | "HABITAT"
@@ -35,6 +36,7 @@ export const STUDIO_SECTIONS: Array<{
   description: string;
 }> = [
   { id: "LOOKS", label: "Looks", description: "Curated starting points" },
+  { id: "COLLECTION", label: "Collection", description: "Optional discoveries" },
   { id: "CHARACTER", label: "Character", description: "Companion and color" },
   { id: "OUTFIT", label: "Outfit", description: "Wearables and props" },
   { id: "HABITAT", label: "Habitat", description: "World and decorations" },

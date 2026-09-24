@@ -28,6 +28,7 @@
   import { HabitatCanvasRenderer } from "../../companion/renderer/HabitatCanvasRenderer";
 
   export let preferences: CompanionPreferences;
+  export let unlockedIdleBehaviors: string[] = [];
 
   const EMPTY_REACTIONS = {
     BUSY: 0,
@@ -239,6 +240,12 @@
       <button type="button" onclick={() => previewBehavior("curious")}>Curious</button>
       <button type="button" onclick={() => previewBehavior("typing_fast")}>Typing</button>
       <button type="button" onclick={() => previewBehavior("sleep")}>Sleep</button>
+      {#if unlockedIdleBehaviors.includes("rare_a")}
+        <button type="button" onclick={() => previewBehavior("rare_a")}>Rare I</button>
+      {/if}
+      {#if unlockedIdleBehaviors.includes("rare_b")}
+        <button type="button" onclick={() => previewBehavior("rare_b")}>Rare II</button>
+      {/if}
     </div>
   </div>
 </div>
