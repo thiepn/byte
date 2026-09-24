@@ -34,7 +34,7 @@ if (!semver.test(version)) {
 
 const requestedTagIndex = process.argv.indexOf("--tag");
 const requestedTag =
-  requestedTagIndex >= 0 ? process.argv[requestedTagIndex + 1] : process.env.GITHUB_REF_NAME;
+  requestedTagIndex >= 0 ? process.argv[requestedTagIndex + 1] : undefined;
 
 if (requestedTag) {
   const expectedTag = `v${version}`;
