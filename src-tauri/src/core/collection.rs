@@ -197,22 +197,28 @@ impl CollectionStore {
         preferences: &CompanionPreferences,
     ) -> Result<(), ByteError> {
         let customization = &preferences.customization;
+        let cosmetic_ids = [
+            customization.headwear.as_str(),
+            customization.face_accessory.as_str(),
+            customization.body_accessory.as_str(),
+            customization.back_accessory.as_str(),
+            customization.hand_prop.as_str(),
+        ];
+        let decoration_ids = [
+            customization.decorations.large_background.as_str(),
+            customization.decorations.wall_or_sky.as_str(),
+            customization.decorations.surface_left.as_str(),
+            customization.decorations.surface_right.as_str(),
+            customization.decorations.small_prop.as_str(),
+            customization.decorations.ambient.as_str(),
+        ];
 
         let gated = [
-            (customization.headwear.as_str() == "night_cap", NIGHT_CAP),
-            (customization.headwear.as_str() == "headphones", HEADPHONES),
-            (
-                customization.decorations.large_background.as_str() == "memory_frame",
-                MEMORY_FRAME,
-            ),
-            (
-                customization.decorations.small_prop.as_str() == "charging_orb",
-                CHARGING_ORB,
-            ),
-            (
-                customization.decorations.wall_or_sky.as_str() == "signal_kite",
-                SIGNAL_KITE,
-            ),
+            (cosmetic_ids.contains(&"night_cap"), NIGHT_CAP),
+            (cosmetic_ids.contains(&"headphones"), HEADPHONES),
+            (decoration_ids.contains(&"memory_frame"), MEMORY_FRAME),
+            (decoration_ids.contains(&"charging_orb"), CHARGING_ORB),
+            (decoration_ids.contains(&"signal_kite"), SIGNAL_KITE),
             (preferences.palette.as_str() == "aurora", AURORA),
         ];
 
@@ -471,6 +477,19 @@ mod tests {
         let mut preferences = CompanionPreferences::default();
         preferences.customization.headwear = "night_cap".into();
 
+        assert!(store.validate_preferences(&preferences).is_err());
+    }
+
+    #[test]
+    fn locked_items_cannot_bypass_gating_through_the_wrong_slot() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let store = CollectionStore::load(temp.path().join("collection.json")).expect("load");
+        let mut preferences = CompanionPreferences::default();
+        preferences.customization.face_accessory = "night_cap".into();
+        assert!(store.validate_preferences(&preferences).is_err());
+
+        preferences.customization.face_accessory = "none".into();
+        preferences.customization.decorations.ambient = "charging_orb".into();
         assert!(store.validate_preferences(&preferences).is_err());
     }
 
