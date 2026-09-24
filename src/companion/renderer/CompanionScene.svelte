@@ -82,6 +82,7 @@
   let lastObservedBehavior = "";
   let forceReducedMotion = false;
   let lifecycleSuspended = false;
+  let companionVisible = true;
 
   function isTauri(): boolean {
     return "__TAURI_INTERNALS__" in window;
@@ -221,7 +222,12 @@
     };
 
     const startAnimation = (): void => {
-      if (disposed || lifecycleSuspended || unsubscribeAnimation) return;
+      if (
+        disposed ||
+        lifecycleSuspended ||
+        !companionVisible ||
+        unsubscribeAnimation
+      ) return;
       unsubscribeAnimation = animationScheduler.subscribe(({ deltaMs }) => {
         renderFrame(deltaMs);
       });
@@ -358,6 +364,8 @@
         ]);
         if (disposed) return;
         lifecycleSuspended = awareness.suppressed;
+        companionVisible =
+          !awareness.suppressed && preferences.companion.display_mode !== "TRAY";
         forceReducedMotion = preferences.app.reduce_motion;
         habitatState = {
           ...habitatState,
@@ -397,6 +405,20 @@
         else cleanups.push(unlisten);
       });
 
+      void listen<boolean>("byte://companion-visibility-changed", (event) => {
+        if (disposed) return;
+        companionVisible = event.payload;
+        if (companionVisible && !lifecycleSuspended) {
+          startAnimation();
+          void refreshSystemState();
+        } else {
+          stopAnimation();
+        }
+      }).then((unlisten: UnlistenFn) => {
+        if (disposed) unlisten();
+        else cleanups.push(unlisten);
+      });
+
       void listen<LifecycleState>("byte://lifecycle-changed", (event) => {
         if (disposed) return;
         const suspended = lifecycleSuspendsVisuals(event.payload);
@@ -405,7 +427,7 @@
         lifecycleSuspended = suspended;
         if (suspended) {
           stopAnimation();
-        } else {
+        } else if (companionVisible) {
           startAnimation();
           void refreshSystemState();
         }

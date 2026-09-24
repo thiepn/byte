@@ -32,7 +32,7 @@ The 30-second monitoring-disabled wait is interrupted immediately when preferenc
 ## Rules
 
 1. **One hardware sampler.** Frontend surfaces may only read the cached SystemSnapshot.
-2. **No hidden render loop.** A companion hidden by desktop awareness unsubscribes from the animation scheduler instead of waking and returning early.
+2. **No hidden render loop.** A companion hidden by desktop awareness, Tray mode, or the shell unsubscribes from the animation scheduler instead of waking and returning early.
 3. **No duplicate telemetry poller.** Companion updates come from byte://snapshot-updated emitted by the authoritative Rust worker.
 4. **No unnecessary global-input processing.** Hook callbacks exit before timestamp/channel work while Byte is intentionally suppressed; the interpreter blocks until a lifecycle control message arrives.
 5. **Expensive process scans are exceptional.** Diagnostic attribution starts only for sustained CPU/memory issues and is rate-limited. Apps diagnostics remain user-triggered.

@@ -119,7 +119,9 @@ pub fn hide_companion(app: &AppHandle) -> Result<(), ByteError> {
     let window = companion_window(app)?;
     window
         .hide()
-        .map_err(|error| ByteError::Window(error.to_string()))
+        .map_err(|error| ByteError::Window(error.to_string()))?;
+    emit_companion_visibility(app, false);
+    Ok(())
 }
 
 pub fn is_companion_visible(app: &AppHandle) -> Result<bool, ByteError> {
@@ -312,9 +314,11 @@ pub fn apply_companion_layout(
     let window = companion_window(app)?;
 
     if preferences.display_mode == DisplayMode::Tray {
-        return window
+        window
             .hide()
-            .map_err(|error| ByteError::Window(error.to_string()));
+            .map_err(|error| ByteError::Window(error.to_string()))?;
+        emit_companion_visibility(app, false);
+        return Ok(());
     }
 
     let saved = preferences
@@ -367,6 +371,7 @@ pub fn apply_companion_layout(
         window
             .hide()
             .map_err(|error| ByteError::Window(error.to_string()))?;
+        emit_companion_visibility(app, false);
         return Ok(());
     }
 
@@ -377,7 +382,9 @@ pub fn apply_companion_layout(
     let click_through = shell_state(app).click_through;
     window
         .set_ignore_cursor_events(click_through)
-        .map_err(|error| ByteError::Window(error.to_string()))
+        .map_err(|error| ByteError::Window(error.to_string()))?;
+    emit_companion_visibility(app, true);
+    Ok(())
 }
 
 fn save_current_placement(app: &AppHandle) -> Result<(), ByteError> {
@@ -684,6 +691,10 @@ fn companion_preferences(app: &AppHandle) -> CompanionPreferences {
 fn companion_window(app: &AppHandle) -> Result<tauri::WebviewWindow, ByteError> {
     app.get_webview_window("companion")
         .ok_or_else(|| ByteError::Window("companion window is unavailable".into()))
+}
+
+fn emit_companion_visibility(app: &AppHandle, visible: bool) {
+    let _ = app.emit_to("companion", "byte://companion-visibility-changed", visible);
 }
 
 fn emit_move_mode(app: &AppHandle, enabled: bool) {
