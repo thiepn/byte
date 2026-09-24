@@ -201,7 +201,7 @@ fn palettes_for_character(character: &str) -> Result<&'static [&'static str], By
 
 fn require_member(label: &str, value: &str, allowed: &[&str]) -> Result<(), ByteError> {
     if value.len() > 64 || !allowed.contains(&value) {
-        return Err(ByteError::Config(format!("Unsupported {label}: {value}")));
+        return Err(ByteError::Config(format!("Unsupported {label}")));
     }
     Ok(())
 }
