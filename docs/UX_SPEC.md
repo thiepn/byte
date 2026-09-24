@@ -16,7 +16,7 @@ The full app has exactly five main destinations: Overview, Activity, Apps, Custo
 
 ## Interaction rules
 
-Byte may react to anonymous keyboard activity, clicks, scrolling, cursor movement, petting, dragging, charging, network activity, workload, and rare idle events. There are no feeding, cleaning, death, streak, happiness-maintenance, or recurring chore systems.
+Byte may react to anonymous keyboard activity, clicks, scrolling, local pointer entry, petting, dragging, charging, network activity, workload, and rare idle events. Global cursor coordinates are not collected. Chill, Curious, and Energetic change low-priority pacing and expression while diagnostic meaning remains stable. There are no feeding, cleaning, death, streak, happiness-maintenance, or recurring chore systems.
 
 ## Alerts
 

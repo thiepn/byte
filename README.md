@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–13 are implemented.
+Phases 1–14 are implemented.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -27,7 +27,9 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Windows global keyboard/click/scroll activity drives privacy-safe typing, click, fast-typing, and idle reactions.
 - Meadow, Cozy Desk, Bedroom, Space, Aquarium, and Rooftop are production habitats with authored depth, local-time variants, semantic system reactions, fixed decoration slots, and bounded ambience.
 - Phase 13 adds persistent live customization: character, palette, habitat, 12 anchor-based character cosmetics, 12 fixed-slot habitat decorations, display mode, and size controls.
-- Customization is entirely local; there is no account, store, virtual currency, unlock timer, or cloud inventory.
+- Phase 14 adds Chill, Curious, and Energetic personality profiles with deterministic idle pacing, personality-aware wind-down, safe interaction follow-ups, charging celebration, and personality-scaled ambient habitat life.
+- Personality never weakens diagnostics or captures cursor coordinates; direct warning states keep their existing priority and privacy boundaries.
+- Customization and personality are entirely local; there is no account, store, virtual currency, unlock timer, or cloud inventory.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
 
 ## Development
@@ -64,5 +66,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Habitat rendering runtime](docs/HABITAT_RUNTIME.md)
 - [Production habitats](docs/HABITAT_PRODUCTION.md)
 - [Customization and decoration](docs/CUSTOMIZATION.md)
+- [Personality and ambient behavior](docs/PERSONALITY.md)
 
-Next: Phase 14 — Personality & Ambient Behavior.
+Next: Phase 15 — Quick Panel.

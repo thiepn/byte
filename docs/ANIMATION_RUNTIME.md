@@ -103,13 +103,14 @@ Core meaning therefore survives without bouncing, shaking, or rapid animation.
 
 Idle reactions are data-driven and deterministic for the seed supplied by the host.
 
-The manifest defines:
+The manifest defines each character's native minimum/maximum idle delay and weighted idle behaviors. Phase 14 applies the selected personality and interaction level as a policy layer over that authored profile:
 
-- minimum idle delay
-- maximum idle delay
-- weighted idle behaviors
+- Chill lengthens idle gaps and favors subtle behaviors.
+- Curious increases looking and curiosity behaviors.
+- Energetic shortens idle gaps and favors expressive/rare behaviors.
+- Quiet/Normal/Playful further tune incidental cadence without changing diagnostics.
 
-The current development Byte can blink, look curious, or perform a small happy reaction. Production characters will receive their own weighted profiles in Phase 9/14.
+Character-specific rare idles remain in the weighted pool instead of being replaced by a generic personality list.
 
 ## Cosmetic anchors
 
@@ -125,7 +126,7 @@ Every sprite frame provides the shared anchor vocabulary:
 
 Anchors may also carry rotation, flip, and layer metadata.
 
-The canvas renderer already supports generic cosmetic attachments before or after the base sprite. Phase 13 will populate that system with actual hats, glasses, scarves, props, and character-specific compatibility data.
+The canvas renderer supports generic cosmetic attachments before or after the base sprite. Phase 13 populates that system with local hats, glasses, scarves, props, and back items without character-specific renderer branches.
 
 ## Pixel rendering
 
@@ -144,9 +145,26 @@ Phase 9 replaces the development atlas with production sprite sheets for Byte, M
 
 See [CHARACTERS.md](CHARACTERS.md).
 
+## Personality layer
+
+Phase 14 adds a PersonalityDirector on top of the semantic animator.
+
+It never replaces the priority model. Critical and diagnostic behaviors still outrank personality. The director only controls low-priority character life:
+
+- personality-specific idle timing and weighting
+- immediate or delayed sleep after anonymous system inactivity
+- wake behavior when activity resumes
+- a small reaction after fast typing stops
+- repeated-click burst reactions using timestamps only
+- pointer-enter reactions on Byte's own window without reading global cursor coordinates
+- a post-drag reaction based on drag duration, not global pointer tracking
+- a one-shot happy reaction when charging changes from false to true
+
+The director advances from the same 12 FPS scheduler. It creates no second timer loop.
+
 ## Current system integration
 
-Until a later event-stream optimization phase, the companion reads the already-cached SystemSnapshot every two seconds and only updates the animator's base semantic behavior.
+The companion reads the already-cached SystemSnapshot every two seconds and updates the animator's base semantic behavior plus the charging-edge observer.
 
 This does not trigger hardware sampling. The authoritative telemetry loop remains in Rust.
 
