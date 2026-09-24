@@ -543,9 +543,7 @@ fn infer_taskbar_edge_from_rects(
     work_size: PhysicalSize<u32>,
 ) -> TaskbarEdge {
     let full_right = full_position.x + full_size.width as i32;
-    let full_bottom = full_position.y + full_size.height as i32;
     let work_right = work_position.x + work_size.width as i32;
-    let work_bottom = work_position.y + work_size.height as i32;
 
     if work_position.y > full_position.y {
         TaskbarEdge::Top
@@ -553,8 +551,6 @@ fn infer_taskbar_edge_from_rects(
         TaskbarEdge::Left
     } else if work_right < full_right {
         TaskbarEdge::Right
-    } else if work_bottom < full_bottom {
-        TaskbarEdge::Bottom
     } else {
         TaskbarEdge::Bottom
     }
