@@ -157,6 +157,20 @@ mod tests {
     }
 
     #[test]
+    fn rejected_companion_mutation_does_not_poison_in_memory_state() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = temp.path().join("config.json");
+        let mut store = ConfigStore::load(path).expect("load");
+
+        let result = store.update_companion_with(|preferences| {
+            preferences.character = "../../invalid".into();
+        });
+
+        assert!(result.is_err());
+        assert_eq!(store.snapshot().companion.character, "BYTE");
+    }
+
+    #[test]
     fn v1_config_migrates_without_losing_companion_preferences() {
         let temp = tempfile::tempdir().expect("temp dir");
         let path = temp.path().join("config.json");
