@@ -1,9 +1,6 @@
 use super::engine::TelemetryEngine;
 use crate::core::{
-    diagnostics::DiagnosticEngine,
-    error::ByteError,
-    lifecycle::LifecycleState,
-    state::AppState,
+    diagnostics::DiagnosticEngine, error::ByteError, lifecycle::LifecycleState, state::AppState,
 };
 use std::{thread, time::Duration};
 use tauri::{AppHandle, Emitter, Manager};
