@@ -12,6 +12,14 @@ const QUICK_PANEL_LOGICAL_HEIGHT: f64 = 390.0;
 const PANEL_GAP_LOGICAL: f64 = 10.0;
 const DEFAULT_MARGIN_LOGICAL: f64 = 18.0;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum TaskbarEdge {
+    Top,
+    Bottom,
+    Left,
+    Right,
+}
+
 pub fn initialize(app: &AppHandle) -> Result<(), ByteError> {
     let preferences = companion_preferences(app);
     apply_companion_layout(app, &preferences)
@@ -392,9 +400,8 @@ fn position_quick_panel(app: &AppHandle) -> Result<(), ByteError> {
             left_candidate.max(work.position.x)
         };
 
-        let y = companion_position
-            .y
-            .clamp(work.position.y, work_bottom - panel_size.height as i32);
+        let max_panel_y = (work_bottom - panel_size.height as i32).max(work.position.y);
+        let y = companion_position.y.clamp(work.position.y, max_panel_y);
 
         panel
             .set_position(PhysicalPosition::new(x, y))
@@ -493,7 +500,7 @@ fn default_position(
 
     let relative = match mode {
         DisplayMode::Habitat | DisplayMode::Mini => (max_x - margin, max_y - margin),
-        DisplayMode::Perch => (max_x - margin, max_y),
+        DisplayMode::Perch => perch_relative_position(monitor, max_x, max_y, margin),
         DisplayMode::Edge => {
             let x = match edge_anchor {
                 EdgeAnchor::Left => 0,
@@ -508,6 +515,43 @@ fn default_position(
         work.position.x + relative.0.max(0),
         work.position.y + relative.1.max(0),
     )
+}
+
+fn perch_relative_position(
+    monitor: &Monitor,
+    max_x: i32,
+    max_y: i32,
+    margin: i32,
+) -> (i32, i32) {
+    match infer_taskbar_edge(monitor) {
+        TaskbarEdge::Bottom => (max_x - margin, max_y),
+        TaskbarEdge::Top => (max_x - margin, 0),
+        TaskbarEdge::Left => (0, max_y - margin),
+        TaskbarEdge::Right => (max_x, max_y - margin),
+    }
+}
+
+fn infer_taskbar_edge(monitor: &Monitor) -> TaskbarEdge {
+    let full_position = monitor.position();
+    let full_size = monitor.size();
+    let work = monitor.work_area();
+
+    let full_right = full_position.x + full_size.width as i32;
+    let full_bottom = full_position.y + full_size.height as i32;
+    let work_right = work.position.x + work.size.width as i32;
+    let work_bottom = work.position.y + work.size.height as i32;
+
+    if work.position.y > full_position.y {
+        TaskbarEdge::Top
+    } else if work.position.x > full_position.x {
+        TaskbarEdge::Left
+    } else if work_right < full_right {
+        TaskbarEdge::Right
+    } else if work_bottom < full_bottom {
+        TaskbarEdge::Bottom
+    } else {
+        TaskbarEdge::Bottom
+    }
 }
 
 fn logical_size(mode: DisplayMode, size: CompanionSize) -> (f64, f64) {
