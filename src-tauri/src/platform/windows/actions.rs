@@ -7,10 +7,7 @@ use std::{ffi::OsStr, iter, os::windows::ffi::OsStrExt, ptr::null};
 use tauri::AppHandle;
 use windows_sys::Win32::{
     Foundation::HWND,
-    UI::{
-        Shell::ShellExecuteW,
-        WindowsAndMessaging::SW_SHOWNORMAL,
-    },
+    UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOWNORMAL},
 };
 
 pub fn execute(app: &AppHandle, action: RecommendedActionKind) -> Result<(), ByteError> {
@@ -18,9 +15,7 @@ pub fn execute(app: &AppHandle, action: RecommendedActionKind) -> Result<(), Byt
         RecommendedActionKind::ViewDetails => windowing::show_main_window(app),
         RecommendedActionKind::OpenTaskManager => launch("taskmgr.exe"),
         RecommendedActionKind::OpenStorageSettings => launch("ms-settings:storagesense"),
-        RecommendedActionKind::OpenBatterySettings => {
-            launch("ms-settings:batterysaver-settings")
-        }
+        RecommendedActionKind::OpenBatterySettings => launch("ms-settings:batterysaver-settings"),
     }
 }
 
