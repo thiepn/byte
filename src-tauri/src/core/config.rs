@@ -379,8 +379,10 @@ mod tests {
     fn v6_config_gains_smart_notification_defaults() {
         let temp = tempfile::tempdir().expect("temp dir");
         let path = temp.path().join("config.json");
-        let mut config = ByteConfig::default();
-        config.schema_version = 6;
+        let config = ByteConfig {
+            schema_version: 6,
+            ..ByteConfig::default()
+        };
         let mut value = serde_json::to_value(config).expect("serialize");
         let app = value
             .get_mut("app")

@@ -401,13 +401,19 @@ mod tests {
     fn quiet_mode_and_snooze_suppress_without_consuming_issue() {
         let (_temp, mut engine) = engine();
         let memory = issue(IssueCategory::Memory, ResourceState::Critical, 0);
-        let mut prefs = AppPreferences::default();
-        prefs.notification_quiet_mode = true;
-        assert!(engine.evaluate(1_000, &[memory.clone()], &prefs).is_none());
+        let mut prefs = AppPreferences {
+            notification_quiet_mode: true,
+            ..AppPreferences::default()
+        };
+        assert!(engine
+            .evaluate(1_000, std::slice::from_ref(&memory), &prefs)
+            .is_none());
 
         prefs.notification_quiet_mode = false;
         prefs.notification_snoozed_until_epoch_ms = Some(10_000);
-        assert!(engine.evaluate(2_000, &[memory.clone()], &prefs).is_none());
+        assert!(engine
+            .evaluate(2_000, std::slice::from_ref(&memory), &prefs)
+            .is_none());
 
         prefs.notification_snoozed_until_epoch_ms = None;
         assert!(engine.evaluate(11_000, &[memory], &prefs).is_some());
@@ -416,8 +422,10 @@ mod tests {
     #[test]
     fn per_category_switch_disables_only_that_category() {
         let (_temp, mut engine) = engine();
-        let mut prefs = AppPreferences::default();
-        prefs.notification_battery_enabled = false;
+        let prefs = AppPreferences {
+            notification_battery_enabled: false,
+            ..AppPreferences::default()
+        };
 
         assert!(engine
             .evaluate(
@@ -441,7 +449,7 @@ mod tests {
         let prefs = AppPreferences::default();
         let memory = issue(IssueCategory::Memory, ResourceState::Critical, 0);
         let first = engine
-            .evaluate(1_000, &[memory.clone()], &prefs)
+            .evaluate(1_000, std::slice::from_ref(&memory), &prefs)
             .expect("first");
         engine.mark_sent(&first, 1_000).expect("record");
 
@@ -455,7 +463,7 @@ mod tests {
         let prefs = AppPreferences::default();
         let critical = issue(IssueCategory::Memory, ResourceState::Critical, 0);
         let first = engine
-            .evaluate(1_000, &[critical.clone()], &prefs)
+            .evaluate(1_000, std::slice::from_ref(&critical), &prefs)
             .expect("first");
         engine.mark_sent(&first, 1_000).expect("record");
 
