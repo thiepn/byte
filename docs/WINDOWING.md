@@ -44,6 +44,8 @@ Habitat, Perch, Mini, and Edge each store an independent normalized position:
 
 Coordinates are not stored as raw pixels.
 
+Habitat and Mini restore both axes. Perch preserves only the coordinate along the detected taskbar edge and always snaps the other axis back against that taskbar. Edge preserves vertical placement while always snapping horizontally to the selected left/right edge.
+
 When resolution or DPI changes, Byte reconstructs a safe physical position from the new work area. If the saved monitor no longer exists, Byte falls back to the current monitor, then the primary monitor, then the first available monitor.
 
 Every restored position is clamped to the work area. A stale saved coordinate therefore cannot permanently strand Byte off-screen.
@@ -61,7 +63,7 @@ Entering Move Mode:
 3. displays a small move overlay,
 4. allows one native window drag.
 
-When the drag ends, Byte stores the normalized position and exits Move Mode automatically. The Done button also exits and stores the current placement.
+When the drag ends, Byte stores the normalized position, reapplies the active display-mode geometry, and exits Move Mode automatically. The Done button does the same. Perch therefore snaps back to the taskbar and Edge snaps back to its selected screen edge after movement.
 
 Normal character clicks do not move the window.
 
