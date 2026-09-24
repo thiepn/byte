@@ -29,6 +29,13 @@
     }
   }
 
+  function goToStep(next: number): void {
+    step = Math.max(0, Math.min(3, next));
+    window.requestAnimationFrame(() => {
+      document.getElementById("onboarding-title")?.focus();
+    });
+  }
+
   async function finish(): Promise<void> {
     if (saving) return;
     saving = true;
@@ -60,14 +67,22 @@
       <div><strong>Welcome to Byte</strong><span>Step {step + 1} of 4</span></div>
     </header>
 
-    <div class="progress" aria-hidden="true">
-      {#each [0,1,2,3] as index}<span class:active={index <= step}></span>{/each}
+    <div
+      class="progress"
+      role="progressbar"
+      aria-label="Onboarding progress"
+      aria-valuemin="1"
+      aria-valuemax="4"
+      aria-valuenow={step + 1}
+      aria-valuetext={"Step " + (step + 1) + " of 4"}
+    >
+      {#each [0,1,2,3] as index}<span aria-hidden="true" class:active={index <= step}></span>{/each}
     </div>
 
     {#if step === 0}
       <section>
         <p class="eyebrow">Meet your desktop companion</p>
-        <h1>A small character that understands your PC.</h1>
+        <h1 id="onboarding-title" tabindex="-1">A small character that understands your PC.</h1>
         <p class="lead">Byte lives on your desktop, reacts to ordinary computer activity, and explains sustained system-health problems in plain language.</p>
         <div class="feature-row">
           <article><strong>Cute first</strong><span>Byte is a companion, not a dashboard.</span></article>
@@ -78,7 +93,7 @@
     {:else if step === 1}
       <section>
         <p class="eyebrow">Privacy</p>
-        <h1>Your computer stays your computer.</h1>
+        <h1 id="onboarding-title" tabindex="-1">Your computer stays your computer.</h1>
         <p class="lead">System readings, process diagnostics, customization, and collection progress stay local. Byte never records typed text or mouse position.</p>
         <div class="privacy-grid">
           <article><strong>Byte can see</strong><span>CPU, memory, storage, battery, aggregate network activity, best-effort temperature, and anonymous input activity.</span></article>
@@ -92,12 +107,12 @@
     {:else if step === 2}
       <section>
         <p class="eyebrow">Choose your Byte</p>
-        <h1>Pick a companion and a home.</h1>
+        <h1 id="onboarding-title" tabindex="-1">Pick a companion and a home.</h1>
         <p class="lead">You can change all of this later in the Customization Studio.</p>
 
         <div class="character-grid">
           {#each CHARACTER_CHOICES as choice}
-            <button class:selected={companion.character === choice.id} onclick={() => void chooseCharacter(choice.id)}>
+            <button aria-pressed={companion.character === choice.id} class:selected={companion.character === choice.id} onclick={() => void chooseCharacter(choice.id)}>
               <img src={choice.preview} alt="" /><strong>{choice.name}</strong>
             </button>
           {/each}
@@ -105,7 +120,7 @@
 
         <div class="habitat-grid">
           {#each HABITAT_CHOICES as choice}
-            <button class:selected={companion.habitat === choice.id} onclick={() => (companion = {...companion, habitat: choice.id})}>
+            <button aria-pressed={companion.habitat === choice.id} class:selected={companion.habitat === choice.id} onclick={() => (companion = {...companion, habitat: choice.id})}>
               <span style:background={choice.tone}></span><strong>{choice.name}</strong>
             </button>
           {/each}
@@ -114,12 +129,12 @@
     {:else}
       <section>
         <p class="eyebrow">Desktop presence</p>
-        <h1>Choose how Byte should live on your desktop.</h1>
+        <h1 id="onboarding-title" tabindex="-1">Choose how Byte should live on your desktop.</h1>
         <p class="lead">Habitat is the full experience; smaller modes stay out of the way.</p>
 
         <div class="mode-grid">
           {#each MODES as mode}
-            <button class:selected={companion.display_mode === mode.id} onclick={() => (companion = {...companion, display_mode: mode.id})}>
+            <button aria-pressed={companion.display_mode === mode.id} class:selected={companion.display_mode === mode.id} onclick={() => (companion = {...companion, display_mode: mode.id})}>
               <strong>{mode.name}</strong><span>{mode.note}</span>
             </button>
           {/each}
@@ -136,12 +151,12 @@
       </section>
     {/if}
 
-    {#if error}<div class="error" role="status">{error}</div>{/if}
+    {#if error}<div class="error" role="alert">{error}</div>{/if}
 
     <footer>
-      <button class="back" disabled={step === 0 || saving} onclick={() => (step -= 1)}>Back</button>
+      <button class="back" disabled={step === 0 || saving} onclick={() => goToStep(step - 1)}>Back</button>
       {#if step < 3}
-        <button class="primary" onclick={() => (step += 1)}>Continue</button>
+        <button class="primary" onclick={() => goToStep(step + 1)}>Continue</button>
       {:else}
         <button class="primary" disabled={saving} onclick={() => void finish()}>{saving ? "Finishing…" : "Finish setup"}</button>
       {/if}
@@ -162,6 +177,7 @@
   section { align-self:start; padding-top:8px; }
   .eyebrow { margin:0 0 8px; color:var(--text-muted); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
   h1 { max-width:620px; margin:0; font-size:29px; line-height:1.15; }
+  h1:focus { outline:none; }
   .lead { max-width:650px; margin:12px 0 22px; color:var(--text-secondary); font-size:13px; line-height:1.6; }
   .feature-row,.privacy-grid { display:grid; gap:9px; }
   .feature-row { grid-template-columns:repeat(3,minmax(0,1fr)); }
@@ -189,5 +205,15 @@
   .back { border:1px solid var(--border-default); background:transparent; color:var(--text-secondary); }
   .primary { border:0; background:var(--accent-primary); color:var(--accent-contrast); }
   button:disabled { opacity:.5; cursor:default; }
-  @media (max-width:680px) { .feature-row,.privacy-grid,.character-grid,.habitat-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media (max-width:680px) {
+    .onboarding { padding:20px; }
+    .onboarding-card { min-height:0; padding:22px; }
+    .feature-row,.privacy-grid,.character-grid,.habitat-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+  @media (max-width:520px) {
+    .onboarding { padding:12px; }
+    .onboarding-card { padding:18px; border-radius:16px; }
+    .feature-row,.privacy-grid,.character-grid,.habitat-grid,.mode-grid { grid-template-columns:1fr; }
+    footer { position:sticky; bottom:0; padding-top:8px; background:var(--surface-raised); }
+  }
 </style>

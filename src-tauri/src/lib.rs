@@ -120,14 +120,20 @@ pub fn run() {
                 smart_notifications,
             ));
 
-            fullscreen::start(app.handle().clone())?;
-            windowing::apply_capture_affinity(
+            // Desktop awareness, capture exclusion, telemetry, and global input
+            // are optional integrations. A Windows/API failure must not make
+            // Byte itself fail to launch.
+            let _ = fullscreen::start(app.handle().clone());
+            let _ = windowing::apply_capture_affinity(
                 app.handle(),
                 initial_app_preferences.exclude_from_capture,
-            )?;
+            );
             windowing::initialize(app.handle())?;
             let _ = startup::apply(initial_app_preferences.launch_at_startup);
-            telemetry::runtime::start(app.handle().clone())?;
+
+            if telemetry::runtime::start(app.handle().clone()).is_err() {
+                app.state::<AppState>().set_snapshot_unavailable();
+            }
 
             if let Ok(input_runtime) = InputRuntime::start(app.handle().clone()) {
                 app.state::<AppState>().install_input_runtime(input_runtime);

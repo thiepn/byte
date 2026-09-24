@@ -249,11 +249,8 @@ pub fn drag_companion(app: &AppHandle) -> Result<WindowShellState, ByteError> {
 }
 
 pub fn finish_move_mode(app: &AppHandle) -> Result<WindowShellState, ByteError> {
-    save_current_placement(app)?;
-
-    let preferences = companion_preferences(app);
-    apply_companion_layout(app, &preferences)?;
-
+    // Clear the interaction state first so a monitor disappearing mid-drag
+    // can never strand Byte in Move Mode.
     let shell = {
         let state = app.state::<AppState>();
         let mut shell = state
@@ -263,8 +260,13 @@ pub fn finish_move_mode(app: &AppHandle) -> Result<WindowShellState, ByteError> 
         shell.move_mode = false;
         *shell
     };
-
     emit_move_mode(app, false);
+
+    let save_result = save_current_placement(app);
+    let preferences = companion_preferences(app);
+    let layout_result = apply_companion_layout(app, &preferences);
+
+    save_result.and(layout_result)?;
     Ok(shell)
 }
 
@@ -395,11 +397,7 @@ fn save_current_placement(app: &AppHandle) -> Result<(), ByteError> {
         return Ok(());
     }
 
-    let monitor = window
-        .current_monitor()
-        .map_err(|error| ByteError::Window(error.to_string()))?
-        .or_else(|| window.primary_monitor().ok().flatten())
-        .ok_or_else(|| ByteError::Window("No monitor is available".into()))?;
+    let monitor = choose_monitor(&window, None)?;
 
     let position = window
         .outer_position()
@@ -447,11 +445,7 @@ fn position_quick_panel(app: &AppHandle) -> Result<(), ByteError> {
         && preferences.display_mode != DisplayMode::Tray;
 
     if companion_visible {
-        let monitor = companion
-            .current_monitor()
-            .map_err(|error| ByteError::Window(error.to_string()))?
-            .or_else(|| companion.primary_monitor().ok().flatten())
-            .ok_or_else(|| ByteError::Window("No monitor is available".into()))?;
+        let monitor = choose_monitor(&companion, None)?;
         let scale = monitor.scale_factor();
         let panel_size = PhysicalSize::new(
             physical_pixels(QUICK_PANEL_LOGICAL_WIDTH, scale),

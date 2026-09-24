@@ -212,7 +212,7 @@
       </label>
 
       <label class="setting-row">
-        <span><strong>Keep Byte out of screen capture</strong><small>Uses Windows WDA_EXCLUDEFROMCAPTURE on Byte's windows. This is more reliable than guessing whether Zoom, Teams, OBS, or another app is currently sharing.</small></span>
+        <span><strong>Keep Byte out of screen capture</strong><small>Requests Windows WDA_EXCLUDEFROMCAPTURE on Byte's windows. Windows may refuse this on unsupported capture paths, so Byte treats it as best-effort protection rather than a security guarantee.</small></span>
         <input type="checkbox" checked={draft.exclude_from_capture} onchange={(event) => change((next) => (next.exclude_from_capture = event.currentTarget.checked))} />
       </label>
 

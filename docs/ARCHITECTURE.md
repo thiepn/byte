@@ -267,9 +267,9 @@ Desktop awareness now maps display-off into the existing `DISPLAY_SLEEP` lifecyc
 
 The telemetry worker blocks through `wait_until_sampling_allowed()` while the display is off. On recovery it creates a fresh DiagnosticEngine and marks the cached snapshot unavailable before sampling again, preventing stale pre-sleep sustained timers from immediately producing diagnostic/notification behavior.
 
-The companion receives `byte://lifecycle-changed` and stops animation/particle advancement for LOCKED, DISPLAY_SLEEP, SYSTEM_SLEEP, and SHUTTING_DOWN states.
+The companion receives `byte://lifecycle-changed` and stops animation/particle advancement for FULLSCREEN_REDUCED, LOCKED, DISPLAY_SLEEP, SYSTEM_SLEEP, and SHUTTING_DOWN states.
 
-Fullscreen/presentation suppression remains `FULLSCREEN_REDUCED`: visibility can be hidden while telemetry continues.
+Fullscreen/presentation suppression remains `FULLSCREEN_REDUCED`: visibility, input reactions, and rendering are suspended while telemetry continues at a reduced cadence.
 
 Restore from any suppression reason requires a 1.5-second continuously clear observation window before the shell may show a previously visible companion again.
 
@@ -307,3 +307,35 @@ Process attribution remains lazy. A raw transient high CPU/memory observation no
 The desktop-awareness worker cannot disappear completely because it owns the display-power message window and must notice recovery. It is therefore the single low-frequency sentinel: 500 ms while active, 1 s while fullscreen-reduced, and 2 s while locked/display-sleeping/system-sleeping. Its wait is lifecycle-cancellable so shutdown does not wait for the timeout.
 
 See [PERFORMANCE.md](PERFORMANCE.md).
+
+
+## Phase 24 accessibility and failure isolation
+
+Phase 24 separates **core startup requirements** from **optional Windows integrations**.
+
+The following failures no longer abort application setup:
+
+- desktop-awareness worker startup
+- capture-exclusion application
+- telemetry-worker startup
+- global input-hook startup
+
+Window creation/layout and the local configuration store remain core requirements. If telemetry cannot start, the cached snapshot stays unavailable and product surfaces say that data is unavailable instead of fabricating readings or remaining indefinitely in a "checking" state.
+
+Capture exclusion remains best-effort. A failure after the preference has been persisted does not roll back unrelated app settings.
+
+### UI accessibility boundary
+
+`App.svelte` centralizes application-level accessibility preferences. Text scale is explicitly surface-aware: main and Quick Panel surfaces scale, while the companion surface remains at 1× so authored pixel-art geometry does not change.
+
+The main application provides a skip link and programmatic main-region focus on section changes. Selection groups expose `aria-pressed`, current navigation exposes `aria-current`, progress indicators expose progressbar values, errors use alert semantics, and save state uses polite live regions.
+
+Global CSS defines focus-visible treatment plus Windows forced-colors behavior. Byte's own High contrast preference remains separate from OS forced-colors and can coexist with it.
+
+### Display recovery
+
+Move Mode clears its shell flag before placement persistence/layout recovery. If a monitor disappears while the user is dragging, a placement error cannot leave the interaction mode latched on.
+
+Placement saving and Quick Panel adjacency use the same monitor fallback chain already used by the main companion layout.
+
+See [ACCESSIBILITY_RESILIENCE.md](ACCESSIBILITY_RESILIENCE.md).

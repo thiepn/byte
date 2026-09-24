@@ -53,6 +53,12 @@
     return value.cpu.state !== "UNKNOWN" || value.memory.state !== "UNKNOWN";
   }
 
+  function unavailableMessage(): string {
+    return preferences?.app.system_monitoring_enabled === false
+      ? "System monitoring is off. Open Byte Settings to enable it."
+      : "System data is currently unavailable. Byte will retry locally.";
+  }
+
   async function refresh(): Promise<void> {
     try {
       const [nextSnapshot, nextPreferences, nextShell] = await Promise.all([
@@ -324,7 +330,7 @@
       <div class="inline-error" role="status">{actionError}</div>
     {/if}
   {:else}
-    <div class="message">Checking your PC…</div>
+    <div class="message" role="status">{unavailableMessage()}</div>
   {/if}
 </div>
 
