@@ -157,7 +157,7 @@ impl DiagnosticEngine {
             issues.push(thermal_issue(active, &snapshot));
         }
 
-        issues.sort_by(|left, right| issue_priority(right).cmp(&issue_priority(left)));
+        issues.sort_by_key(|issue| std::cmp::Reverse(issue_priority(issue)));
 
         snapshot.overall_status = if issues
             .iter()
