@@ -517,12 +517,7 @@ fn default_position(
     )
 }
 
-fn perch_relative_position(
-    monitor: &Monitor,
-    max_x: i32,
-    max_y: i32,
-    margin: i32,
-) -> (i32, i32) {
+fn perch_relative_position(monitor: &Monitor, max_x: i32, max_y: i32, margin: i32) -> (i32, i32) {
     match infer_taskbar_edge(monitor) {
         TaskbarEdge::Bottom => (max_x - margin, max_y),
         TaskbarEdge::Top => (max_x - margin, 0),
