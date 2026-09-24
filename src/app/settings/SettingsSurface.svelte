@@ -4,10 +4,12 @@
   import type {
     AppPreferences,
     ByteConfig,
+    DesktopAwarenessSnapshot,
     NotificationPermissionState,
   } from "../../lib/types/domain";
   import {
     clearActivityHistory,
+    getDesktopAwareness,
     getNotificationPermission,
     openReleasePage,
     requestNotificationPermission,
@@ -21,6 +23,11 @@
     snoozeLabel,
     snoozeUntilTomorrow,
   } from "./notification-model";
+  import {
+    awarenessDetail,
+    awarenessTitle,
+    normalizeExcludedAppInput,
+  } from "./awareness-model";
 
   export let preferences: ByteConfig;
   export let onSaved: (config: ByteConfig) => void = () => {};
@@ -32,6 +39,9 @@
   let saving = false;
   let saveError = "";
   let dataMessage = "";
+  let awareness: DesktopAwarenessSnapshot | null = null;
+  let excludedAppInput = "";
+  let exclusionMessage = "";
   let notificationPermission: NotificationPermissionState | null = null;
   let permissionBusy = false;
   let version = "0.1.0";
@@ -67,6 +77,44 @@
       }
     }
     saving = false;
+  }
+
+  async function refreshAwareness(): Promise<void> {
+    try {
+      awareness = await getDesktopAwareness();
+    } catch {
+      awareness = null;
+    }
+  }
+
+  function addExcludedApp(): void {
+    exclusionMessage = "";
+    const normalized = normalizeExcludedAppInput(excludedAppInput);
+    if (!normalized) {
+      exclusionMessage = "Enter an executable name such as obs64 or powerpnt.";
+      return;
+    }
+    if (draft.hidden_foreground_apps.includes(normalized)) {
+      exclusionMessage = "That app is already excluded.";
+      return;
+    }
+    if (draft.hidden_foreground_apps.length >= 32) {
+      exclusionMessage = "Byte supports up to 32 excluded apps.";
+      return;
+    }
+
+    change((next) => {
+      next.hidden_foreground_apps = [...next.hidden_foreground_apps, normalized];
+    });
+    excludedAppInput = "";
+  }
+
+  function removeExcludedApp(name: string): void {
+    change((next) => {
+      next.hidden_foreground_apps = next.hidden_foreground_apps.filter(
+        (item) => item !== name,
+      );
+    });
   }
 
   async function refreshNotificationPermission(): Promise<void> {
@@ -131,6 +179,9 @@
   onMount(() => {
     void getVersion().then((value) => (version = value)).catch(() => {});
     void refreshNotificationPermission();
+    void refreshAwareness();
+    const awarenessTimer = window.setInterval(() => void refreshAwareness(), 1_500);
+    return () => window.clearInterval(awarenessTimer);
   });
 </script>
 
@@ -150,7 +201,68 @@
     <section class="settings-group">
       <div class="group-heading"><h2>Windows & desktop</h2><p>How Byte fits into the operating system.</p></div>
       <label class="setting-row"><span><strong>Start Byte with Windows</strong><small>Registers Byte in the current user's Windows startup list.</small></span><input type="checkbox" checked={draft.launch_at_startup} onchange={(event) => change((next) => (next.launch_at_startup = event.currentTarget.checked))} /></label>
-      <label class="setting-row"><span><strong>Hide during fullscreen</strong><small>Automatically hides the companion for fullscreen games, videos, and presentations, then restores it afterward.</small></span><input type="checkbox" checked={draft.hide_in_fullscreen} onchange={(event) => change((next) => (next.hide_in_fullscreen = event.currentTarget.checked))} /></label>
+      <label class="setting-row">
+        <span><strong>Hide for fullscreen games & video</strong><small>Uses foreground-window geometry plus Windows' fullscreen Direct3D state. Ordinary maximized windows stay unaffected.</small></span>
+        <input type="checkbox" checked={draft.hide_in_fullscreen} onchange={(event) => change((next) => (next.hide_in_fullscreen = event.currentTarget.checked))} />
+      </label>
+
+      <label class="setting-row">
+        <span><strong>Hide during presentation mode</strong><small>Respects Windows presentation/busy state so Byte stays out of slide shows and uninterrupted presentation sessions.</small></span>
+        <input type="checkbox" checked={draft.hide_in_presentation} onchange={(event) => change((next) => (next.hide_in_presentation = event.currentTarget.checked))} />
+      </label>
+
+      <label class="setting-row">
+        <span><strong>Keep Byte out of screen capture</strong><small>Uses Windows WDA_EXCLUDEFROMCAPTURE on Byte's windows. This is more reliable than guessing whether Zoom, Teams, OBS, or another app is currently sharing.</small></span>
+        <input type="checkbox" checked={draft.exclude_from_capture} onchange={(event) => change((next) => (next.exclude_from_capture = event.currentTarget.checked))} />
+      </label>
+
+      <div class="setting-row awareness-row">
+        <span>
+          <strong>Desktop awareness</strong>
+          <small>{awarenessDetail(awareness)}</small>
+        </span>
+        <span class:active-awareness={awareness?.suppressed} class="status-badge">{awarenessTitle(awareness)}</span>
+      </div>
+
+      <div class="excluded-apps">
+        <div class="excluded-copy">
+          <strong>Always hide for selected foreground apps</strong>
+          <small>Optional local executable-name list for apps where you never want the desktop companion visible, even when they are windowed. Paths and window titles are never stored.</small>
+        </div>
+        <div class="excluded-entry">
+          <input
+            type="text"
+            maxlength="96"
+            placeholder="e.g. obs64 or powerpnt"
+            bind:value={excludedAppInput}
+            onkeydown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                addExcludedApp();
+              }
+            }}
+          />
+          <button onclick={addExcludedApp}>Add app</button>
+        </div>
+        {#if exclusionMessage}<small class="exclusion-message">{exclusionMessage}</small>{/if}
+        {#if draft.hidden_foreground_apps.length > 0}
+          <div class="excluded-chips">
+            {#each draft.hidden_foreground_apps as appName}
+              <button class="app-chip" onclick={() => removeExcludedApp(appName)} aria-label={`Remove ${appName} exclusion`}>
+                <span>{appName}</span><b>×</b>
+              </button>
+            {/each}
+          </div>
+        {:else}
+          <small class="empty-exclusions">No app-specific exclusions. Fullscreen, presentation, lock/display-off, and capture protection still work independently.</small>
+        {/if}
+      </div>
+
+      <div class="setting-row protected-row">
+        <span><strong>Lock & display-off protection</strong><small>Always active. Byte hides on the locked/not-present desktop and when Windows reports the console display is off. Worker/power optimization remains a separate lifecycle phase.</small></span>
+        <span class="status-badge">Always on</span>
+      </div>
+
       <div class="setting-row"><span><strong>Companion appearance & behavior</strong><small>Character, habitat, personality, cosmetics, collection extras, mode, and size live in the Studio.</small></span><button onclick={onOpenCustomize}>Open Studio</button></div>
     </section>
 
@@ -285,4 +397,16 @@
   .notification-policy { margin:10px 16px; padding:10px 11px; display:grid; gap:3px; border-radius:10px; background:var(--surface-selected); }
   .notification-policy strong { font-size:9px; text-transform:uppercase; letter-spacing:.05em; }
   .notification-policy span,.notification-policy small { color:var(--text-muted); font-size:9px; line-height:1.4; }
+  .active-awareness { border:1px solid var(--status-info); color:var(--text-primary); }
+  .excluded-apps { padding:13px 16px; border-top:1px solid var(--border-default); display:grid; gap:9px; }
+  .excluded-copy { display:grid; gap:3px; }
+  .excluded-copy strong { font-size:11px; }
+  .excluded-copy small,.empty-exclusions,.exclusion-message { color:var(--text-muted); font-size:9px; line-height:1.45; }
+  .exclusion-message { color:var(--status-warning); }
+  .excluded-entry { display:flex; gap:6px; }
+  .excluded-entry input { min-width:0; flex:1; padding:7px 9px; border:1px solid var(--border-default); border-radius:8px; background:var(--surface-base); color:var(--text-primary); font:inherit; font-size:10px; }
+  .excluded-chips { display:flex; flex-wrap:wrap; gap:5px; }
+  .app-chip { display:flex; align-items:center; gap:6px; padding:5px 7px; }
+  .app-chip b { color:var(--text-muted); font-size:12px; font-weight:400; }
+  .protected-row { background:color-mix(in srgb,var(--surface-selected) 40%,transparent); }
 </style>
