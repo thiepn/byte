@@ -8,7 +8,10 @@ use crate::{
     },
     models::SystemStatus,
 };
-use std::{thread, time::Duration};
+use std::{
+    thread,
+    time::{Duration, Instant},
+};
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_notification::NotificationExt;
 
@@ -20,6 +23,7 @@ const BUSY_SAMPLE_INTERVAL: Duration = Duration::from_millis(2_500);
 const CALM_SAMPLE_INTERVAL: Duration = Duration::from_secs(5);
 const FULLSCREEN_SAMPLE_INTERVAL: Duration = Duration::from_secs(8);
 const MONITORING_DISABLED_INTERVAL: Duration = Duration::from_secs(30);
+const SUSPEND_GAP_RESET_INTERVAL: Duration = Duration::from_secs(12);
 
 pub fn start(app: AppHandle) -> Result<(), ByteError> {
     let worker_app = app.clone();
@@ -30,6 +34,10 @@ pub fn start(app: AppHandle) -> Result<(), ByteError> {
 
     app.state::<AppState>().install_telemetry_worker(handle);
     Ok(())
+}
+
+fn scheduling_gap_requires_reset(elapsed: Duration) -> bool {
+    elapsed >= SUSPEND_GAP_RESET_INTERVAL
 }
 
 fn sampling_interval(
@@ -56,6 +64,7 @@ fn sampling_interval(
 fn run_worker(app: AppHandle) {
     let mut telemetry = TelemetryEngine::new(WindowsTelemetrySource::new());
     let mut diagnostics = DiagnosticEngine::new();
+    let mut last_sample_at: Option<Instant> = None;
 
     loop {
         let state = app.state::<AppState>();
@@ -65,12 +74,17 @@ fn run_worker(app: AppHandle) {
         }
         let lifecycle_after_wait = state.lifecycle.current();
 
-        if background_work_suspended(lifecycle_before_wait)
-            && !background_work_suspended(lifecycle_after_wait)
-        {
+        let resumed_from_suspension = background_work_suspended(lifecycle_before_wait)
+            && !background_work_suspended(lifecycle_after_wait);
+        let resumed_from_long_gap = last_sample_at
+            .map(|last| scheduling_gap_requires_reset(last.elapsed()))
+            .unwrap_or(false);
+
+        if resumed_from_suspension || resumed_from_long_gap {
             telemetry = TelemetryEngine::new(WindowsTelemetrySource::new());
             diagnostics = DiagnosticEngine::new();
             state.set_snapshot_unavailable();
+            last_sample_at = None;
         }
 
         let app_preferences = state.app_preferences();
@@ -78,6 +92,7 @@ fn run_worker(app: AppHandle) {
             state.set_snapshot_unavailable();
             sampling_interval(lifecycle_after_wait, None, false)
         } else if let Ok(snapshot) = telemetry.sample_snapshot() {
+            last_sample_at = Some(Instant::now());
             let evaluated = diagnostics.evaluate(snapshot);
 
             if let Ok(Some(collection)) = state.observe_collection_system(&evaluated) {
@@ -143,6 +158,13 @@ fn run_worker(app: AppHandle) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn long_scheduler_gaps_are_treated_as_resume_boundaries() {
+        assert!(!scheduling_gap_requires_reset(Duration::from_secs(8)));
+        assert!(scheduling_gap_requires_reset(Duration::from_secs(12)));
+        assert!(scheduling_gap_requires_reset(Duration::from_secs(60)));
+    }
 
     #[test]
     fn calm_sampling_is_slow_and_pressure_sampling_is_fast() {

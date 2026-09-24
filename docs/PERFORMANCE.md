@@ -52,7 +52,7 @@ Lock/display/system sleep are discontinuities, not long sample gaps. On resume B
 5. takes a fresh sample,
 6. emits the fresh snapshot to the companion.
 
-This prevents pre-sleep EWMA values, network deltas, or issue timers from being treated as continuous post-resume evidence.
+This prevents pre-sleep EWMA values, network deltas, or issue timers from being treated as continuous post-resume evidence. A scheduling gap of 12 seconds or more is also treated as a resume boundary, covering OS sleep cases where no intermediate lifecycle observation could run while Windows itself had suspended the process.
 
 ## Verification
 

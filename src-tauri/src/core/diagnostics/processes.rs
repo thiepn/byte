@@ -39,6 +39,7 @@ pub struct ProcessAttributor {
     system: System,
     cpu_count: f32,
     aggregates: Vec<Aggregate>,
+    primed: bool,
     last_refresh: Option<Instant>,
 }
 
@@ -48,6 +49,7 @@ impl ProcessAttributor {
             system: System::new(),
             cpu_count: logical_cpu_count(),
             aggregates: Vec::new(),
+            primed: false,
             last_refresh: None,
         }
     }
@@ -82,6 +84,12 @@ impl CulpritProvider for ProcessAttributor {
         }
 
         refresh_processes(&mut self.system);
+        if !self.primed {
+            thread::sleep(FIRST_CPU_SAMPLE_DELAY);
+            refresh_processes(&mut self.system);
+            self.primed = true;
+        }
+
         self.rebuild_aggregates();
         self.last_refresh = Some(Instant::now());
     }
