@@ -12,15 +12,11 @@ use std::{
 };
 use tauri::{AppHandle, Emitter};
 use windows_sys::Win32::{
-    System::{
-        LibraryLoader::GetModuleHandleW,
-        Threading::GetCurrentThreadId,
-    },
+    System::{LibraryLoader::GetModuleHandleW, Threading::GetCurrentThreadId},
     UI::WindowsAndMessaging::{
         CallNextHookEx, GetMessageW, PeekMessageW, PostThreadMessageW, SetWindowsHookExW,
         UnhookWindowsHookEx, MSG, PM_NOREMOVE, WH_KEYBOARD_LL, WH_MOUSE_LL, WM_KEYDOWN,
-        WM_LBUTTONDOWN, WM_MOUSEHWHEEL, WM_MOUSEWHEEL, WM_QUIT, WM_RBUTTONDOWN,
-        WM_SYSKEYDOWN,
+        WM_LBUTTONDOWN, WM_MOUSEHWHEEL, WM_MOUSEWHEEL, WM_QUIT, WM_RBUTTONDOWN, WM_SYSKEYDOWN,
     },
 };
 
@@ -309,25 +305,55 @@ impl InputInterpreter {
 
         if self.idle {
             self.idle = false;
-            reactions.push(reaction(InputReactionKind::IdleEnd, activity.timestamp_epoch_ms, None));
+            reactions.push(reaction(
+                InputReactionKind::IdleEnd,
+                activity.timestamp_epoch_ms,
+                None,
+            ));
         }
         self.last_activity_ms = activity.timestamp_epoch_ms;
 
         match activity.kind {
-            RawInputKind::Keyboard => self.handle_keyboard(activity.timestamp_epoch_ms, &mut reactions),
+            RawInputKind::Keyboard => {
+                self.handle_keyboard(activity.timestamp_epoch_ms, &mut reactions)
+            }
             RawInputKind::MouseLeft => {
-                if debounce(&mut self.last_left_click_ms, activity.timestamp_epoch_ms, MOUSE_DEBOUNCE_MS) {
-                    reactions.push(reaction(InputReactionKind::MouseLeft, activity.timestamp_epoch_ms, None));
+                if debounce(
+                    &mut self.last_left_click_ms,
+                    activity.timestamp_epoch_ms,
+                    MOUSE_DEBOUNCE_MS,
+                ) {
+                    reactions.push(reaction(
+                        InputReactionKind::MouseLeft,
+                        activity.timestamp_epoch_ms,
+                        None,
+                    ));
                 }
             }
             RawInputKind::MouseRight => {
-                if debounce(&mut self.last_right_click_ms, activity.timestamp_epoch_ms, MOUSE_DEBOUNCE_MS) {
-                    reactions.push(reaction(InputReactionKind::MouseRight, activity.timestamp_epoch_ms, None));
+                if debounce(
+                    &mut self.last_right_click_ms,
+                    activity.timestamp_epoch_ms,
+                    MOUSE_DEBOUNCE_MS,
+                ) {
+                    reactions.push(reaction(
+                        InputReactionKind::MouseRight,
+                        activity.timestamp_epoch_ms,
+                        None,
+                    ));
                 }
             }
             RawInputKind::Scroll => {
-                if debounce(&mut self.last_scroll_ms, activity.timestamp_epoch_ms, SCROLL_DEBOUNCE_MS) {
-                    reactions.push(reaction(InputReactionKind::Scroll, activity.timestamp_epoch_ms, None));
+                if debounce(
+                    &mut self.last_scroll_ms,
+                    activity.timestamp_epoch_ms,
+                    SCROLL_DEBOUNCE_MS,
+                ) {
+                    reactions.push(reaction(
+                        InputReactionKind::Scroll,
+                        activity.timestamp_epoch_ms,
+                        None,
+                    ));
                 }
             }
         }
@@ -348,8 +374,7 @@ impl InputInterpreter {
         self.key_times.push_back(now);
         self.last_key_ms = Some(now);
 
-        let keys_per_second =
-            self.key_times.len() as f32 * 1000.0 / TYPING_WINDOW_MS as f32;
+        let keys_per_second = self.key_times.len() as f32 * 1000.0 / TYPING_WINDOW_MS as f32;
 
         if self.key_times.len() >= FAST_TYPING_MIN_KEYS {
             if !self.fast_typing {
@@ -397,7 +422,8 @@ impl InputInterpreter {
     }
 
     fn next_deadline_ms(&self, now: u64) -> u64 {
-        let idle_remaining = IDLE_START_MS.saturating_sub(now.saturating_sub(self.last_activity_ms));
+        let idle_remaining =
+            IDLE_START_MS.saturating_sub(now.saturating_sub(self.last_activity_ms));
         let typing_remaining = if self.fast_typing {
             self.last_key_ms
                 .map(|last| FAST_TYPING_STOP_MS.saturating_sub(now.saturating_sub(last)))
@@ -460,10 +486,8 @@ mod tests {
 
         let mut start_events = Vec::new();
         for index in 0..FAST_TYPING_MIN_KEYS {
-            start_events.extend(interpreter.handle(raw(
-                RawInputKind::Keyboard,
-                100 + index as u64 * 80,
-            )));
+            start_events
+                .extend(interpreter.handle(raw(RawInputKind::Keyboard, 100 + index as u64 * 80)));
         }
 
         assert_eq!(
