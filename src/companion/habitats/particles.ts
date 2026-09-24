@@ -39,8 +39,13 @@ export class HabitatParticleEngine {
       if (remaining <= 0) break;
       if (profile.time && !profile.time.includes(state.timeOfDay)) continue;
 
+      const reactionLimit = profile.reaction
+        ? this.manifest.reactions.find(
+            (reaction) => reaction.id === profile.reaction,
+          )?.maxIntensity ?? 1
+        : 1;
       const intensity = profile.reaction
-        ? state.reactions[profile.reaction]
+        ? Math.min(state.reactions[profile.reaction], reactionLimit)
         : 1;
       const desired = state.reducedMotion
         ? 0

@@ -59,6 +59,12 @@ export function validateHabitatManifest(value: unknown): HabitatManifest {
     if (!Number.isFinite(layer.order)) {
       throw new Error(`Layer "${layer.id}" has invalid order`);
     }
+    if (
+      layer.opacity != null &&
+      (!Number.isFinite(layer.opacity) || layer.opacity < 0 || layer.opacity > 1)
+    ) {
+      throw new Error(`Layer "${layer.id}" has invalid opacity`);
+    }
     if (!Array.isArray(layer.modes) || layer.modes.some((mode) => !MODES.has(mode))) {
       throw new Error(`Layer "${layer.id}" has invalid display modes`);
     }
@@ -77,17 +83,33 @@ export function validateHabitatManifest(value: unknown): HabitatManifest {
     }
     slotIds.add(slot.id);
     validatePoint(slot.x, slot.y, manifest, `decoration slot "${slot.id}"`);
+    if (slot.plane !== "BACK" && slot.plane !== "FRONT") {
+      throw new Error(`Decoration slot "${slot.id}" has invalid plane`);
+    }
+    if (!Number.isFinite(slot.order)) {
+      throw new Error(`Decoration slot "${slot.id}" has invalid order`);
+    }
   }
 
+  const particleDirections = new Set(["UP", "DOWN", "LEFT", "RIGHT", "FLOAT"]);
   for (const particle of manifest.particles ?? []) {
     if (
       !particle.id ||
+      (particle.plane !== "BACK" && particle.plane !== "FRONT") ||
+      !particleDirections.has(particle.direction) ||
       !Number.isInteger(particle.maxCount) ||
       particle.maxCount < 0 ||
       particle.maxCount > 15 ||
       particle.radius <= 0 ||
       particle.speed < 0 ||
-      !paletteSlots.has(particle.color)
+      particle.drift < 0 ||
+      !paletteSlots.has(particle.color) ||
+      particle.region.width < 0 ||
+      particle.region.height < 0 ||
+      particle.region.x < 0 ||
+      particle.region.y < 0 ||
+      particle.region.x + particle.region.width > manifest.canvas.width ||
+      particle.region.y + particle.region.height > manifest.canvas.height
     ) {
       throw new Error(`Particle profile "${particle.id}" is invalid`);
     }
@@ -99,10 +121,17 @@ export function validateHabitatManifest(value: unknown): HabitatManifest {
     }
   }
 
+  const reactionIds = new Set<string>();
   for (const reaction of manifest.reactions ?? []) {
-    if (!REACTIONS.has(reaction.id) || reaction.maxIntensity < 0 || reaction.maxIntensity > 1) {
+    if (
+      !REACTIONS.has(reaction.id) ||
+      reactionIds.has(reaction.id) ||
+      reaction.maxIntensity < 0 ||
+      reaction.maxIntensity > 1
+    ) {
       throw new Error("Habitat reaction profile is invalid");
     }
+    reactionIds.add(reaction.id);
   }
 
   return manifest;
