@@ -151,4 +151,5 @@ export interface HabitatRenderState {
   reactions: HabitatReactionState;
   reducedMotion: boolean;
   displayMode: DisplayMode;
+  ambientIntensity: number;
 }

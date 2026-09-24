@@ -51,6 +51,7 @@ const state: HabitatRenderState = {
   timeOfDay: "DAY",
   reducedMotion: false,
   displayMode: "HABITAT",
+  ambientIntensity: 1,
   reactions: {
     BUSY: 0,
     MEMORY_PRESSURE: 0,
@@ -66,6 +67,16 @@ describe("HabitatParticleEngine", () => {
   it("never exceeds the global particle budget", () => {
     const engine = new HabitatParticleEngine(manifest(), 1);
     expect(engine.update(16, state).length).toBeLessThanOrEqual(particleCap());
+  });
+
+  it("scales non-reaction ambience without muting semantic reactions", () => {
+    const engine = new HabitatParticleEngine(manifest(), 1);
+    const calm = engine.update(16, { ...state, ambientIntensity: 0.5 });
+    const ambient = calm.filter((particle) => particle.profileId === "ambient");
+    const network = calm.filter((particle) => particle.profileId === "network");
+
+    expect(ambient).toHaveLength(6);
+    expect(network.length).toBeGreaterThan(0);
   });
 
   it("removes animated particles in reduced-motion mode", () => {

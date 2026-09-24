@@ -6,6 +6,8 @@
     CompanionSize,
     DisplayMode,
     HabitatDecorationPreferences,
+    InteractionLevel,
+    Personality,
     SystemSnapshot,
   } from "../lib/types/domain";
   import {
@@ -30,6 +32,7 @@
     type CosmeticCategory,
     type DecorationSlot,
   } from "../companion/customization/catalog";
+  import { PERSONALITY_CHOICES } from "../companion/personality/profiles";
 
   type View = "overview" | "activity" | "apps" | "customize" | "settings";
 
@@ -53,6 +56,15 @@
     { id: "SMALL", name: "Small" },
     { id: "MEDIUM", name: "Medium" },
     { id: "LARGE", name: "Large" },
+  ];
+
+  const INTERACTION_LEVELS: Array<{
+    id: InteractionLevel;
+    name: string;
+  }> = [
+    { id: "QUIET", name: "Quiet" },
+    { id: "NORMAL", name: "Normal" },
+    { id: "PLAYFUL", name: "Playful" },
   ];
 
   let view: View = "overview";
@@ -151,6 +163,22 @@
     const next = cloneCompanion();
     if (!next) return;
     next.habitat = id;
+    await persistCompanion(next);
+  }
+
+  async function selectPersonality(id: Personality): Promise<void> {
+    const next = cloneCompanion();
+    if (!next) return;
+    next.personality = id;
+    await persistCompanion(next);
+  }
+
+  async function selectInteractionLevel(
+    id: InteractionLevel,
+  ): Promise<void> {
+    const next = cloneCompanion();
+    if (!next) return;
+    next.interaction_level = id;
     await persistCompanion(next);
   }
 
@@ -425,6 +453,51 @@
                   <span>{choice.name}</span>
                 </button>
               {/each}
+            </div>
+          </section>
+
+          <section class="custom-card">
+            <div class="section-heading">
+              <div>
+                <h2>Personality</h2>
+                <p>
+                  Personality changes idle pacing, curiosity, wind-down behavior,
+                  and ambient life. System warnings remain equally clear in every
+                  personality.
+                </p>
+              </div>
+            </div>
+            <div class="personality-grid">
+              {#each PERSONALITY_CHOICES as option}
+                <button
+                  class="personality-choice"
+                  class:selected={preferences.companion.personality === option.id}
+                  disabled={saving}
+                  onclick={() => void selectPersonality(option.id)}
+                >
+                  <strong>{option.name}</strong>
+                  <span>{option.description}</span>
+                  <small>{option.traits}</small>
+                </button>
+              {/each}
+            </div>
+            <div class="activity-level">
+              <span class="field-label">Interaction level</span>
+              <div class="chip-row">
+                {#each INTERACTION_LEVELS as option}
+                  <button
+                    class:selected={preferences.companion.interaction_level ===
+                      option.id}
+                    disabled={saving}
+                    onclick={() => void selectInteractionLevel(option.id)}
+                    >{option.name}</button
+                  >
+                {/each}
+              </div>
+              <small>
+                Quiet reduces incidental activity; Playful increases expression
+                frequency without changing alerts or collecting more data.
+              </small>
             </div>
           </section>
 
@@ -810,6 +883,50 @@
     gap: var(--space-8);
   }
 
+  .personality-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-8);
+  }
+
+  .personality-choice {
+    min-height: 132px;
+    display: grid;
+    align-content: start;
+    gap: 7px;
+    border: 1px solid var(--border-default);
+    background: var(--surface-base);
+  }
+
+  .personality-choice strong {
+    color: var(--text-primary);
+    font-size: 14px;
+  }
+
+  .personality-choice span {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .personality-choice small,
+  .activity-level > small {
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .activity-level {
+    margin-top: var(--space-16);
+    padding-top: var(--space-16);
+    border-top: 1px solid var(--border-default);
+  }
+
+  .activity-level > small {
+    display: block;
+    margin-top: 8px;
+  }
+
   .characters {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
@@ -960,7 +1077,8 @@
     .metric-grid,
     .characters,
     .habitats,
-    .palette-grid {
+    .palette-grid,
+    .personality-grid {
       grid-template-columns: 1fr;
     }
 

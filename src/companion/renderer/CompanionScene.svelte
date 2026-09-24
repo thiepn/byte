@@ -24,6 +24,7 @@
     loadSelectedCosmetics,
     resolveHabitatDecorations,
   } from "../customization/catalog";
+  import { PersonalityDirector } from "../personality/profiles";
   import { CharacterCanvasRenderer } from "./CharacterCanvasRenderer";
   import { HabitatCanvasRenderer } from "./HabitatCanvasRenderer";
   import {
@@ -55,6 +56,7 @@
   let particleEngine: HabitatParticleEngine | null = null;
   let characterManifest: CharacterManifest | null = null;
   let habitatManifest: HabitatManifest | null = null;
+  let personalityDirector: PersonalityDirector | null = null;
 
   let displayMode: DisplayMode = "HABITAT";
   let habitatState: HabitatRenderState = {
@@ -62,6 +64,7 @@
     reactions: { ...EMPTY_REACTIONS },
     reducedMotion: false,
     displayMode,
+    ambientIntensity: 0.8,
   };
 
   let pressed = false;
@@ -96,10 +99,17 @@
     event.preventDefault();
     dragging = true;
     suppressClickUntil = Date.now() + 400;
+    const dragStartedAt = performance.now();
 
     try {
       const shell = await dragCompanion();
       moveMode = shell.move_mode;
+      if (animator) {
+        personalityDirector?.onDragComplete(
+          performance.now() - dragStartedAt,
+          animator,
+        );
+      }
     } finally {
       dragging = false;
     }
@@ -141,6 +151,7 @@
   function renderFrame(deltaMs: number): void {
     if (!animator || !characterRenderer) return;
 
+    personalityDirector?.tick(deltaMs, animator);
     const frame = animator.tick(deltaMs);
     characterRenderer.render(frame);
     positionCharacter(frame);
@@ -158,6 +169,7 @@
       if (animator) {
         const request = systemBehaviorForSnapshot(snapshot);
         animator.setBaseBehavior(request.behavior, request.source);
+        personalityDirector?.observeSnapshot(snapshot, animator);
       }
 
       habitatState = {
@@ -211,6 +223,10 @@
 
       if (disposed || revision !== visualRevision) return;
 
+      const nextPersonalityDirector = new PersonalityDirector(
+        preferences.personality,
+        preferences.interaction_level,
+      );
       const characterChanged =
         !characterManifest || characterManifest.id !== nextCharacterManifest.id;
 
@@ -231,6 +247,10 @@
         animator.setReducedMotion(mediaQuery?.matches ?? false);
       }
 
+      personalityDirector = nextPersonalityDirector;
+      animator?.setIdleProfile(
+        nextPersonalityDirector.idleProfile(nextCharacterManifest),
+      );
       characterRenderer?.setPalette(preferences.palette);
       characterRenderer?.setAttachments(attachments);
 
@@ -262,6 +282,7 @@
         ...habitatState,
         displayMode,
         timeOfDay: currentTimeOfDay(),
+        ambientIntensity: nextPersonalityDirector.ambientIntensity(),
       };
 
       if (animator && characterRenderer) {
@@ -347,7 +368,7 @@
 
       void listen<InputReactionEvent>("byte://input-reaction", (event) => {
         if (!disposed && animator) {
-          applyInputReaction(animator, event.payload);
+          applyInputReaction(animator, event.payload, personalityDirector ?? undefined);
         }
       }).then((unlisten: UnlistenFn) => {
         if (disposed) unlisten();
@@ -369,6 +390,7 @@
       particleEngine = null;
       characterManifest = null;
       habitatManifest = null;
+      personalityDirector = null;
     };
   });
 </script>
@@ -386,6 +408,9 @@
   onclick={() => void openPanel()}
   onkeydown={handleKeydown}
   onpointerdown={(event) => void startMove(event)}
+  onpointerenter={() => {
+    if (animator) personalityDirector?.onPointerEnter(animator);
+  }}
 >
   <canvas
     bind:this={habitatBackCanvas}
