@@ -104,3 +104,29 @@ CustomizationStudio owns an optimistic in-memory view of the current preferences
 The preview is not a second companion engine. It instantiates the same CharacterAnimator, CharacterCanvasRenderer, HabitatCanvasRenderer, HabitatParticleEngine, semantic attachment system, personality idle profile, and local-time habitat state used by the desktop companion.
 
 Studio Undo/Redo is session-only UI history and is not persisted as a second source of truth.
+
+
+## Lightweight collection and progression
+
+Phase 19 adds a local CollectionStore persisted in `collection.json`.
+
+CollectionStore is separate from ByteConfig so customization preferences remain the authoritative selected look while collection state records only optional progression. It tracks:
+
+- first-seen timestamp
+- anonymous typing-event count
+- completed charging transitions
+- sparse normal-network moments
+- rare idle discoveries
+- permanently unlocked collection IDs
+
+Time-based unlocks are evaluated when collection state is read and while normal signals arrive.
+
+Anonymous typing events reuse the existing low-level input pipeline but still contain no key identity. Typing progress is checkpointed every 250 events and on clean shutdown instead of writing to disk on every keypress.
+
+Charging progress counts only a false → true charging transition. Starting Byte while already charging does not count.
+
+Network progress counts at most one moment per 60 seconds while aggregate throughput is at least 0.5 Mbps and stops counting after its single finite unlock threshold. The Studio deliberately hides a numeric network target to avoid encouraging artificial traffic.
+
+Rare idle discovery is reported by the production companion only when an existing `rare_a` or `rare_b` idle occurs naturally. Discovery unlocks replay access in the Studio; it does not remove those rare idles from normal companion behavior.
+
+The backend validates known Phase 19 gated selections before persisting CompanionPreferences. Core Phase 18 items are never gated.

@@ -187,3 +187,19 @@ Frontend tests cover:
 - sleep/wake mapping
 - fast typing not being interrupted by mouse input
 - animation source release back to system base state
+
+
+## Phase 19 collection counting
+
+The lightweight collection system may increment one anonymous typing counter when the existing keyboard hook reports keyboard activity.
+
+This does not widen the input payload. Byte still never stores or exposes:
+
+- key identity
+- scan code
+- virtual-key code
+- typed text
+- focused application
+- cursor position
+
+The counter exists only for two finite local cosmetic milestones, is checkpointed in `collection.json`, and stops being relevant once those milestones are unlocked.

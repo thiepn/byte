@@ -189,6 +189,8 @@ It does not add:
 - imported assets
 - freeform habitat editing
 
-Optional lightweight collection/unlock mechanics belong to **Phase 19** and must layer onto this Studio rather than replacing it.
+Phase 19 now layers an optional Collection section onto this Studio without replacing any of the Phase 18 editing model.
 
-Next: **Phase 19 — Lightweight Cosmetic Unlocks**.
+See [COLLECTION.md](COLLECTION.md).
+
+Next: **Phase 20 — Onboarding & Settings**.

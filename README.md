@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–18 are implemented.
+Phases 1–19 are implemented.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -33,6 +33,7 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Phase 16 promotes the main application Overview and Activity surfaces: live resource summaries with bounded session trends, persisted meaningful issue/power events, timeline filtering, and a richer investigation path without becoming a raw telemetry dashboard.
 - Phase 17 adds explicit on-demand Apps diagnostics: locally aggregated process groups, CPU/memory shares, conservative standout confidence, point-in-time sorting, diagnostic context, and Task Manager handoff with no End task control.
 - Phase 18 turns Customize into a full live Customization Studio with a large animated habitat preview, reaction testing, visual category browsing, four curated looks, optimistic queued persistence, undo/redo, reset controls, and the complete existing character/cosmetic/decor/personality/display toolset.
+- Phase 19 adds a finite optional collection layer: eight local extras unlocked through elapsed time, natural anonymous typing, ordinary charging/network moments, and naturally encountered rare idles. Core customization remains immediately available.
 - Activity persists only meaningful events locally; trend points are session-only and globally bounded.
 - Customization and personality are entirely local; there is no account, store, virtual currency, unlock timer, or cloud inventory.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
@@ -76,5 +77,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Main app: Overview & Activity](docs/FULL_APP.md)
 - [Apps & Diagnostics](docs/APPS_DIAGNOSTICS.md)
 - [Customization Studio](docs/CUSTOMIZATION_STUDIO.md)
+- [Lightweight collection & unlocks](docs/COLLECTION.md)
 
-Next: Phase 19 — Lightweight Cosmetic Unlocks.
+Next: Phase 20 — Onboarding & Settings.

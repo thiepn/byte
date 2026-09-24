@@ -39,3 +39,14 @@ Transient spikes do not notify. Sustained meaningful conditions progress from ob
 ## Windows
 
 Closing the full application hides it instead of quitting Byte. Byte hides by default during fullscreen usage and later lifecycle phases suspend unnecessary work during lock/sleep.
+
+
+## Lightweight collection
+
+Phase 19 adds one optional Collection section inside the Customization Studio.
+
+Core characters, habitats, Phase 13 cosmetics/decorations, personalities, palettes, and display controls remain immediately available. The collection contains only eight finite extras and does not gate Byte's core experience.
+
+Unlock conditions are based on passive elapsed time or signals Byte already observes for companion reactions. There are no daily-login rewards, streaks, XP bars, currency, shop, battle pass, resource-wasting challenges, or mandatory pet maintenance.
+
+Locked extras remain visible with a plain-language condition. Time, typing, and charging milestones may show simple finite progress. Network and rare-idle discoveries intentionally do not expose grindable numeric targets.
