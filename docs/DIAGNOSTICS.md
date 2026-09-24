@@ -19,14 +19,14 @@ These thresholds are implementation defaults, not user-facing settings.
 - Busy/elevated: 70%+
 - High candidate: 95%+ for 60 seconds
 - Critical candidate: 99%+ for 5 minutes
-- Recovery: 80% or below for 15 seconds
+- Recovery: 90% or below for 15 seconds
 
 ### Memory
 Uses both used percentage and available physical memory.
 - Elevated: 88% used, or 80%+ with 4 GB or less available
 - High: 96% used, or 90%+ with 2 GB or less available, sustained for 15 seconds
 - Critical: 99% used, or 96%+ with 1 GB or less available, sustained for 30 seconds
-- Recovery: 82% or below, or 3 GB+ available, for 15 seconds
+- Recovery: 88% or below, or 2.5 GB+ available, for 15 seconds
 
 ### Storage
 - Elevated: 30 GB or less free, or 90%+ used
@@ -39,14 +39,14 @@ Only applies while not charging.
 - Elevated: 20% or less
 - High: 10% or less
 - Critical: 5% or less
-- Charging immediately resolves the low-battery condition.
+- Charging immediately resolves the low-battery condition; otherwise 12%+ clears it.
 
 ### Thermal
 Temperature is best-effort and may come from different hardware sensors, so thresholds are deliberately conservative.
 - Elevated: 90°C+
 - High: 100°C+ for 60 seconds
 - Critical: 110°C+ for 30 seconds
-- Recovery: 92°C or below for 30 seconds
+- Recovery: 95°C or below for 30 seconds
 
 ## Hysteresis and recovery
 
@@ -58,7 +58,7 @@ Resolved HIGH issues have a short reopen cooldown. CRITICAL conditions can bypas
 
 Process scanning is lazy.
 
-Byte does not continuously scan every process. It begins refreshing process CPU/memory only when CPU or memory is already in a high candidate state or an issue is active.
+Byte does not continuously scan every process. It begins refreshing process CPU/memory only when CPU or memory is already in a high candidate state or an issue is active, and throttles those scans to at most once every 3 seconds.
 
 Related processes are grouped by process name. CPU usage is normalized by logical CPU count. Byte only names a culprit when one process group accounts for a meaningful share of measured process usage.
 

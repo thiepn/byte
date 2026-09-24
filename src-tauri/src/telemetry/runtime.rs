@@ -1,7 +1,5 @@
 use super::engine::TelemetryEngine;
-use crate::{
-    core::{diagnostics::DiagnosticEngine, error::ByteError, state::AppState},
-};
+use crate::core::{diagnostics::DiagnosticEngine, error::ByteError, state::AppState};
 use std::{thread, time::Duration};
 use tauri::{AppHandle, Manager};
 

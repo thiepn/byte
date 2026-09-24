@@ -1,8 +1,12 @@
 use crate::models::{Confidence, IssueCategory, ProcessSummary};
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    time::{Duration, Instant},
+};
 use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, System};
 
 const BYTES_PER_MIB: f32 = 1_048_576.0;
+const PROCESS_REFRESH_INTERVAL: Duration = Duration::from_secs(3);
 
 #[derive(Debug, Clone)]
 pub struct Attribution {
@@ -28,6 +32,7 @@ pub struct ProcessAttributor {
     system: System,
     cpu_count: f32,
     aggregates: Vec<Aggregate>,
+    last_refresh: Option<Instant>,
 }
 
 impl ProcessAttributor {
@@ -38,6 +43,7 @@ impl ProcessAttributor {
                 .map(|value| value.get() as f32)
                 .unwrap_or(1.0),
             aggregates: Vec::new(),
+            last_refresh: None,
         }
     }
 
@@ -69,23 +75,11 @@ impl ProcessAttributor {
     }
 
     fn top_cpu(&self) -> Option<Attribution> {
-        attribution_from(
-            &self.aggregates,
-            |item| item.cpu_percent,
-            15.0,
-            0.50,
-            0.25,
-        )
+        attribution_from(&self.aggregates, |item| item.cpu_percent, 15.0, 0.50, 0.25)
     }
 
     fn top_memory(&self) -> Option<Attribution> {
-        attribution_from(
-            &self.aggregates,
-            |item| item.memory_mb,
-            256.0,
-            0.35,
-            0.18,
-        )
+        attribution_from(&self.aggregates, |item| item.memory_mb, 256.0, 0.35, 0.18)
     }
 }
 
@@ -97,12 +91,21 @@ impl Default for ProcessAttributor {
 
 impl CulpritProvider for ProcessAttributor {
     fn refresh(&mut self) {
+        if self
+            .last_refresh
+            .map(|last| last.elapsed() < PROCESS_REFRESH_INTERVAL)
+            .unwrap_or(false)
+        {
+            return;
+        }
+
         self.system.refresh_processes_specifics(
             ProcessesToUpdate::All,
             true,
             ProcessRefreshKind::nothing().with_cpu().with_memory(),
         );
         self.rebuild_aggregates();
+        self.last_refresh = Some(Instant::now());
     }
 
     fn attribution(&self, category: IssueCategory) -> Option<Attribution> {

@@ -102,10 +102,6 @@ impl SustainedTracker {
         self.active
     }
 
-    pub fn active(&self) -> Option<ActiveCondition> {
-        self.active
-    }
-
     pub fn reset(&mut self) {
         self.high_since = None;
         self.critical_since = None;
@@ -174,8 +170,12 @@ mod tests {
     #[test]
     fn transient_high_condition_does_not_open_issue() {
         let mut tracker = SustainedTracker::default();
-        assert!(tracker.update(0, observed(true, false, false), POLICY).is_none());
-        assert!(tracker.update(5_000, observed(false, false, true), POLICY).is_none());
+        assert!(tracker
+            .update(0, observed(true, false, false), POLICY)
+            .is_none());
+        assert!(tracker
+            .update(5_000, observed(false, false, true), POLICY)
+            .is_none());
     }
 
     #[test]

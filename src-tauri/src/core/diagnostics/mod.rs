@@ -89,7 +89,8 @@ impl DiagnosticEngine {
             self.storage.reset();
             None
         } else {
-            self.storage.update(now, storage_observation, STORAGE_POLICY)
+            self.storage
+                .update(now, storage_observation, STORAGE_POLICY)
         };
         let battery_active = match battery_observation {
             Some(observation) => self.battery.update(now, observation, BATTERY_POLICY),
@@ -115,30 +116,19 @@ impl DiagnosticEngine {
             self.culprits.refresh();
         }
 
-        snapshot.cpu.state = visible_resource_state(
-            snapshot.cpu.state,
-            cpu_observation,
-            cpu_active,
-        );
-        snapshot.memory.state = visible_resource_state(
-            snapshot.memory.state,
-            memory_observation,
-            memory_active,
-        );
-        snapshot.storage.state = visible_resource_state(
-            snapshot.storage.state,
-            storage_observation,
-            storage_active,
-        );
+        snapshot.cpu.state =
+            visible_resource_state(snapshot.cpu.state, cpu_observation, cpu_active);
+        snapshot.memory.state =
+            visible_resource_state(snapshot.memory.state, memory_observation, memory_active);
+        snapshot.storage.state =
+            visible_resource_state(snapshot.storage.state, storage_observation, storage_active);
 
-        if let (Some(battery), Some(observation)) =
-            (snapshot.battery.as_mut(), battery_observation)
+        if let (Some(battery), Some(observation)) = (snapshot.battery.as_mut(), battery_observation)
         {
             battery.state = visible_resource_state(battery.state, observation, battery_active);
         }
 
-        if let (Some(thermal), Some(observation)) =
-            (snapshot.thermal.as_mut(), thermal_observation)
+        if let (Some(thermal), Some(observation)) = (snapshot.thermal.as_mut(), thermal_observation)
         {
             thermal.state = visible_resource_state(thermal.state, observation, thermal_active);
         }
@@ -203,7 +193,7 @@ fn observe_cpu(resource: &ResourceSummary) -> Observation {
         elevated: resource.value >= 70.0,
         high: resource.value >= 95.0,
         critical: resource.value >= 99.0,
-        recovered: resource.value <= 80.0,
+        recovered: resource.value <= 90.0,
     }
 }
 
@@ -219,8 +209,8 @@ fn observe_memory(resource: &ResourceSummary) -> Observation {
         || (resource.value >= 90.0 && available.map(|value| value <= 2.0).unwrap_or(false));
     let critical = resource.value >= 99.0
         || (resource.value >= 96.0 && available.map(|value| value <= 1.0).unwrap_or(false));
-    let recovered = resource.value <= 82.0
-        || available.map(|value| value >= 3.0).unwrap_or(false);
+    let recovered =
+        resource.value <= 88.0 || available.map(|value| value >= 2.5).unwrap_or(false);
 
     Observation {
         elevated,
@@ -240,7 +230,7 @@ fn observe_storage(resource: &ResourceSummary) -> Observation {
         elevated: available <= 30.0 || resource.value >= 90.0,
         high: available <= 15.0 || resource.value >= 95.0,
         critical: available <= 5.0 || resource.value >= 98.0,
-        recovered: available >= 20.0 && resource.value <= 93.0,
+        recovered: available >= 18.0 && resource.value <= 94.0,
     }
 }
 
@@ -258,7 +248,7 @@ fn observe_battery(battery: &crate::models::BatterySummary) -> Observation {
         elevated: battery.percent <= 20.0,
         high: battery.percent <= 10.0,
         critical: battery.percent <= 5.0,
-        recovered: battery.percent >= 15.0,
+        recovered: battery.percent >= 12.0,
     }
 }
 
@@ -271,7 +261,7 @@ fn observe_thermal(resource: &ResourceSummary) -> Observation {
         elevated: resource.value >= 90.0,
         high: resource.value >= 100.0,
         critical: resource.value >= 110.0,
-        recovered: resource.value <= 92.0,
+        recovered: resource.value <= 95.0,
     }
 }
 
@@ -373,7 +363,10 @@ fn storage_issue(active: ActiveCondition, snapshot: &SystemSnapshot) -> SystemIs
         } else {
             "Storage is getting low".into()
         },
-        explanation: format!("About {} remains available on the monitored drive.", format_gb(available)),
+        explanation: format!(
+            "About {} remains available on the monitored drive.",
+            format_gb(available)
+        ),
         culprit: None,
         confidence: Confidence::High,
         culprit_confidence: None,
@@ -449,7 +442,11 @@ fn attribution_parts(
     high_confidence_suffix: &str,
     medium_confidence_suffix: &str,
     fallback: &str,
-) -> (Option<crate::models::ProcessSummary>, Option<Confidence>, String) {
+) -> (
+    Option<crate::models::ProcessSummary>,
+    Option<Confidence>,
+    String,
+) {
     match attribution {
         Some(attribution) => {
             let suffix = if attribution.confidence == Confidence::High {
