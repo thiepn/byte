@@ -1,5 +1,12 @@
 use crate::{
-    core::error::ByteError,
+    core::{
+        error::ByteError,
+        persistence::{read_bounded_text, BoundedText},
+        security::{
+            normalize_and_validate_app_preferences, normalize_and_validate_config,
+            validate_companion_preferences,
+        },
+    },
     models::{AppPreferences, ByteConfig, CompanionPreferences},
 };
 use std::{
@@ -10,6 +17,7 @@ use std::{
 use tempfile::NamedTempFile;
 
 pub const CURRENT_SCHEMA_VERSION: u32 = 8;
+const MAX_CONFIG_FILE_BYTES: u64 = 256 * 1024;
 
 pub struct ConfigStore {
     path: PathBuf,
@@ -22,16 +30,19 @@ impl ConfigStore {
             fs::create_dir_all(parent)?;
         }
 
-        let config = match fs::read_to_string(&path) {
-            Ok(raw) => match decode_and_migrate(&raw) {
+        let config = match read_bounded_text(&path, MAX_CONFIG_FILE_BYTES)? {
+            BoundedText::Present(raw) => match decode_and_migrate(&raw) {
                 Ok(value) => value,
                 Err(_) => {
                     quarantine_corrupt_config(&path);
                     ByteConfig::default()
                 }
             },
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => ByteConfig::default(),
-            Err(error) => return Err(error.into()),
+            BoundedText::Invalid => {
+                quarantine_corrupt_config(&path);
+                ByteConfig::default()
+            }
+            BoundedText::Missing => ByteConfig::default(),
         };
 
         let store = Self { path, config };
@@ -47,6 +58,7 @@ impl ConfigStore {
         &mut self,
         preferences: CompanionPreferences,
     ) -> Result<ByteConfig, ByteError> {
+        validate_companion_preferences(&preferences)?;
         self.config.companion = preferences;
         self.save()?;
         Ok(self.config.clone())
@@ -57,11 +69,16 @@ impl ConfigStore {
         update: impl FnOnce(&mut CompanionPreferences),
     ) -> Result<ByteConfig, ByteError> {
         update(&mut self.config.companion);
+        validate_companion_preferences(&self.config.companion)?;
         self.save()?;
         Ok(self.config.clone())
     }
 
-    pub fn update_app(&mut self, preferences: AppPreferences) -> Result<ByteConfig, ByteError> {
+    pub fn update_app(
+        &mut self,
+        mut preferences: AppPreferences,
+    ) -> Result<ByteConfig, ByteError> {
+        normalize_and_validate_app_preferences(&mut preferences)?;
         self.config.app = preferences;
         self.save()?;
         Ok(self.config.clone())
@@ -84,23 +101,26 @@ fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
     let mut config = serde_json::from_str::<ByteConfig>(raw)?;
 
     match config.schema_version {
-        CURRENT_SCHEMA_VERSION => Ok(config),
+        CURRENT_SCHEMA_VERSION => {}
         1..=5 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
             // Installations predating Phase 20 already passed through Byte
             // without onboarding. Do not force first-run setup on them.
             config.app.onboarding_completed = true;
-            Ok(config)
         }
         6 | 7 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
             // Phase 20+ already persisted onboarding state; preserve it.
-            Ok(config)
         }
-        other => Err(ByteError::Config(format!(
-            "Unsupported configuration schema version: {other}"
-        ))),
+        other => {
+            return Err(ByteError::Config(format!(
+                "Unsupported configuration schema version: {other}"
+            )));
+        }
     }
+
+    normalize_and_validate_config(&mut config)?;
+    Ok(config)
 }
 
 fn quarantine_corrupt_config(path: &Path) {

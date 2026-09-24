@@ -1,0 +1,32 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-window",
+  "description": "Main application access to Byte's local state, settings and explicit system actions.",
+  "windows": [
+    "main"
+  ],
+  "local": true,
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:app:allow-version",
+    "allow-get-snapshot",
+    "allow-get-activity-history",
+    "allow-inspect-apps",
+    "allow-get-collection",
+    "allow-get-preferences",
+    "allow-update-app-preferences",
+    "allow-get-desktop-awareness",
+    "allow-get-notification-permission",
+    "allow-request-notification-permission",
+    "allow-clear-activity-history",
+    "allow-open-release-page",
+    "allow-update-companion-preferences",
+    "allow-execute-recommended-action",
+    "allow-set-display-mode",
+    "allow-set-companion-size"
+  ],
+  "platforms": [
+    "windows"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "companion-window",
+  "description": "Desktop companion access limited to cached state, semantic discovery, panel opening and Move Mode.",
+  "windows": [
+    "companion"
+  ],
+  "local": true,
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "allow-get-snapshot",
+    "allow-get-preferences",
+    "allow-get-desktop-awareness",
+    "allow-get-window-shell-state",
+    "allow-record-collection-discovery",
+    "allow-drag-companion",
+    "allow-finish-move-mode",
+    "allow-show-quick-panel"
+  ],
+  "platforms": [
+    "windows"
+  ]
+}

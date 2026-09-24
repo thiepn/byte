@@ -1,12 +1,20 @@
 use crate::{
-    core::{activity::ActivitySnapshot, error::ByteError, state::AppState},
+    core::{
+        activity::ActivitySnapshot,
+        error::ByteError,
+        security::{
+            normalize_and_validate_app_preferences, validate_companion_preferences,
+            validate_snooze,
+        },
+        state::AppState,
+    },
     models::{
         AppDiagnosticsSnapshot, AppPreferences, ByteConfig, CollectionDiscoveryKind,
         CollectionSnapshot, CompanionPreferences, CompanionSize, DesktopAwarenessSnapshot,
         DisplayMode, EdgeAnchor, NotificationPermissionState, RecommendedActionKind,
         SystemSnapshot, WindowShellState,
     },
-    platform::windows::{actions, fullscreen, startup, windowing},
+    platform::windows::{actions, startup, windowing},
 };
 use tauri::{plugin::PermissionState, AppHandle, Emitter, State};
 use tauri_plugin_notification::NotificationExt;
@@ -62,24 +70,11 @@ pub fn update_app_preferences(
     state: State<'_, AppState>,
     mut preferences: AppPreferences,
 ) -> Result<ByteConfig, ByteError> {
-    if !matches!(preferences.text_scale_percent, 100 | 110 | 125) {
-        return Err(ByteError::Config(
-            "Text scale must be 100, 110, or 125 percent".into(),
-        ));
-    }
-
-    if let Some(until) = preferences.notification_snoozed_until_epoch_ms {
-        let now = crate::models::now_epoch_ms();
-        let maximum = now.saturating_add(7 * 24 * 60 * 60 * 1_000);
-        if until > maximum {
-            return Err(ByteError::Config(
-                "Notification snooze cannot exceed seven days".into(),
-            ));
-        }
-    }
-
-    preferences.hidden_foreground_apps =
-        fullscreen::normalize_excluded_apps(&preferences.hidden_foreground_apps)?;
+    normalize_and_validate_app_preferences(&mut preferences)?;
+    validate_snooze(
+        preferences.notification_snoozed_until_epoch_ms,
+        crate::models::now_epoch_ms(),
+    )?;
 
     let previous = state.app_preferences();
     if previous.launch_at_startup != preferences.launch_at_startup {
@@ -156,6 +151,7 @@ pub fn update_companion_preferences(
     state: State<'_, AppState>,
     preferences: CompanionPreferences,
 ) -> Result<ByteConfig, ByteError> {
+    validate_companion_preferences(&preferences)?;
     state.validate_collection_preferences(&preferences)?;
 
     let config = state

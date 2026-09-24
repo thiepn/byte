@@ -1,5 +1,8 @@
 use crate::{
-    core::error::ByteError,
+    core::{
+        error::ByteError,
+        persistence::{read_bounded_text, BoundedText},
+    },
     models::{
         now_epoch_ms, CollectionDiscoveryKind, CollectionItemKind, CollectionItemProgress,
         CollectionSnapshot, CompanionPreferences, SystemSnapshot,
@@ -15,6 +18,7 @@ use std::{
 use tempfile::NamedTempFile;
 
 const COLLECTION_SCHEMA_VERSION: u32 = 1;
+const MAX_COLLECTION_FILE_BYTES: u64 = 256 * 1024;
 const DAY_MS: u64 = 86_400_000;
 const WEEK_DAYS: u64 = 7;
 const MONTH_DAYS: u64 = 30;
@@ -86,18 +90,15 @@ impl CollectionStore {
         }
 
         let now = now_epoch_ms();
-        let (data, recovered) = match fs::read_to_string(&path) {
-            Ok(raw) => match serde_json::from_str::<CollectionData>(&raw)
+        let (data, recovered) = match read_bounded_text(&path, MAX_COLLECTION_FILE_BYTES)? {
+            BoundedText::Present(raw) => match serde_json::from_str::<CollectionData>(&raw)
                 .ok()
                 .filter(|value| value.schema_version == COLLECTION_SCHEMA_VERSION)
             {
                 Some(value) => (value, false),
                 None => (CollectionData::new(now), true),
             },
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                (CollectionData::new(now), true)
-            }
-            Err(error) => return Err(error.into()),
+            BoundedText::Invalid | BoundedText::Missing => (CollectionData::new(now), true),
         };
 
         let mut store = Self {

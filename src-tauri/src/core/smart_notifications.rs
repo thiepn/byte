@@ -1,5 +1,8 @@
 use crate::{
-    core::error::ByteError,
+    core::{
+        error::ByteError,
+        persistence::{read_bounded_text, BoundedText},
+    },
     models::{
         AppPreferences, Confidence, IssueCategory, NotificationCategory, ResourceState, SystemIssue,
     },
@@ -14,6 +17,7 @@ use std::{
 use tempfile::NamedTempFile;
 
 const STATE_SCHEMA_VERSION: u32 = 1;
+const MAX_NOTIFICATION_STATE_BYTES: u64 = 128 * 1024;
 const MINUTE_MS: u64 = 60_000;
 const HOUR_MS: u64 = 60 * MINUTE_MS;
 const RUNAWAY_MIN_MS: u64 = 10 * MINUTE_MS;
@@ -53,18 +57,15 @@ impl SmartNotificationEngine {
             fs::create_dir_all(parent)?;
         }
 
-        let (persisted, recovered) = match fs::read_to_string(&path) {
-            Ok(raw) => match serde_json::from_str::<PersistedState>(&raw)
+        let (persisted, recovered) = match read_bounded_text(&path, MAX_NOTIFICATION_STATE_BYTES)? {
+            BoundedText::Present(raw) => match serde_json::from_str::<PersistedState>(&raw)
                 .ok()
                 .filter(|value| value.schema_version == STATE_SCHEMA_VERSION)
             {
                 Some(value) => (value, false),
                 None => (PersistedState::default(), true),
             },
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                (PersistedState::default(), true)
-            }
-            Err(error) => return Err(error.into()),
+            BoundedText::Invalid | BoundedText::Missing => (PersistedState::default(), true),
         };
 
         let engine = Self {
@@ -243,15 +244,11 @@ fn build_notification(category: NotificationCategory, issue: &SystemIssue) -> Sm
     let fingerprint = incident_fingerprint(category, issue);
 
     let title = match category {
-        NotificationCategory::Memory => "Byte: memory is critically low".into(),
-        NotificationCategory::Thermal => "Byte: your computer is running very hot".into(),
-        NotificationCategory::Storage => "Byte: storage is almost full".into(),
-        NotificationCategory::Battery => "Byte: battery is almost empty".into(),
-        NotificationCategory::RunawayProcess => issue
-            .culprit
-            .as_ref()
-            .map(|culprit| format!("Byte: {} has kept the CPU busy", culprit.name))
-            .unwrap_or_else(|| "Byte: processor pressure has persisted".into()),
+        NotificationCategory::Memory => "Byte: memory needs attention".into(),
+        NotificationCategory::Thermal => "Byte: temperature needs attention".into(),
+        NotificationCategory::Storage => "Byte: storage needs attention".into(),
+        NotificationCategory::Battery => "Byte: battery needs attention".into(),
+        NotificationCategory::RunawayProcess => "Byte: processor pressure has persisted".into(),
     };
 
     let next_step = issue
@@ -261,17 +258,21 @@ fn build_notification(category: NotificationCategory, issue: &SystemIssue) -> Sm
         .unwrap_or_else(|| " Open Byte for details.".into());
 
     let body = match category {
-        NotificationCategory::RunawayProcess => {
-            let culprit = issue
-                .culprit
-                .as_ref()
-                .map(|value| value.name.as_str())
-                .unwrap_or("An app");
-            format!(
-                "{culprit} has remained a major processor user for about 10 minutes.{next_step}"
-            )
+        NotificationCategory::Memory => {
+            format!("A sustained memory condition needs attention.{next_step}")
         }
-        _ => format!("{}{}", issue.explanation, next_step),
+        NotificationCategory::Thermal => {
+            format!("A sustained temperature condition needs attention.{next_step}")
+        }
+        NotificationCategory::Storage => {
+            format!("Available storage has reached Byte's attention threshold.{next_step}")
+        }
+        NotificationCategory::Battery => {
+            format!("Battery level has reached Byte's attention threshold.{next_step}")
+        }
+        NotificationCategory::RunawayProcess => {
+            format!("An app has remained a major processor user for about 10 minutes.{next_step}")
+        }
     };
 
     SmartNotification {
@@ -371,6 +372,28 @@ mod tests {
             )
             .expect("thermal");
         assert_eq!(result.category, NotificationCategory::Thermal);
+    }
+
+    #[test]
+    fn native_notifications_do_not_expose_process_names_or_exact_readings() {
+        let mut cpu = issue(IssueCategory::Cpu, ResourceState::Critical, 0);
+        cpu.culprit = Some(ProcessSummary {
+            name: "Sensitive App Name".into(),
+            pid: Some(44),
+            cpu_percent: Some(91.2),
+            memory_mb: Some(900.0),
+        });
+        cpu.culprit_confidence = Some(Confidence::High);
+
+        let notification = build_notification(NotificationCategory::RunawayProcess, &cpu);
+        assert!(!notification.title.contains("Sensitive App Name"));
+        assert!(!notification.body.contains("Sensitive App Name"));
+        assert!(!notification.body.contains("91.2"));
+
+        let mut battery = issue(IssueCategory::Battery, ResourceState::Critical, 0);
+        battery.explanation = "Battery level is about 4%.".into();
+        let notification = build_notification(NotificationCategory::Battery, &battery);
+        assert!(!notification.body.contains("4%"));
     }
 
     #[test]
