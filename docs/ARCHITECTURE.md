@@ -366,3 +366,18 @@ Persisted JSON is size-bounded before UTF-8 conversion/deserialization. CPU/memo
 CI pins its GitHub Actions to commit SHAs and runs npm + RustSec dependency audits in addition to the existing type/test/build/fmt/clippy/check gates.
 
 See [SECURITY_PRIVACY.md](SECURITY_PRIVACY.md).
+
+
+## Phase 26 packaging and release engineering
+
+Phase 26 adds a distribution boundary around the existing production application without changing its runtime architecture.
+
+The canonical Windows executable is now named `Byte.exe` through Tauri's `mainBinaryName` configuration while the Rust package remains `byte-desktop`.
+
+Production bundling targets NSIS with current-user installation. Downgrades are explicitly disabled. The installer uses Byte's production icon, a silent WebView2 download bootstrapper when required, and an NSIS post-uninstall hook that removes Byte's separate HKCU Run startup entry.
+
+Packaging certification is independent of ordinary compilation CI. The Windows packaging workflow creates the actual NSIS installer, installs it silently, exercises reinstall, verifies the installed executable version, uninstalls it, and verifies that both installer registration and startup registration are gone.
+
+Tagged release builds additionally compare the tag to all three project version declarations, reject non-increasing release versions, optionally import a Windows signing certificate, certify against the previous standardized installer when available, generate a portable ZIP plus release manifest and SHA-256 checksums, and publish those exact files to GitHub Releases only after certification passes.
+
+See [PACKAGING_RELEASE.md](PACKAGING_RELEASE.md).
