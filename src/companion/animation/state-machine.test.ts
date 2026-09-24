@@ -113,6 +113,16 @@ describe("CharacterAnimator", () => {
     expect(animator.currentBehavior()).toBe("idle");
   });
 
+  it("allows a persistent critical base state to downgrade after recovery", () => {
+    const animator = new CharacterAnimator(manifest(), 1);
+    animator.setBaseBehavior("needs_attention", "critical");
+    animator.tick(50);
+    expect(animator.currentBehavior()).toBe("needs_attention");
+
+    animator.setBaseBehavior("idle", "idle");
+    expect(animator.currentBehavior()).toBe("idle");
+  });
+
   it("uses reduced-motion frames while preserving completion semantics", () => {
     const animator = new CharacterAnimator(manifest(), 1);
     animator.setReducedMotion(true);

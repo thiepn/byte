@@ -49,14 +49,16 @@ export class CharacterAnimator {
     this.baseBehavior = behavior;
     this.baseSource = source;
 
-    const currentIsBase =
-      this.active.behavior === previousBase ||
-      this.active.source === "idle" ||
-      this.active.source === "system" ||
-      this.active.source === "diagnostic" ||
-      this.active.source === "critical";
+    const currentTracksPreviousBase =
+      this.active.behavior === previousBase &&
+      (this.active.source === "idle" ||
+        this.active.source === "system" ||
+        this.active.source === "diagnostic" ||
+        this.active.source === "critical");
 
-    if (currentIsBase || BEHAVIOR_PRIORITY[source] >= this.active.priority) {
+    if (currentTracksPreviousBase) {
+      this.requestBehavior({ behavior, source, force: true });
+    } else if (BEHAVIOR_PRIORITY[source] >= this.active.priority) {
       this.requestBehavior({ behavior, source });
     }
 
