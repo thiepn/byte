@@ -24,11 +24,12 @@ Personalities: Chill, Curious, Energetic.
 - Calm semantic status colors.
 - No permanent cyberpunk HUD, reticles, tiny monospace telemetry, giant gauges, or excessive neon.
 
-The production character layer now uses authored pixel sprite atlases for Byte, Mochi, Pip, and Kiwi. The old CSS/programmer-art placeholder has been removed. See [CHARACTERS.md](CHARACTERS.md).
+The production character layer uses authored pixel sprite atlases for Byte, Mochi, Pip, and Kiwi. See [CHARACTERS.md](CHARACTERS.md).
 
+## Production habitats
 
-## Habitat runtime foundation
+Phase 12 promotes all six scenes to production: denser authored compositions, local-time palettes, time-specific layers, richer ellipse/polygon geometry, habitat-specific telemetry metaphors, grounded character staging, fixed decoration slots, and bounded ambience.
 
-Phase 11 implements the visual scene architecture for Meadow, Cozy Desk, Bedroom, Space, Aquarium, and Rooftop. Each uses a 256×256 logical pixel canvas, four local-time palettes, fixed decoration slots, semantic system reactions, sparse bounded ambience, and explicit back/front planes.
+The scenes remain cozy pixel-art worlds rather than technical dashboards. System health is communicated through environmental metaphors, not numeric overlays.
 
-The six Phase 11 scenes are runtime foundations. Phase 12 is responsible for final habitat art polish and production certification.
+See [HABITAT_PRODUCTION.md](HABITAT_PRODUCTION.md).

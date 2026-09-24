@@ -22,6 +22,16 @@ function fixture(): any {
         modes: ["HABITAT"],
         primitives: [
           { kind: "RECT", x: 0, y: 0, width: 100, height: 100, color: "base" },
+          { kind: "ELLIPSE", x: 30, y: 30, radiusX: 8, radiusY: 4, color: "base" },
+          {
+            kind: "POLYGON",
+            points: [
+              { x: 10, y: 10 },
+              { x: 20, y: 10 },
+              { x: 15, y: 20 },
+            ],
+            color: "base",
+          },
         ],
       },
     ],
@@ -45,7 +55,7 @@ function fixture(): any {
 }
 
 describe("validateHabitatManifest", () => {
-  it("accepts a complete foundation manifest", () => {
+  it("accepts the production primitive vocabulary", () => {
     expect(validateHabitatManifest(fixture()).id).toBe("test");
   });
 
@@ -59,6 +69,27 @@ describe("validateHabitatManifest", () => {
     const value = fixture();
     value.layers[0].primitives[0].color = "missing";
     expect(() => validateHabitatManifest(value)).toThrow(/invalid primitive/);
+  });
+
+  it("rejects malformed polygons", () => {
+    const value = fixture();
+    value.layers[0].primitives[2].points = [
+      { x: 10, y: 10 },
+      { x: 20, y: 10 },
+    ];
+    expect(() => validateHabitatManifest(value)).toThrow(/invalid polygon/);
+  });
+
+  it("rejects invalid time-gated layers", () => {
+    const value = fixture();
+    value.layers[0].time = ["MIDNIGHT"];
+    expect(() => validateHabitatManifest(value)).toThrow(/invalid time/);
+  });
+
+  it("rejects invalid status", () => {
+    const value = fixture();
+    value.status = "draft";
+    expect(() => validateHabitatManifest(value)).toThrow(/status/);
   });
 
   it("rejects reaction intensity above one", () => {

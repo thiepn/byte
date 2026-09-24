@@ -36,26 +36,35 @@ export class HabitatCanvasRenderer {
     this.clear(this.backContext);
     this.clear(this.frontContext);
 
-    if (state.displayMode === "TRAY" || state.displayMode === "MINI" || state.displayMode === "EDGE") {
+    if (
+      state.displayMode === "TRAY" ||
+      state.displayMode === "MINI" ||
+      state.displayMode === "EDGE"
+    ) {
       return;
     }
 
     const palette = this.palette(state);
-    const layers = [...this.manifest.layers].sort((left, right) => left.order - right.order);
+    const layers = [...this.manifest.layers].sort(
+      (left, right) => left.order - right.order,
+    );
 
     for (const layer of layers) {
       if (!layer.modes.includes(state.displayMode)) continue;
+      if (layer.time && !layer.time.includes(state.timeOfDay)) continue;
 
       const intensity = layer.reaction ? state.reactions[layer.reaction] : 1;
       if (intensity <= 0) continue;
 
-      const context = layer.plane === "BACK" ? this.backContext : this.frontContext;
+      const context =
+        layer.plane === "BACK" ? this.backContext : this.frontContext;
       this.drawLayer(context, layer, palette, intensity);
     }
 
     if (state.displayMode === "HABITAT") {
       for (const particle of particles) {
-        const context = particle.plane === "BACK" ? this.backContext : this.frontContext;
+        const context =
+          particle.plane === "BACK" ? this.backContext : this.frontContext;
         const color = palette.colors[particle.color];
         if (!color) continue;
 
@@ -110,13 +119,19 @@ export class HabitatCanvasRenderer {
 
   private palette(state: HabitatRenderState): HabitatPalette {
     return (
-      this.manifest.palettes.find((palette) => palette.id === state.timeOfDay) ??
-      this.manifest.palettes[0]
+      this.manifest.palettes.find(
+        (palette) => palette.id === state.timeOfDay,
+      ) ?? this.manifest.palettes[0]
     );
   }
 
   private clear(context: CanvasRenderingContext2D): void {
-    context.clearRect(0, 0, this.manifest.canvas.width, this.manifest.canvas.height);
+    context.clearRect(
+      0,
+      0,
+      this.manifest.canvas.width,
+      this.manifest.canvas.height,
+    );
     context.imageSmoothingEnabled = false;
   }
 
@@ -127,7 +142,10 @@ export class HabitatCanvasRenderer {
     intensity: number,
   ): void {
     context.save();
-    context.globalAlpha = Math.min(1, Math.max(0, (layer.opacity ?? 1) * intensity));
+    context.globalAlpha = Math.min(
+      1,
+      Math.max(0, (layer.opacity ?? 1) * intensity),
+    );
 
     for (const primitive of layer.primitives) {
       const color = palette.colors[primitive.color];
@@ -171,6 +189,34 @@ export class HabitatCanvasRenderer {
     if (primitive.kind === "CIRCLE") {
       context.beginPath();
       context.arc(primitive.x, primitive.y, primitive.radius, 0, Math.PI * 2);
+      context.fill();
+      return;
+    }
+
+    if (primitive.kind === "ELLIPSE") {
+      context.beginPath();
+      context.ellipse(
+        primitive.x,
+        primitive.y,
+        primitive.radiusX,
+        primitive.radiusY,
+        0,
+        0,
+        Math.PI * 2,
+      );
+      context.fill();
+      return;
+    }
+
+    if (primitive.kind === "POLYGON") {
+      const first = primitive.points[0];
+      if (!first) return;
+      context.beginPath();
+      context.moveTo(first.x, first.y);
+      for (const point of primitive.points.slice(1)) {
+        context.lineTo(point.x, point.y);
+      }
+      context.closePath();
       context.fill();
       return;
     }

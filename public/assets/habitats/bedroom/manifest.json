@@ -14,67 +14,91 @@
     {
       "id": "MORNING",
       "colors": {
-        "sky": "#f5d8c6",
-        "far": "#d7b6b1",
-        "ground": "#b28c89",
-        "ground2": "#8b6d6d",
-        "accent": "#8fa5c8",
-        "warm": "#eeb173",
-        "shadow": "#4d3f46",
-        "light": "#fff0dc",
-        "signal": "#9cc3d4",
-        "low": "#72676d"
+        "sky": "#f3c9a4",
+        "sky2": "#ffe2c1",
+        "far": "#d9c2b1",
+        "far2": "#b89d91",
+        "ground": "#a77d6b",
+        "ground2": "#79594f",
+        "accent": "#d58b77",
+        "accent2": "#788f78",
+        "warm": "#ffd493",
+        "shadow": "#41393d",
+        "light": "#fff0d3",
+        "signal": "#78bac5",
+        "low": "#726d70",
+        "danger": "#c76660",
+        "detail": "#5d4f52",
+        "water": "#93c0c7"
       }
     },
     {
       "id": "DAY",
       "colors": {
-        "sky": "#e8dde2",
-        "far": "#c9c0ce",
-        "ground": "#aa868c",
-        "ground2": "#84656d",
-        "accent": "#88a0c8",
-        "warm": "#e9aa68",
-        "shadow": "#493c45",
-        "light": "#fff3e4",
-        "signal": "#93bdcf",
-        "low": "#70646b"
+        "sky": "#a5d9eb",
+        "sky2": "#d8edf5",
+        "far": "#d9c6b6",
+        "far2": "#b69e93",
+        "ground": "#a77b69",
+        "ground2": "#76564d",
+        "accent": "#d48673",
+        "accent2": "#748c75",
+        "warm": "#ffe19d",
+        "shadow": "#3c373d",
+        "light": "#fff4dc",
+        "signal": "#68b5c4",
+        "low": "#706c70",
+        "danger": "#c45e59",
+        "detail": "#584b50",
+        "water": "#86bcc5"
       }
     },
     {
       "id": "EVENING",
       "colors": {
-        "sky": "#bd7a83",
-        "far": "#966773",
-        "ground": "#8e6873",
-        "ground2": "#6c505b",
-        "accent": "#7d83af",
-        "warm": "#e2a06a",
-        "shadow": "#3c3440",
-        "light": "#f2cfbd",
-        "signal": "#86a9bf",
-        "low": "#5b535d"
+        "sky": "#cc8b87",
+        "sky2": "#eaa59a",
+        "far": "#b49da0",
+        "far2": "#846f78",
+        "ground": "#8c675d",
+        "ground2": "#664b48",
+        "accent": "#c9796f",
+        "accent2": "#61735f",
+        "warm": "#f5bc7c",
+        "shadow": "#37313c",
+        "light": "#ead0bd",
+        "signal": "#759fab",
+        "low": "#5e5c64",
+        "danger": "#ad5756",
+        "detail": "#4c4148",
+        "water": "#6f929d"
       }
     },
     {
       "id": "NIGHT",
       "colors": {
-        "sky": "#272d42",
-        "far": "#373c55",
-        "ground": "#554652",
-        "ground2": "#423740",
-        "accent": "#626a96",
-        "warm": "#c98458",
-        "shadow": "#232735",
-        "light": "#e7c0ad",
-        "signal": "#789bb5",
-        "low": "#464a56"
+        "sky": "#26364e",
+        "sky2": "#33465e",
+        "far": "#625f70",
+        "far2": "#484655",
+        "ground": "#66504d",
+        "ground2": "#493a3b",
+        "accent": "#ad6b67",
+        "accent2": "#4f6252",
+        "warm": "#dfaa69",
+        "shadow": "#252631",
+        "light": "#d7d7cc",
+        "signal": "#6c98a7",
+        "low": "#4c4e58",
+        "danger": "#954e50",
+        "detail": "#37343d",
+        "water": "#536f7b"
       }
     }
   ],
   "layers": [
     {
-      "id": "sky",
+      "id": "wall",
       "plane": "BACK",
       "order": 0,
       "modes": [
@@ -87,70 +111,266 @@
           "y": 0,
           "width": 256,
           "height": 256,
+          "color": "far"
+        }
+      ]
+    },
+    {
+      "id": "window",
+      "plane": "BACK",
+      "order": 3,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 18,
+          "y": 22,
+          "width": 78,
+          "height": 82,
+          "color": "shadow",
+          "radius": 5
+        },
+        {
+          "kind": "RECT",
+          "x": 24,
+          "y": 28,
+          "width": 66,
+          "height": 70,
+          "color": "sky",
+          "radius": 2
+        },
+        {
+          "kind": "LINE",
+          "x1": 57,
+          "y1": 28,
+          "x2": 57,
+          "y2": 98,
+          "width": 3,
+          "color": "far2"
+        },
+        {
+          "kind": "LINE",
+          "x1": 24,
+          "y1": 63,
+          "x2": 90,
+          "y2": 63,
+          "width": 3,
+          "color": "far2"
+        }
+      ]
+    },
+    {
+      "id": "window_sun",
+      "plane": "BACK",
+      "order": 4,
+      "modes": [
+        "HABITAT"
+      ],
+      "time": [
+        "MORNING",
+        "DAY"
+      ],
+      "primitives": [
+        {
+          "kind": "CIRCLE",
+          "x": 73,
+          "y": 45,
+          "radius": 9,
+          "color": "warm"
+        }
+      ]
+    },
+    {
+      "id": "window_evening",
+      "plane": "BACK",
+      "order": 4,
+      "modes": [
+        "HABITAT"
+      ],
+      "time": [
+        "EVENING"
+      ],
+      "primitives": [
+        {
+          "kind": "CIRCLE",
+          "x": 74,
+          "y": 72,
+          "radius": 11,
+          "color": "warm"
+        }
+      ]
+    },
+    {
+      "id": "window_moon",
+      "plane": "BACK",
+      "order": 4,
+      "modes": [
+        "HABITAT"
+      ],
+      "time": [
+        "NIGHT"
+      ],
+      "primitives": [
+        {
+          "kind": "CIRCLE",
+          "x": 73,
+          "y": 45,
+          "radius": 9,
+          "color": "light"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 77,
+          "y": 42,
+          "radius": 7,
           "color": "sky"
         }
       ]
     },
     {
-      "id": "rear",
+      "id": "curtains",
       "plane": "BACK",
-      "order": 10,
+      "order": 7,
       "modes": [
         "HABITAT"
       ],
       "primitives": [
         {
           "kind": "RECT",
-          "x": 0,
-          "y": 0,
-          "width": 256,
-          "height": 176,
-          "color": "far"
-        },
-        {
-          "kind": "RECT",
-          "x": 25,
-          "y": 25,
-          "width": 72,
-          "height": 72,
-          "color": "sky",
+          "x": 12,
+          "y": 18,
+          "width": 11,
+          "height": 96,
+          "color": "accent",
           "radius": 5
         },
         {
           "kind": "RECT",
-          "x": 164,
-          "y": 58,
-          "width": 65,
-          "height": 92,
+          "x": 91,
+          "y": 18,
+          "width": 11,
+          "height": 96,
+          "color": "accent",
+          "radius": 5
+        },
+        {
+          "kind": "LINE",
+          "x1": 18,
+          "y1": 72,
+          "x2": 28,
+          "y2": 72,
+          "width": 3,
+          "color": "warm"
+        },
+        {
+          "kind": "LINE",
+          "x1": 86,
+          "y1": 72,
+          "x2": 97,
+          "y2": 72,
+          "width": 3,
+          "color": "warm"
+        }
+      ]
+    },
+    {
+      "id": "bed",
+      "plane": "BACK",
+      "order": 17,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 128,
+          "y": 139,
+          "width": 108,
+          "height": 15,
           "color": "ground2",
           "radius": 5
         },
         {
           "kind": "RECT",
-          "x": 172,
-          "y": 68,
-          "width": 48,
-          "height": 26,
+          "x": 134,
+          "y": 154,
+          "width": 102,
+          "height": 54,
+          "color": "ground",
+          "radius": 7
+        },
+        {
+          "kind": "RECT",
+          "x": 139,
+          "y": 148,
+          "width": 44,
+          "height": 18,
           "color": "light",
+          "radius": 7
+        },
+        {
+          "kind": "RECT",
+          "x": 184,
+          "y": 148,
+          "width": 45,
+          "height": 18,
+          "color": "sky2",
+          "radius": 7
+        },
+        {
+          "kind": "RECT",
+          "x": 128,
+          "y": 201,
+          "width": 108,
+          "height": 10,
+          "color": "ground2",
           "radius": 4
+        },
+        {
+          "kind": "RECT",
+          "x": 132,
+          "y": 209,
+          "width": 8,
+          "height": 24,
+          "color": "detail",
+          "radius": 3
+        },
+        {
+          "kind": "RECT",
+          "x": 224,
+          "y": 209,
+          "width": 8,
+          "height": 24,
+          "color": "detail",
+          "radius": 3
         }
       ]
     },
     {
-      "id": "ground",
+      "id": "rug",
       "plane": "BACK",
-      "order": 20,
+      "order": 19,
       "modes": [
         "HABITAT"
       ],
       "primitives": [
         {
-          "kind": "RECT",
-          "x": 0,
-          "y": 174,
-          "width": 256,
-          "height": 82,
-          "color": "ground"
+          "kind": "ELLIPSE",
+          "x": 112,
+          "y": 221,
+          "radiusX": 69,
+          "radiusY": 18,
+          "color": "accent"
+        },
+        {
+          "kind": "ELLIPSE",
+          "x": 112,
+          "y": 221,
+          "radiusX": 52,
+          "radiusY": 11,
+          "color": "far2"
         }
       ]
     },
@@ -164,124 +384,353 @@
       "primitives": [
         {
           "kind": "RECT",
-          "x": 34,
+          "x": 37,
           "y": 226,
-          "width": 188,
+          "width": 182,
           "height": 8,
           "color": "ground2",
           "radius": 3
+        },
+        {
+          "kind": "RECT",
+          "x": 52,
+          "y": 234,
+          "width": 152,
+          "height": 4,
+          "color": "detail",
+          "radius": 2
         }
       ]
     },
     {
-      "id": "busy",
+      "id": "nightstand",
       "plane": "BACK",
-      "order": 30,
+      "order": 22,
       "modes": [
         "HABITAT"
       ],
-      "opacity": 0.75,
-      "reaction": "BUSY",
       "primitives": [
         {
-          "kind": "CIRCLE",
-          "x": 205,
-          "y": 48,
-          "radius": 24,
-          "color": "warm"
+          "kind": "RECT",
+          "x": 26,
+          "y": 157,
+          "width": 42,
+          "height": 54,
+          "color": "ground2",
+          "radius": 5
         },
         {
           "kind": "LINE",
-          "x1": 205,
-          "y1": 16,
-          "x2": 205,
-          "y2": 4,
-          "width": 3,
-          "color": "warm"
+          "x1": 31,
+          "y1": 178,
+          "x2": 63,
+          "y2": 178,
+          "width": 2,
+          "color": "shadow"
         },
         {
-          "kind": "LINE",
-          "x1": 173,
-          "y1": 48,
-          "x2": 160,
-          "y2": 48,
-          "width": 3,
-          "color": "warm"
+          "kind": "RECT",
+          "x": 43,
+          "y": 167,
+          "width": 8,
+          "height": 3,
+          "color": "light",
+          "radius": 1
+        },
+        {
+          "kind": "RECT",
+          "x": 43,
+          "y": 188,
+          "width": 8,
+          "height": 3,
+          "color": "light",
+          "radius": 1
+        },
+        {
+          "kind": "RECT",
+          "x": 37,
+          "y": 143,
+          "width": 20,
+          "height": 14,
+          "color": "shadow",
+          "radius": 4
+        },
+        {
+          "kind": "RECT",
+          "x": 42,
+          "y": 147,
+          "width": 10,
+          "height": 6,
+          "color": "signal",
+          "radius": 2
         }
       ]
     },
     {
-      "id": "memory",
+      "id": "lamp",
+      "plane": "BACK",
+      "order": 24,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 76,
+          "y": 157,
+          "width": 8,
+          "height": 26,
+          "color": "detail",
+          "radius": 3
+        },
+        {
+          "kind": "POLYGON",
+          "points": [
+            {
+              "x": 66,
+              "y": 146
+            },
+            {
+              "x": 94,
+              "y": 146
+            },
+            {
+              "x": 87,
+              "y": 159
+            },
+            {
+              "x": 72,
+              "y": 159
+            }
+          ],
+          "color": "warm"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 80,
+          "y": 151,
+          "radius": 4,
+          "color": "light"
+        }
+      ]
+    },
+    {
+      "id": "busy_clock",
+      "plane": "BACK",
+      "order": 31,
+      "modes": [
+        "HABITAT"
+      ],
+      "reaction": "BUSY",
+      "opacity": 0.72,
+      "primitives": [
+        {
+          "kind": "LINE",
+          "x1": 34,
+          "y1": 138,
+          "x2": 26,
+          "y2": 130,
+          "width": 3,
+          "color": "signal"
+        },
+        {
+          "kind": "LINE",
+          "x1": 58,
+          "y1": 138,
+          "x2": 66,
+          "y2": 130,
+          "width": 3,
+          "color": "signal"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 47,
+          "y": 150,
+          "radius": 19,
+          "color": "signal"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 47,
+          "y": 150,
+          "radius": 12,
+          "color": "shadow"
+        },
+        {
+          "kind": "LINE",
+          "x1": 47,
+          "y1": 150,
+          "x2": 47,
+          "y2": 142,
+          "width": 3,
+          "color": "light"
+        },
+        {
+          "kind": "LINE",
+          "x1": 47,
+          "y1": 150,
+          "x2": 54,
+          "y2": 154,
+          "width": 3,
+          "color": "light"
+        }
+      ]
+    },
+    {
+      "id": "memory_clutter",
       "plane": "FRONT",
       "order": 50,
       "modes": [
         "HABITAT"
       ],
-      "opacity": 0.85,
       "reaction": "MEMORY_PRESSURE",
+      "opacity": 0.9,
       "primitives": [
         {
           "kind": "RECT",
+          "x": 10,
+          "y": 215,
+          "width": 26,
+          "height": 12,
+          "color": "danger",
+          "radius": 4
+        },
+        {
+          "kind": "RECT",
           "x": 18,
-          "y": 198,
-          "width": 18,
-          "height": 16,
-          "color": "shadow",
-          "radius": 2
+          "y": 205,
+          "width": 31,
+          "height": 10,
+          "color": "accent",
+          "radius": 4
         },
         {
-          "kind": "RECT",
+          "kind": "ELLIPSE",
           "x": 38,
-          "y": 190,
-          "width": 20,
-          "height": 24,
-          "color": "ground2",
-          "radius": 2
+          "y": 222,
+          "radiusX": 16,
+          "radiusY": 7,
+          "color": "low"
         },
         {
           "kind": "RECT",
-          "x": 198,
-          "y": 194,
-          "width": 22,
-          "height": 20,
-          "color": "shadow",
-          "radius": 2
+          "x": 48,
+          "y": 216,
+          "width": 19,
+          "height": 10,
+          "color": "detail",
+          "radius": 3
+        },
+        {
+          "kind": "LINE",
+          "x1": 15,
+          "y1": 204,
+          "x2": 30,
+          "y2": 195,
+          "width": 3,
+          "color": "shadow"
         }
       ]
     },
     {
-      "id": "thermal",
+      "id": "storage_underbed",
+      "plane": "FRONT",
+      "order": 52,
+      "modes": [
+        "HABITAT"
+      ],
+      "reaction": "STORAGE",
+      "opacity": 0.9,
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 151,
+          "y": 207,
+          "width": 72,
+          "height": 17,
+          "color": "ground2",
+          "radius": 4
+        },
+        {
+          "kind": "LINE",
+          "x1": 160,
+          "y1": 215,
+          "x2": 214,
+          "y2": 215,
+          "width": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 182,
+          "y": 211,
+          "width": 10,
+          "height": 3,
+          "color": "light",
+          "radius": 1
+        }
+      ]
+    },
+    {
+      "id": "thermal_radiator",
       "plane": "FRONT",
       "order": 55,
       "modes": [
         "HABITAT"
       ],
-      "opacity": 0.72,
       "reaction": "THERMAL",
+      "opacity": 0.58,
       "primitives": [
         {
+          "kind": "RECT",
+          "x": 104,
+          "y": 166,
+          "width": 34,
+          "height": 42,
+          "color": "danger",
+          "radius": 4
+        },
+        {
           "kind": "LINE",
-          "x1": 102,
-          "y1": 168,
-          "x2": 98,
+          "x1": 112,
+          "y1": 171,
+          "x2": 112,
+          "y2": 202,
+          "width": 3,
+          "color": "warm"
+        },
+        {
+          "kind": "LINE",
+          "x1": 121,
+          "y1": 171,
+          "x2": 121,
+          "y2": 202,
+          "width": 3,
+          "color": "warm"
+        },
+        {
+          "kind": "LINE",
+          "x1": 130,
+          "y1": 171,
+          "x2": 130,
+          "y2": 202,
+          "width": 3,
+          "color": "warm"
+        },
+        {
+          "kind": "LINE",
+          "x1": 100,
+          "y1": 159,
+          "x2": 96,
           "y2": 150,
           "width": 3,
           "color": "warm"
         },
         {
           "kind": "LINE",
-          "x1": 128,
-          "y1": 164,
-          "x2": 132,
-          "y2": 146,
-          "width": 3,
-          "color": "warm"
-        },
-        {
-          "kind": "LINE",
-          "x1": 154,
-          "y1": 168,
-          "x2": 150,
+          "x1": 142,
+          "y1": 159,
+          "x2": 146,
           "y2": 150,
           "width": 3,
           "color": "warm"
@@ -289,42 +738,46 @@
       ]
     },
     {
-      "id": "charging",
+      "id": "charging_lamp",
       "plane": "FRONT",
       "order": 58,
       "modes": [
-        "HABITAT",
-        "PERCH"
+        "HABITAT"
       ],
-      "opacity": 0.85,
       "reaction": "CHARGING",
+      "opacity": 0.78,
       "primitives": [
         {
+          "kind": "CIRCLE",
+          "x": 80,
+          "y": 151,
+          "radius": 11,
+          "color": "signal"
+        },
+        {
           "kind": "LINE",
-          "x1": 164,
-          "y1": 176,
-          "x2": 154,
-          "y2": 192,
+          "x1": 80,
+          "y1": 158,
+          "x2": 80,
+          "y2": 181,
           "width": 4,
           "color": "signal"
         },
         {
           "kind": "LINE",
-          "x1": 154,
-          "y1": 192,
-          "x2": 164,
-          "y2": 192,
+          "x1": 80,
+          "y1": 181,
+          "x2": 93,
+          "y2": 188,
           "width": 4,
           "color": "signal"
         },
         {
-          "kind": "LINE",
-          "x1": 164,
-          "y1": 192,
-          "x2": 154,
-          "y2": 210,
-          "width": 4,
-          "color": "signal"
+          "kind": "CIRCLE",
+          "x": 94,
+          "y": 188,
+          "radius": 4,
+          "color": "light"
         }
       ]
     },
@@ -333,28 +786,36 @@
       "plane": "FRONT",
       "order": 59,
       "modes": [
-        "HABITAT",
-        "PERCH"
+        "HABITAT"
       ],
-      "opacity": 0.82,
       "reaction": "LOW_BATTERY",
+      "opacity": 0.9,
       "primitives": [
         {
           "kind": "RECT",
-          "x": 178,
-          "y": 198,
+          "x": 203,
+          "y": 179,
           "width": 28,
           "height": 13,
           "color": "low",
-          "radius": 2
+          "radius": 3
         },
         {
           "kind": "RECT",
-          "x": 206,
-          "y": 202,
+          "x": 231,
+          "y": 183,
           "width": 4,
           "height": 5,
           "color": "low"
+        },
+        {
+          "kind": "RECT",
+          "x": 207,
+          "y": 183,
+          "width": 5,
+          "height": 5,
+          "color": "danger",
+          "radius": 1
         }
       ]
     },
@@ -368,58 +829,45 @@
       "primitives": [
         {
           "kind": "RECT",
-          "x": 22,
-          "y": 202,
-          "width": 72,
-          "height": 23,
-          "color": "ground2",
-          "radius": 8
+          "x": 0,
+          "y": 235,
+          "width": 256,
+          "height": 21,
+          "color": "shadow"
         },
         {
-          "kind": "CIRCLE",
-          "x": 211,
-          "y": 211,
-          "radius": 14,
-          "color": "accent"
-        }
-      ]
-    },
-    {
-      "id": "storage",
-      "plane": "FRONT",
-      "order": 52,
-      "modes": [
-        "HABITAT"
-      ],
-      "opacity": 0.82,
-      "reaction": "STORAGE",
-      "primitives": [
-        {
-          "kind": "RECT",
-          "x": 203,
-          "y": 181,
-          "width": 18,
-          "height": 15,
-          "color": "ground2",
-          "radius": 2
+          "kind": "ELLIPSE",
+          "x": 27,
+          "y": 233,
+          "radiusX": 20,
+          "radiusY": 8,
+          "color": "accent2"
         },
         {
-          "kind": "RECT",
-          "x": 222,
-          "y": 174,
-          "width": 20,
-          "height": 22,
-          "color": "shadow",
-          "radius": 2
+          "kind": "ELLIPSE",
+          "x": 233,
+          "y": 232,
+          "radiusX": 18,
+          "radiusY": 7,
+          "color": "accent2"
         },
         {
-          "kind": "RECT",
-          "x": 210,
-          "y": 163,
-          "width": 25,
-          "height": 10,
-          "color": "ground2",
-          "radius": 2
+          "kind": "LINE",
+          "x1": 17,
+          "y1": 232,
+          "x2": 23,
+          "y2": 213,
+          "width": 3,
+          "color": "accent2"
+        },
+        {
+          "kind": "LINE",
+          "x1": 238,
+          "y1": 232,
+          "x2": 233,
+          "y2": 214,
+          "width": 3,
+          "color": "accent2"
         }
       ]
     }
@@ -427,36 +875,36 @@
   "decorationSlots": [
     {
       "id": "large_background",
-      "x": 46,
-      "y": 92,
+      "x": 178,
+      "y": 88,
       "plane": "BACK",
       "order": 12
     },
     {
       "id": "wall_or_sky",
-      "x": 208,
-      "y": 83,
+      "x": 56,
+      "y": 62,
       "plane": "BACK",
       "order": 13
     },
     {
       "id": "surface_left",
-      "x": 49,
-      "y": 205,
+      "x": 47,
+      "y": 154,
       "plane": "FRONT",
       "order": 72
     },
     {
       "id": "surface_right",
-      "x": 207,
-      "y": 205,
+      "x": 205,
+      "y": 151,
       "plane": "FRONT",
       "order": 72
     },
     {
       "id": "small_prop",
-      "x": 165,
-      "y": 207,
+      "x": 90,
+      "y": 155,
       "plane": "FRONT",
       "order": 73
     },
@@ -470,53 +918,53 @@
   ],
   "particles": [
     {
-      "id": "network",
+      "id": "network_stars",
       "plane": "FRONT",
       "color": "signal",
-      "maxCount": 6,
-      "radius": 2,
-      "speed": 22,
-      "drift": 5,
+      "maxCount": 4,
+      "radius": 1.4,
+      "speed": 5,
+      "drift": 3,
       "direction": "FLOAT",
       "region": {
-        "x": 20,
-        "y": 35,
-        "width": 216,
-        "height": 130
+        "x": 25,
+        "y": 30,
+        "width": 65,
+        "height": 68
       },
       "reaction": "NETWORK"
     },
     {
-      "id": "charging",
+      "id": "charging_glow",
       "plane": "FRONT",
       "color": "light",
-      "maxCount": 3,
-      "radius": 2,
-      "speed": 18,
-      "drift": 3,
+      "maxCount": 2,
+      "radius": 1.5,
+      "speed": 8,
+      "drift": 2,
       "direction": "UP",
       "region": {
-        "x": 95,
-        "y": 135,
-        "width": 66,
-        "height": 70
+        "x": 64,
+        "y": 132,
+        "width": 36,
+        "height": 55
       },
       "reaction": "CHARGING"
     },
     {
-      "id": "stars",
+      "id": "window_stars",
       "plane": "BACK",
       "color": "light",
       "maxCount": 4,
-      "radius": 1.5,
+      "radius": 1.1,
       "speed": 1,
-      "drift": 2,
+      "drift": 1,
       "direction": "FLOAT",
       "region": {
-        "x": 26,
-        "y": 28,
-        "width": 70,
-        "height": 66
+        "x": 28,
+        "y": 31,
+        "width": 58,
+        "height": 62
       },
       "time": [
         "NIGHT"
@@ -553,5 +1001,5 @@
       "maxIntensity": 1
     }
   ],
-  "status": "foundation"
+  "status": "production"
 }

@@ -34,6 +34,15 @@ export interface HabitatCirclePrimitive {
   color: string;
 }
 
+export interface HabitatEllipsePrimitive {
+  kind: "ELLIPSE";
+  x: number;
+  y: number;
+  radiusX: number;
+  radiusY: number;
+  color: string;
+}
+
 export interface HabitatLinePrimitive {
   kind: "LINE";
   x1: number;
@@ -44,10 +53,23 @@ export interface HabitatLinePrimitive {
   color: string;
 }
 
+export interface HabitatPolygonPoint {
+  x: number;
+  y: number;
+}
+
+export interface HabitatPolygonPrimitive {
+  kind: "POLYGON";
+  points: HabitatPolygonPoint[];
+  color: string;
+}
+
 export type HabitatPrimitive =
   | HabitatRectPrimitive
   | HabitatCirclePrimitive
-  | HabitatLinePrimitive;
+  | HabitatEllipsePrimitive
+  | HabitatLinePrimitive
+  | HabitatPolygonPrimitive;
 
 export interface HabitatLayerDefinition {
   id: string;
@@ -56,6 +78,7 @@ export interface HabitatLayerDefinition {
   modes: DisplayMode[];
   opacity?: number;
   reaction?: HabitatReaction;
+  time?: TimeOfDay[];
   primitives: HabitatPrimitive[];
 }
 

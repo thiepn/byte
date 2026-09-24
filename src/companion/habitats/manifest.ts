@@ -26,6 +26,9 @@ export function validateHabitatManifest(value: unknown): HabitatManifest {
   if (manifest.schemaVersion !== 1 || !manifest.id || !manifest.name) {
     throw new Error("Habitat manifest identity is invalid");
   }
+  if (manifest.status !== "foundation" && manifest.status !== "production") {
+    throw new Error("Habitat manifest status is invalid");
+  }
 
   if (
     !Number.isFinite(manifest.canvas?.width) ||
@@ -70,6 +73,9 @@ export function validateHabitatManifest(value: unknown): HabitatManifest {
     }
     if (layer.reaction && !REACTIONS.has(layer.reaction)) {
       throw new Error(`Layer "${layer.id}" has invalid reaction`);
+    }
+    if (layer.time?.some((time) => !TIMES.has(time))) {
+      throw new Error(`Layer "${layer.id}" has invalid time`);
     }
     for (const primitive of layer.primitives ?? []) {
       validatePrimitive(primitive, manifest, layer.id, paletteSlots);
@@ -182,23 +188,60 @@ function validatePrimitive(
 
   if (primitive.kind === "RECT") {
     validatePoint(primitive.x, primitive.y, manifest, "rectangle origin");
-    if (primitive.width < 0 || primitive.height < 0) {
+    if (
+      !Number.isFinite(primitive.width) ||
+      !Number.isFinite(primitive.height) ||
+      primitive.width < 0 ||
+      primitive.height < 0 ||
+      (primitive.radius != null &&
+        (!Number.isFinite(primitive.radius) || primitive.radius < 0))
+    ) {
       throw new Error(`Layer "${layerId}" has invalid rectangle size`);
     }
-  } else if (primitive.kind === "CIRCLE") {
+    return;
+  }
+
+  if (primitive.kind === "CIRCLE") {
     validatePoint(primitive.x, primitive.y, manifest, "circle origin");
-    if (primitive.radius <= 0) {
+    if (!Number.isFinite(primitive.radius) || primitive.radius <= 0) {
       throw new Error(`Layer "${layerId}" has invalid circle radius`);
     }
-  } else if (primitive.kind === "LINE") {
+    return;
+  }
+
+  if (primitive.kind === "ELLIPSE") {
+    validatePoint(primitive.x, primitive.y, manifest, "ellipse origin");
+    if (
+      !Number.isFinite(primitive.radiusX) ||
+      !Number.isFinite(primitive.radiusY) ||
+      primitive.radiusX <= 0 ||
+      primitive.radiusY <= 0
+    ) {
+      throw new Error(`Layer "${layerId}" has invalid ellipse radius`);
+    }
+    return;
+  }
+
+  if (primitive.kind === "POLYGON") {
+    if (!Array.isArray(primitive.points) || primitive.points.length < 3) {
+      throw new Error(`Layer "${layerId}" has invalid polygon`);
+    }
+    for (const point of primitive.points) {
+      validatePoint(point.x, point.y, manifest, "polygon point");
+    }
+    return;
+  }
+
+  if (primitive.kind === "LINE") {
     validatePoint(primitive.x1, primitive.y1, manifest, "line origin");
     validatePoint(primitive.x2, primitive.y2, manifest, "line end");
-    if (primitive.width <= 0) {
+    if (!Number.isFinite(primitive.width) || primitive.width <= 0) {
       throw new Error(`Layer "${layerId}" has invalid line width`);
     }
-  } else {
-    throw new Error(`Layer "${layerId}" contains unknown primitive kind`);
+    return;
   }
+
+  throw new Error(`Layer "${layerId}" contains unknown primitive kind`);
 }
 
 function validatePoint(

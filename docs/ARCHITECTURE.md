@@ -1,4 +1,4 @@
-# Byte Architecture — Phase 5 Baseline
+# Byte Architecture — Current Baseline
 
 ## Boundaries
 
@@ -21,84 +21,50 @@ Telemetry has three layers:
 - TelemetryEngine: smoothing, normalization, units, optional-signal handling.
 - telemetry runtime: exactly one lifecycle-aware worker that updates AppState.
 
-On Windows, WindowsTelemetrySource uses sysinfo 0.39.6 for CPU, RAM, disks, networks, and best-effort component temperature, plus GetSystemPowerStatus for battery state.
+On Windows, WindowsTelemetrySource uses sysinfo for CPU, RAM, disks, networks, and best-effort component temperature, plus GetSystemPowerStatus for battery state.
 
 See [TELEMETRY.md](TELEMETRY.md).
 
-## Sampling and lifecycle
-
-CPU, memory, and network are sampled at the 1.5-second base cadence. Slower-changing or more expensive signals use cached values and slower refresh intervals.
-
-LifecycleCoordinator owns ACTIVE, FULLSCREEN_REDUCED, LOCKED, DISPLAY_SLEEP, SYSTEM_SLEEP, and SHUTTING_DOWN. It uses a condition variable so telemetry can block during display/system sleep rather than wake periodically.
-
-The telemetry worker is owned by AppState and joined during explicit quit.
-
 ## Human-friendly diagnostics
 
-Phase 6 adds a stateful DiagnosticEngine after telemetry normalization and before the snapshot cache.
+The DiagnosticEngine sits after telemetry normalization and before the snapshot cache. It owns sustained-condition timing, hysteresis, recovery, issue priority, process culprit attribution, confidence, and safe recommendations. It never performs destructive system actions.
 
-The pipeline is now:
-
-Windows telemetry source → normalized/smoothed snapshot → diagnostic engine → cached SystemSnapshot → frontend.
-
-The diagnostic engine owns sustained-condition timing, hysteresis, recovery, issue priority, process culprit attribution, confidence, and safe recommendations. It never performs destructive system actions.
-
-Process scanning is lazy and only runs while CPU or memory is in a high candidate state or has an active issue. Diagnostic thresholds and behavior are documented in [DIAGNOSTICS.md](DIAGNOSTICS.md).
+See [DIAGNOSTICS.md](DIAGNOSTICS.md).
 
 ## Global input reactions
-
-Phase 10 turns the input privacy boundary into a production Windows input runtime.
 
 One dedicated low-level hook thread observes keyboard, left/right mouse button, and wheel activity. Hook callbacks only enqueue anonymous activity and immediately return. A separate interpreter worker owns debounce, alternating typing taps, fast-typing detection, and idle detection.
 
 Only semantic reaction events cross into Svelte. No key identity, scan code, typed text, mouse position, or input history crosses the platform boundary.
 
-The runtime is optional at startup and explicitly unhooks/joins on shutdown. See [INPUT_REACTIONS.md](INPUT_REACTIONS.md).
+See [INPUT_REACTIONS.md](INPUT_REACTIONS.md).
 
 ## Windows shell
 
-Phase 7 promotes windowing into a dedicated Windows platform service.
+The shell service owns one reusable transparent companion surface plus Quick Panel and main windows. It handles monitor selection, DPI-aware sizing, taskbar-aware work areas, normalized placement persistence, off-screen recovery, Move Mode, native dragging, click-through state, and tray-driven display modes.
 
-- companion: one reusable transparent desktop surface for Habitat, Perch, Mini, Edge, and hidden Tray modes.
-- quick-panel: compact status surface positioned beside the companion or inside the primary work area.
-- main: normal application window.
-
-The shell service owns monitor selection, DPI-aware physical sizing, taskbar-aware work areas, normalized placement persistence, safe off-screen recovery, Move Mode, native dragging, click-through state, and tray-driven display-mode changes.
-
-Closing main hides it so tray/companion operation continues. See [WINDOWING.md](WINDOWING.md).
-
-## Persistence
-
-ByteConfig is versioned. Invalid config is quarantined and Byte recovers to defaults. Writes use a same-directory temporary file before persistence.
-
-## IPC
-
-Snapshot reads are cache-only. There is no frontend hardware polling, arbitrary shell command, generic filesystem bridge, cleaner, RAM trimmer, or process-kill IPC.
-
-## Assets
-
-Characters and habitats remain manifest-driven. Phase 5 does not change the Phase 3 visual contract.
-
-## Validation
-
-Windows CI runs frontend type checks/tests/build plus Rust format/tests/clippy/check. Telemetry fixtures cover healthy data, changing load, and absent optional sensors.
-
+See [WINDOWING.md](WINDOWING.md).
 
 ## Character animation runtime
 
-Phase 8 adds a manifest-driven character engine in the Svelte companion layer. One shared scheduler drives semantic animation state, transition clips, idle selection, reduced-motion behavior, frame anchors, and canvas rendering.
-
-System telemetry never references sprite frames. The companion maps cached system state to semantic behaviors and the character manifest decides how those behaviors look.
+The companion uses a manifest-driven character engine in Svelte. One shared scheduler drives semantic animation state, transition clips, idle selection, reduced-motion behavior, frame anchors, and canvas rendering.
 
 See [ANIMATION_RUNTIME.md](ANIMATION_RUNTIME.md).
 
-
 ## Habitat rendering runtime
 
-Phase 11 adds a manifest-driven habitat engine around the character renderer.
+The companion scene is habitat back canvas → grounded character canvas → habitat front canvas. Habitat geometry, four local-time palettes, semantic system-reaction layers, fixed decoration slots, and sparse particles are data-driven.
 
-The companion scene is composed as habitat back canvas → grounded character canvas → habitat front canvas. Habitat geometry, four local-time palettes, semantic system-reaction layers, decoration slots, and sparse particles are data-driven.
+Phase 12 extends the declarative vocabulary with time-gated layers, ellipses, and polygons and promotes all six shipped habitats to production. The shared scheduler, 15-particle cap, reduced-motion behavior, semantic reaction boundary, and Mini/Edge/Perch rules remain unchanged.
 
-The habitat particle engine shares the Phase 8 scheduler and is globally capped, so environments do not add an independent frame loop. Mini/Edge remain character-only, while Perch renders only its minimal platform/status layers.
+See [HABITAT_RUNTIME.md](HABITAT_RUNTIME.md) and [HABITAT_PRODUCTION.md](HABITAT_PRODUCTION.md).
 
-See [HABITAT_RUNTIME.md](HABITAT_RUNTIME.md).
+## Persistence and IPC
+
+ByteConfig is versioned. Invalid config is quarantined and Byte recovers to defaults. Writes use a same-directory temporary file before persistence.
+
+Snapshot reads are cache-only. There is no frontend hardware polling, arbitrary shell command, generic filesystem bridge, cleaner, RAM trimmer, or process-kill IPC.
+
+## Validation
+
+Windows CI runs frontend type checks/tests/build plus Rust format/tests/clippy/check. Production habitat tests certify manifest validity, scene density, time-specific art, and semantic reaction coverage.

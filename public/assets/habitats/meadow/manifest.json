@@ -14,61 +14,85 @@
     {
       "id": "MORNING",
       "colors": {
-        "sky": "#f7cfa0",
-        "far": "#d6b486",
-        "ground": "#78ad68",
-        "ground2": "#5f9253",
-        "accent": "#f0b55d",
-        "warm": "#ffe7a0",
-        "shadow": "#33413b",
-        "light": "#f9f4dc",
-        "signal": "#8fd2df",
-        "low": "#676f68"
+        "sky": "#f7cda4",
+        "sky2": "#fbe2bd",
+        "far": "#9fbe8a",
+        "far2": "#759a67",
+        "ground": "#6da85a",
+        "ground2": "#4e7f46",
+        "accent": "#efb74f",
+        "accent2": "#d96d71",
+        "warm": "#ffe39a",
+        "shadow": "#31463d",
+        "light": "#fff6d8",
+        "signal": "#78c8d5",
+        "low": "#66746b",
+        "danger": "#d86a58",
+        "detail": "#365842",
+        "water": "#8ecbd0"
       }
     },
     {
       "id": "DAY",
       "colors": {
-        "sky": "#98d6ec",
-        "far": "#79b9d4",
-        "ground": "#69aa5b",
-        "ground2": "#4f8e48",
-        "accent": "#efb24e",
-        "warm": "#fff0a8",
-        "shadow": "#2f4038",
-        "light": "#fff8df",
-        "signal": "#76c8dc",
-        "low": "#606d64"
+        "sky": "#96d6ed",
+        "sky2": "#c7ebf4",
+        "far": "#82bb7b",
+        "far2": "#5c9655",
+        "ground": "#61a653",
+        "ground2": "#447d40",
+        "accent": "#f2b84c",
+        "accent2": "#e27779",
+        "warm": "#fff0a2",
+        "shadow": "#2d4338",
+        "light": "#fffbe8",
+        "signal": "#67c2d5",
+        "low": "#64726a",
+        "danger": "#d85e4f",
+        "detail": "#31543e",
+        "water": "#7ec8d3"
       }
     },
     {
       "id": "EVENING",
       "colors": {
-        "sky": "#d88979",
-        "far": "#aa6e72",
-        "ground": "#658b55",
-        "ground2": "#4e7247",
-        "accent": "#eaa35e",
-        "warm": "#ffd69b",
-        "shadow": "#3c3941",
-        "light": "#f5d8bd",
-        "signal": "#8cb7c6",
-        "low": "#5a5960"
+        "sky": "#d98c7b",
+        "sky2": "#f0b38b",
+        "far": "#827d61",
+        "far2": "#5e6e4c",
+        "ground": "#5f844e",
+        "ground2": "#456a40",
+        "accent": "#e7a84e",
+        "accent2": "#cb6874",
+        "warm": "#ffd18e",
+        "shadow": "#3b3940",
+        "light": "#ffe1b5",
+        "signal": "#86b6c2",
+        "low": "#5f6062",
+        "danger": "#c85b51",
+        "detail": "#40533f",
+        "water": "#80aeb9"
       }
     },
     {
       "id": "NIGHT",
       "colors": {
-        "sky": "#26364d",
-        "far": "#35435d",
-        "ground": "#355b48",
-        "ground2": "#29483a",
-        "accent": "#d39d52",
-        "warm": "#e9df9e",
-        "shadow": "#202936",
-        "light": "#d9dfc7",
-        "signal": "#73aabb",
-        "low": "#454b52"
+        "sky": "#24364d",
+        "sky2": "#30445d",
+        "far": "#46604f",
+        "far2": "#344b40",
+        "ground": "#355c48",
+        "ground2": "#29473a",
+        "accent": "#d49b4d",
+        "accent2": "#a85f72",
+        "warm": "#eadb91",
+        "shadow": "#1e2a35",
+        "light": "#dce5bd",
+        "signal": "#72aebe",
+        "low": "#485158",
+        "danger": "#a95553",
+        "detail": "#2d4238",
+        "water": "#547d8b"
       }
     }
   ],
@@ -92,7 +116,157 @@
       ]
     },
     {
-      "id": "rear",
+      "id": "horizon_haze",
+      "plane": "BACK",
+      "order": 2,
+      "modes": [
+        "HABITAT"
+      ],
+      "opacity": 0.72,
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 0,
+          "y": 108,
+          "width": 256,
+          "height": 68,
+          "color": "sky2"
+        }
+      ]
+    },
+    {
+      "id": "sun",
+      "plane": "BACK",
+      "order": 4,
+      "modes": [
+        "HABITAT"
+      ],
+      "time": [
+        "MORNING",
+        "DAY"
+      ],
+      "primitives": [
+        {
+          "kind": "CIRCLE",
+          "x": 208,
+          "y": 43,
+          "radius": 16,
+          "color": "warm"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 208,
+          "y": 43,
+          "radius": 9,
+          "color": "light"
+        }
+      ]
+    },
+    {
+      "id": "sunset",
+      "plane": "BACK",
+      "order": 4,
+      "modes": [
+        "HABITAT"
+      ],
+      "time": [
+        "EVENING"
+      ],
+      "opacity": 0.85,
+      "primitives": [
+        {
+          "kind": "CIRCLE",
+          "x": 210,
+          "y": 72,
+          "radius": 21,
+          "color": "warm"
+        }
+      ]
+    },
+    {
+      "id": "moon",
+      "plane": "BACK",
+      "order": 4,
+      "modes": [
+        "HABITAT"
+      ],
+      "time": [
+        "NIGHT"
+      ],
+      "primitives": [
+        {
+          "kind": "CIRCLE",
+          "x": 207,
+          "y": 42,
+          "radius": 14,
+          "color": "light"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 212,
+          "y": 38,
+          "radius": 12,
+          "color": "sky"
+        }
+      ]
+    },
+    {
+      "id": "clouds",
+      "plane": "BACK",
+      "order": 6,
+      "modes": [
+        "HABITAT"
+      ],
+      "time": [
+        "MORNING",
+        "DAY"
+      ],
+      "opacity": 0.72,
+      "primitives": [
+        {
+          "kind": "ELLIPSE",
+          "x": 46,
+          "y": 48,
+          "radiusX": 22,
+          "radiusY": 8,
+          "color": "light"
+        },
+        {
+          "kind": "ELLIPSE",
+          "x": 64,
+          "y": 46,
+          "radiusX": 16,
+          "radiusY": 7,
+          "color": "light"
+        },
+        {
+          "kind": "ELLIPSE",
+          "x": 160,
+          "y": 67,
+          "radiusX": 25,
+          "radiusY": 8,
+          "color": "light"
+        },
+        {
+          "kind": "ELLIPSE",
+          "x": 181,
+          "y": 64,
+          "radiusX": 15,
+          "radiusY": 6,
+          "color": "light"
+        },
+        {
+          "kind": "ELLIPSE",
+          "x": 105,
+          "y": 31,
+          "radiusX": 13,
+          "radiusY": 5,
+          "color": "light"
+        }
+      ]
+    },
+    {
+      "id": "far_hills",
       "plane": "BACK",
       "order": 10,
       "modes": [
@@ -100,32 +274,137 @@
       ],
       "primitives": [
         {
-          "kind": "CIRCLE",
-          "x": 45,
-          "y": 82,
-          "radius": 55,
+          "kind": "POLYGON",
+          "points": [
+            {
+              "x": 0,
+              "y": 151
+            },
+            {
+              "x": 54,
+              "y": 88
+            },
+            {
+              "x": 108,
+              "y": 151
+            }
+          ],
           "color": "far"
         },
         {
-          "kind": "CIRCLE",
-          "x": 112,
-          "y": 70,
-          "radius": 72,
+          "kind": "POLYGON",
+          "points": [
+            {
+              "x": 70,
+              "y": 151
+            },
+            {
+              "x": 142,
+              "y": 75
+            },
+            {
+              "x": 213,
+              "y": 151
+            }
+          ],
+          "color": "far2"
+        },
+        {
+          "kind": "POLYGON",
+          "points": [
+            {
+              "x": 145,
+              "y": 151
+            },
+            {
+              "x": 214,
+              "y": 101
+            },
+            {
+              "x": 256,
+              "y": 151
+            }
+          ],
           "color": "far"
+        }
+      ]
+    },
+    {
+      "id": "tree_line",
+      "plane": "BACK",
+      "order": 13,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 18,
+          "y": 127,
+          "width": 5,
+          "height": 34,
+          "color": "detail",
+          "radius": 2
         },
         {
           "kind": "CIRCLE",
-          "x": 206,
-          "y": 92,
-          "radius": 62,
-          "color": "far"
-        },
-        {
-          "kind": "CIRCLE",
-          "x": 210,
-          "y": 45,
+          "x": 20,
+          "y": 124,
           "radius": 15,
-          "color": "warm"
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 55,
+          "y": 132,
+          "width": 5,
+          "height": 29,
+          "color": "detail",
+          "radius": 2
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 58,
+          "y": 128,
+          "radius": 13,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 226,
+          "y": 127,
+          "width": 5,
+          "height": 34,
+          "color": "detail",
+          "radius": 2
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 229,
+          "y": 122,
+          "radius": 16,
+          "color": "far2"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 12,
+          "y": 146,
+          "radius": 16,
+          "color": "far"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 84,
+          "y": 144,
+          "radius": 15,
+          "color": "far"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 190,
+          "y": 144,
+          "radius": 18,
+          "color": "far"
         }
       ]
     },
@@ -140,9 +419,51 @@
         {
           "kind": "RECT",
           "x": 0,
-          "y": 174,
+          "y": 151,
           "width": 256,
-          "height": 82,
+          "height": 105,
+          "color": "ground"
+        },
+        {
+          "kind": "POLYGON",
+          "points": [
+            {
+              "x": 0,
+              "y": 177
+            },
+            {
+              "x": 70,
+              "y": 164
+            },
+            {
+              "x": 126,
+              "y": 176
+            },
+            {
+              "x": 196,
+              "y": 160
+            },
+            {
+              "x": 256,
+              "y": 174
+            },
+            {
+              "x": 256,
+              "y": 256
+            },
+            {
+              "x": 0,
+              "y": 256
+            }
+          ],
+          "color": "ground2"
+        },
+        {
+          "kind": "ELLIPSE",
+          "x": 128,
+          "y": 218,
+          "radiusX": 94,
+          "radiusY": 19,
           "color": "ground"
         }
       ]
@@ -163,196 +484,447 @@
           "height": 8,
           "color": "ground2",
           "radius": 3
+        },
+        {
+          "kind": "RECT",
+          "x": 52,
+          "y": 233,
+          "width": 152,
+          "height": 4,
+          "color": "detail",
+          "radius": 2
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 42,
+          "y": 225,
+          "radius": 4,
+          "color": "accent"
         }
       ]
     },
     {
-      "id": "busy",
+      "id": "wildflowers",
       "plane": "BACK",
-      "order": 30,
+      "order": 24,
       "modes": [
         "HABITAT"
       ],
-      "opacity": 0.75,
-      "reaction": "BUSY",
       "primitives": [
         {
+          "kind": "LINE",
+          "x1": 33,
+          "y1": 189,
+          "x2": 33,
+          "y2": 174,
+          "width": 2,
+          "color": "detail"
+        },
+        {
           "kind": "CIRCLE",
-          "x": 205,
-          "y": 48,
-          "radius": 24,
-          "color": "warm"
+          "x": 33,
+          "y": 172,
+          "radius": 4,
+          "color": "accent2"
         },
         {
           "kind": "LINE",
-          "x1": 205,
-          "y1": 16,
-          "x2": 205,
-          "y2": 4,
-          "width": 3,
-          "color": "warm"
+          "x1": 72,
+          "y1": 193,
+          "x2": 70,
+          "y2": 178,
+          "width": 2,
+          "color": "detail"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 70,
+          "y": 176,
+          "radius": 3,
+          "color": "accent"
         },
         {
           "kind": "LINE",
-          "x1": 173,
-          "y1": 48,
-          "x2": 160,
-          "y2": 48,
-          "width": 3,
+          "x1": 192,
+          "y1": 190,
+          "x2": 194,
+          "y2": 174,
+          "width": 2,
+          "color": "detail"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 194,
+          "y": 172,
+          "radius": 4,
+          "color": "accent2"
+        },
+        {
+          "kind": "LINE",
+          "x1": 221,
+          "y1": 199,
+          "x2": 219,
+          "y2": 184,
+          "width": 2,
+          "color": "detail"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 219,
+          "y": 182,
+          "radius": 3,
+          "color": "accent"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 107,
+          "y": 189,
+          "radius": 2,
+          "color": "light"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 154,
+          "y": 184,
+          "radius": 2,
+          "color": "light"
+        }
+      ]
+    },
+    {
+      "id": "busy_breeze",
+      "plane": "BACK",
+      "order": 31,
+      "modes": [
+        "HABITAT"
+      ],
+      "reaction": "BUSY",
+      "opacity": 0.78,
+      "primitives": [
+        {
+          "kind": "LINE",
+          "x1": 20,
+          "y1": 94,
+          "x2": 61,
+          "y2": 89,
+          "width": 2,
+          "color": "light"
+        },
+        {
+          "kind": "LINE",
+          "x1": 34,
+          "y1": 108,
+          "x2": 82,
+          "y2": 103,
+          "width": 2,
+          "color": "light"
+        },
+        {
+          "kind": "LINE",
+          "x1": 183,
+          "y1": 93,
+          "x2": 228,
+          "y2": 89,
+          "width": 2,
+          "color": "light"
+        },
+        {
+          "kind": "LINE",
+          "x1": 174,
+          "y1": 111,
+          "x2": 218,
+          "y2": 108,
+          "width": 2,
+          "color": "light"
+        },
+        {
+          "kind": "LINE",
+          "x1": 91,
+          "y1": 127,
+          "x2": 122,
+          "y2": 125,
+          "width": 2,
           "color": "warm"
         }
       ]
     },
     {
-      "id": "memory",
+      "id": "memory_brambles",
       "plane": "FRONT",
       "order": 50,
       "modes": [
         "HABITAT"
       ],
-      "opacity": 0.85,
       "reaction": "MEMORY_PRESSURE",
+      "opacity": 0.88,
       "primitives": [
         {
-          "kind": "RECT",
+          "kind": "LINE",
+          "x1": 14,
+          "y1": 218,
+          "x2": 29,
+          "y2": 190,
+          "width": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "LINE",
+          "x1": 27,
+          "y1": 219,
+          "x2": 17,
+          "y2": 199,
+          "width": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "CIRCLE",
           "x": 18,
           "y": 198,
-          "width": 18,
-          "height": 16,
-          "color": "shadow",
-          "radius": 2
+          "radius": 5,
+          "color": "danger"
         },
         {
-          "kind": "RECT",
-          "x": 38,
+          "kind": "CIRCLE",
+          "x": 30,
           "y": 190,
-          "width": 20,
-          "height": 24,
-          "color": "ground2",
-          "radius": 2
+          "radius": 4,
+          "color": "danger"
         },
         {
-          "kind": "RECT",
-          "x": 198,
-          "y": 194,
-          "width": 22,
-          "height": 20,
-          "color": "shadow",
-          "radius": 2
+          "kind": "CIRCLE",
+          "x": 39,
+          "y": 211,
+          "radius": 5,
+          "color": "low"
+        },
+        {
+          "kind": "LINE",
+          "x1": 42,
+          "y1": 219,
+          "x2": 35,
+          "y2": 198,
+          "width": 3,
+          "color": "shadow"
         }
       ]
     },
     {
-      "id": "thermal",
+      "id": "storage_stones",
+      "plane": "FRONT",
+      "order": 52,
+      "modes": [
+        "HABITAT"
+      ],
+      "reaction": "STORAGE",
+      "opacity": 0.9,
+      "primitives": [
+        {
+          "kind": "ELLIPSE",
+          "x": 217,
+          "y": 211,
+          "radiusX": 17,
+          "radiusY": 8,
+          "color": "shadow"
+        },
+        {
+          "kind": "ELLIPSE",
+          "x": 211,
+          "y": 198,
+          "radiusX": 14,
+          "radiusY": 7,
+          "color": "far2"
+        },
+        {
+          "kind": "ELLIPSE",
+          "x": 222,
+          "y": 187,
+          "radiusX": 11,
+          "radiusY": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "ELLIPSE",
+          "x": 232,
+          "y": 211,
+          "radiusX": 8,
+          "radiusY": 5,
+          "color": "far"
+        },
+        {
+          "kind": "LINE",
+          "x1": 201,
+          "y1": 217,
+          "x2": 239,
+          "y2": 217,
+          "width": 2,
+          "color": "shadow"
+        }
+      ]
+    },
+    {
+      "id": "thermal_haze",
       "plane": "FRONT",
       "order": 55,
       "modes": [
         "HABITAT"
       ],
-      "opacity": 0.72,
       "reaction": "THERMAL",
+      "opacity": 0.72,
       "primitives": [
         {
           "kind": "LINE",
-          "x1": 102,
-          "y1": 168,
-          "x2": 98,
+          "x1": 95,
+          "y1": 170,
+          "x2": 91,
+          "y2": 153,
+          "width": 3,
+          "color": "warm"
+        },
+        {
+          "kind": "LINE",
+          "x1": 111,
+          "y1": 169,
+          "x2": 115,
           "y2": 150,
           "width": 3,
           "color": "warm"
         },
         {
           "kind": "LINE",
-          "x1": 128,
-          "y1": 164,
-          "x2": 132,
-          "y2": 146,
+          "x1": 145,
+          "y1": 169,
+          "x2": 141,
+          "y2": 151,
           "width": 3,
           "color": "warm"
         },
         {
           "kind": "LINE",
-          "x1": 154,
-          "y1": 168,
-          "x2": 150,
-          "y2": 150,
+          "x1": 163,
+          "y1": 170,
+          "x2": 168,
+          "y2": 153,
           "width": 3,
           "color": "warm"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 128,
+          "y": 155,
+          "radius": 5,
+          "color": "accent"
         }
       ]
     },
     {
-      "id": "charging",
+      "id": "charging_bloom",
       "plane": "FRONT",
       "order": 58,
       "modes": [
-        "HABITAT",
-        "PERCH"
+        "HABITAT"
       ],
-      "opacity": 0.85,
       "reaction": "CHARGING",
+      "opacity": 0.9,
       "primitives": [
         {
           "kind": "LINE",
-          "x1": 164,
-          "y1": 176,
-          "x2": 154,
-          "y2": 192,
-          "width": 4,
+          "x1": 168,
+          "y1": 214,
+          "x2": 168,
+          "y2": 190,
+          "width": 3,
+          "color": "detail"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 168,
+          "y": 186,
+          "radius": 7,
+          "color": "signal"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 162,
+          "y": 187,
+          "radius": 4,
+          "color": "light"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 174,
+          "y": 187,
+          "radius": 4,
+          "color": "light"
+        },
+        {
+          "kind": "LINE",
+          "x1": 168,
+          "y1": 180,
+          "x2": 162,
+          "y2": 171,
+          "width": 3,
           "color": "signal"
         },
         {
           "kind": "LINE",
-          "x1": 154,
-          "y1": 192,
-          "x2": 164,
-          "y2": 192,
-          "width": 4,
-          "color": "signal"
-        },
-        {
-          "kind": "LINE",
-          "x1": 164,
-          "y1": 192,
-          "x2": 154,
-          "y2": 210,
-          "width": 4,
+          "x1": 168,
+          "y1": 180,
+          "x2": 175,
+          "y2": 170,
+          "width": 3,
           "color": "signal"
         }
       ]
     },
     {
-      "id": "low_battery",
+      "id": "low_battery_wilt",
       "plane": "FRONT",
       "order": 59,
       "modes": [
-        "HABITAT",
-        "PERCH"
+        "HABITAT"
       ],
-      "opacity": 0.82,
       "reaction": "LOW_BATTERY",
+      "opacity": 0.9,
       "primitives": [
         {
-          "kind": "RECT",
-          "x": 178,
-          "y": 198,
-          "width": 28,
-          "height": 13,
-          "color": "low",
-          "radius": 2
+          "kind": "LINE",
+          "x1": 189,
+          "y1": 217,
+          "x2": 195,
+          "y2": 198,
+          "width": 3,
+          "color": "low"
         },
         {
-          "kind": "RECT",
+          "kind": "LINE",
+          "x1": 195,
+          "y1": 198,
+          "x2": 203,
+          "y2": 205,
+          "width": 3,
+          "color": "low"
+        },
+        {
+          "kind": "ELLIPSE",
           "x": 206,
-          "y": 202,
-          "width": 4,
-          "height": 5,
+          "y": 208,
+          "radiusX": 8,
+          "radiusY": 4,
+          "color": "low"
+        },
+        {
+          "kind": "LINE",
+          "x1": 185,
+          "y1": 217,
+          "x2": 211,
+          "y2": 217,
+          "width": 2,
           "color": "low"
         }
       ]
     },
     {
-      "id": "foreground",
+      "id": "foreground_grass",
       "plane": "FRONT",
       "order": 70,
       "modes": [
@@ -360,75 +932,86 @@
       ],
       "primitives": [
         {
+          "kind": "LINE",
+          "x1": 5,
+          "y1": 239,
+          "x2": 14,
+          "y2": 214,
+          "width": 3,
+          "color": "detail"
+        },
+        {
+          "kind": "LINE",
+          "x1": 15,
+          "y1": 239,
+          "x2": 21,
+          "y2": 218,
+          "width": 3,
+          "color": "detail"
+        },
+        {
+          "kind": "LINE",
+          "x1": 30,
+          "y1": 242,
+          "x2": 34,
+          "y2": 219,
+          "width": 3,
+          "color": "ground2"
+        },
+        {
           "kind": "CIRCLE",
-          "x": 32,
+          "x": 34,
+          "y": 216,
+          "radius": 4,
+          "color": "accent"
+        },
+        {
+          "kind": "LINE",
+          "x1": 224,
+          "y1": 242,
+          "x2": 220,
+          "y2": 218,
+          "width": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "CIRCLE",
+          "x": 220,
           "y": 215,
-          "radius": 8,
-          "color": "accent"
+          "radius": 4,
+          "color": "accent2"
+        },
+        {
+          "kind": "LINE",
+          "x1": 239,
+          "y1": 240,
+          "x2": 232,
+          "y2": 213,
+          "width": 3,
+          "color": "detail"
+        },
+        {
+          "kind": "LINE",
+          "x1": 249,
+          "y1": 240,
+          "x2": 242,
+          "y2": 220,
+          "width": 3,
+          "color": "detail"
         },
         {
           "kind": "CIRCLE",
-          "x": 224,
-          "y": 217,
-          "radius": 7,
-          "color": "accent"
+          "x": 51,
+          "y": 229,
+          "radius": 3,
+          "color": "light"
         },
         {
-          "kind": "LINE",
-          "x1": 20,
-          "y1": 224,
-          "x2": 24,
-          "y2": 205,
-          "width": 3,
-          "color": "ground2"
-        },
-        {
-          "kind": "LINE",
-          "x1": 236,
-          "y1": 226,
-          "x2": 231,
-          "y2": 204,
-          "width": 3,
-          "color": "ground2"
-        }
-      ]
-    },
-    {
-      "id": "storage",
-      "plane": "FRONT",
-      "order": 52,
-      "modes": [
-        "HABITAT"
-      ],
-      "opacity": 0.82,
-      "reaction": "STORAGE",
-      "primitives": [
-        {
-          "kind": "RECT",
-          "x": 203,
-          "y": 181,
-          "width": 18,
-          "height": 15,
-          "color": "ground2",
-          "radius": 2
-        },
-        {
-          "kind": "RECT",
-          "x": 222,
-          "y": 174,
-          "width": 20,
-          "height": 22,
-          "color": "shadow",
-          "radius": 2
-        },
-        {
-          "kind": "RECT",
-          "x": 210,
-          "y": 163,
-          "width": 25,
-          "height": 10,
-          "color": "ground2",
-          "radius": 2
+          "kind": "CIRCLE",
+          "x": 205,
+          "y": 231,
+          "radius": 3,
+          "color": "light"
         }
       ]
     }
@@ -436,36 +1019,36 @@
   "decorationSlots": [
     {
       "id": "large_background",
-      "x": 46,
+      "x": 44,
       "y": 92,
       "plane": "BACK",
       "order": 12
     },
     {
       "id": "wall_or_sky",
-      "x": 208,
-      "y": 83,
+      "x": 210,
+      "y": 82,
       "plane": "BACK",
       "order": 13
     },
     {
       "id": "surface_left",
-      "x": 49,
-      "y": 205,
+      "x": 48,
+      "y": 208,
       "plane": "FRONT",
       "order": 72
     },
     {
       "id": "surface_right",
-      "x": 207,
-      "y": 205,
+      "x": 208,
+      "y": 208,
       "plane": "FRONT",
       "order": 72
     },
     {
       "id": "small_prop",
-      "x": 165,
-      "y": 207,
+      "x": 166,
+      "y": 206,
       "plane": "FRONT",
       "order": 73
     },
@@ -479,53 +1062,73 @@
   ],
   "particles": [
     {
-      "id": "network",
+      "id": "network_fireflies",
       "plane": "FRONT",
       "color": "signal",
-      "maxCount": 6,
-      "radius": 2,
-      "speed": 22,
-      "drift": 5,
+      "maxCount": 5,
+      "radius": 1.7,
+      "speed": 8,
+      "drift": 6,
       "direction": "FLOAT",
       "region": {
-        "x": 20,
-        "y": 35,
-        "width": 216,
-        "height": 130
+        "x": 30,
+        "y": 58,
+        "width": 196,
+        "height": 115
       },
       "reaction": "NETWORK"
     },
     {
-      "id": "charging",
+      "id": "charging_sparks",
       "plane": "FRONT",
       "color": "light",
       "maxCount": 3,
-      "radius": 2,
-      "speed": 18,
+      "radius": 1.8,
+      "speed": 14,
       "drift": 3,
       "direction": "UP",
       "region": {
-        "x": 95,
-        "y": 135,
-        "width": 66,
-        "height": 70
+        "x": 145,
+        "y": 155,
+        "width": 48,
+        "height": 64
       },
       "reaction": "CHARGING"
     },
     {
-      "id": "fireflies",
+      "id": "pollen",
       "plane": "BACK",
       "color": "light",
+      "maxCount": 3,
+      "radius": 1.1,
+      "speed": 3,
+      "drift": 4,
+      "direction": "RIGHT",
+      "region": {
+        "x": 20,
+        "y": 58,
+        "width": 216,
+        "height": 110
+      },
+      "time": [
+        "MORNING",
+        "DAY"
+      ]
+    },
+    {
+      "id": "fireflies",
+      "plane": "BACK",
+      "color": "warm",
       "maxCount": 4,
-      "radius": 1.5,
-      "speed": 5,
-      "drift": 7,
+      "radius": 1.4,
+      "speed": 4,
+      "drift": 6,
       "direction": "FLOAT",
       "region": {
-        "x": 18,
-        "y": 35,
-        "width": 220,
-        "height": 130
+        "x": 20,
+        "y": 62,
+        "width": 216,
+        "height": 112
       },
       "time": [
         "EVENING",
@@ -563,5 +1166,5 @@
       "maxIntensity": 1
     }
   ],
-  "status": "foundation"
+  "status": "production"
 }
