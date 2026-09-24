@@ -434,7 +434,8 @@ unsafe extern "system" fn power_window_proc(
         // SAFETY: Windows documents lParam for PBT_POWERSETTINGCHANGE as a
         // valid POWERBROADCAST_SETTING pointer for the duration of the call.
         let setting = unsafe { &*(lparam as *const POWERBROADCAST_SETTING) };
-        if guid_equal(&setting.PowerSetting, &GUID_CONSOLE_DISPLAY_STATE) && setting.DataLength >= 4 {
+        if guid_equal(&setting.PowerSetting, &GUID_CONSOLE_DISPLAY_STATE) && setting.DataLength >= 4
+        {
             let data = setting.Data.as_ptr() as *const u32;
             let value = unsafe { std::ptr::read_unaligned(data) };
             if value <= DISPLAY_DIMMED as u32 {
