@@ -91,7 +91,8 @@ impl SmartNotificationEngine {
             .iter()
             .map(|candidate| candidate.fingerprint.clone())
             .collect::<BTreeSet<_>>();
-        self.handled_active.retain(|fingerprint| current.contains(fingerprint));
+        self.handled_active
+            .retain(|fingerprint| current.contains(fingerprint));
 
         if !preferences.notifications_enabled
             || preferences.notification_quiet_mode
@@ -135,9 +136,12 @@ impl SmartNotificationEngine {
         selected
     }
 
-    pub fn mark_sent(&mut self, notification: &SmartNotification, now: u64) -> Result<(), ByteError> {
-        self.handled_active
-            .insert(notification.fingerprint.clone());
+    pub fn mark_sent(
+        &mut self,
+        notification: &SmartNotification,
+        now: u64,
+    ) -> Result<(), ByteError> {
+        self.handled_active.insert(notification.fingerprint.clone());
         self.persisted
             .last_sent_epoch_ms
             .insert(notification.category, now);
@@ -185,7 +189,10 @@ fn candidate_for_issue(
         }
         IssueCategory::Thermal
             if preferences.notification_thermal_enabled
-                && matches!(issue.severity, ResourceState::High | ResourceState::Critical) =>
+                && matches!(
+                    issue.severity,
+                    ResourceState::High | ResourceState::Critical
+                ) =>
         {
             NotificationCategory::Thermal
         }
@@ -220,10 +227,7 @@ fn candidate_for_issue(
 }
 
 fn build_notification(category: NotificationCategory, issue: &SystemIssue) -> SmartNotification {
-    let fingerprint = format!(
-        "{:?}:{}:{}",
-        category, issue.id, issue.started_at_epoch_ms
-    );
+    let fingerprint = format!("{:?}:{}:{}", category, issue.id, issue.started_at_epoch_ms);
 
     let title = match category {
         NotificationCategory::Memory => "Byte: memory is critically low".into(),
@@ -320,7 +324,11 @@ mod tests {
         let (_temp, mut engine) = engine();
         let prefs = AppPreferences::default();
         assert!(engine
-            .evaluate(1_000, &[issue(IssueCategory::Memory, ResourceState::High, 0)], &prefs)
+            .evaluate(
+                1_000,
+                &[issue(IssueCategory::Memory, ResourceState::High, 0)],
+                &prefs
+            )
             .is_none());
         assert_eq!(
             engine
@@ -415,7 +423,9 @@ mod tests {
         let (_temp, mut engine) = engine();
         let prefs = AppPreferences::default();
         let memory = issue(IssueCategory::Memory, ResourceState::Critical, 0);
-        let first = engine.evaluate(1_000, &[memory.clone()], &prefs).expect("first");
+        let first = engine
+            .evaluate(1_000, &[memory.clone()], &prefs)
+            .expect("first");
         engine.mark_sent(&first, 1_000).expect("record");
 
         assert!(engine.evaluate(2_000, &[memory], &prefs).is_none());

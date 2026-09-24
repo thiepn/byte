@@ -64,10 +64,8 @@ fn run_worker(app: AppHandle) {
                         .show()
                         .is_ok()
                 {
-                    let _ = state.mark_smart_notification_sent(
-                        &notification,
-                        evaluated.timestamp_epoch_ms,
-                    );
+                    let _ = state
+                        .mark_smart_notification_sent(&notification, evaluated.timestamp_epoch_ms);
                 }
             }
 
