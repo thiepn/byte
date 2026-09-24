@@ -29,6 +29,7 @@
 
   onMount(() => {
     let unlisten: UnlistenFn | null = null;
+    let disposed = false;
 
     // Preferences are local IPC state. If the bridge is temporarily
     // unavailable, keep the CSS/OS defaults rather than failing the surface.
@@ -44,12 +45,16 @@
         applyAccessibility(event.payload);
       })
         .then((cleanup) => {
-          unlisten = cleanup;
+          if (disposed) cleanup();
+          else unlisten = cleanup;
         })
         .catch(() => {});
     }
 
-    return () => unlisten?.();
+    return () => {
+      disposed = true;
+      unlisten?.();
+    };
   });
 </script>
 
