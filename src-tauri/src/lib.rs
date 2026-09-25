@@ -71,39 +71,50 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         tray = tray.icon(icon.clone());
     }
 
-    tray.on_menu_event(|app, event| match event.id().as_ref() {
-        "open" => {
+    tray.on_menu_event(|app, event| {
+        let action = event.id().as_ref();
+
+        if !app.state::<AppState>().app_preferences().onboarding_completed
+            && !matches!(action, "open" | "quit")
+        {
             let _ = windowing::show_main_window(app);
+            return;
         }
-        "toggle" => {
-            let _ = windowing::toggle_companion(app);
+
+        match action {
+            "open" => {
+                let _ = windowing::show_main_window(app);
+            }
+            "toggle" => {
+                let _ = windowing::toggle_companion(app);
+            }
+            "move" => {
+                let _ = windowing::begin_move_mode(app);
+            }
+            "click-through" => {
+                let _ = windowing::toggle_click_through(app);
+            }
+            "mode-habitat" => {
+                let _ = windowing::set_display_mode(app, DisplayMode::Habitat);
+            }
+            "mode-perch" => {
+                let _ = windowing::set_display_mode(app, DisplayMode::Perch);
+            }
+            "mode-mini" => {
+                let _ = windowing::set_display_mode(app, DisplayMode::Mini);
+            }
+            "mode-edge" => {
+                let _ = windowing::set_display_mode(app, DisplayMode::Edge);
+            }
+            "mode-tray" => {
+                let _ = windowing::set_display_mode(app, DisplayMode::Tray);
+            }
+            "quit" => {
+                app.state::<AppState>().stop_background_workers();
+                app.exit(0);
+            }
+            _ => {}
         }
-        "move" => {
-            let _ = windowing::begin_move_mode(app);
-        }
-        "click-through" => {
-            let _ = windowing::toggle_click_through(app);
-        }
-        "mode-habitat" => {
-            let _ = windowing::set_display_mode(app, DisplayMode::Habitat);
-        }
-        "mode-perch" => {
-            let _ = windowing::set_display_mode(app, DisplayMode::Perch);
-        }
-        "mode-mini" => {
-            let _ = windowing::set_display_mode(app, DisplayMode::Mini);
-        }
-        "mode-edge" => {
-            let _ = windowing::set_display_mode(app, DisplayMode::Edge);
-        }
-        "mode-tray" => {
-            let _ = windowing::set_display_mode(app, DisplayMode::Tray);
-        }
-        "quit" => {
-            app.state::<AppState>().stop_background_workers();
-            app.exit(0);
-        }
-        _ => {}
     })
     .on_tray_icon_event(|tray, event| {
         if let TrayIconEvent::Click {
