@@ -44,6 +44,7 @@
   let busyAction = "";
   let panelOpen = false;
   let refreshTimer: number | null = null;
+  let panelElement: HTMLDivElement;
 
   function isTauri(): boolean {
     return "__TAURI_INTERNALS__" in window;
@@ -77,6 +78,7 @@
 
   function startRefreshing(): void {
     panelOpen = true;
+    window.requestAnimationFrame(() => panelElement?.focus());
     if (refreshTimer != null) return;
     void refresh();
     refreshTimer = window.setInterval(() => void refresh(), 2_000);
@@ -93,6 +95,20 @@
   async function closePanel(): Promise<void> {
     stopRefreshing();
     await hideQuickPanel();
+  }
+
+  async function requestClose(): Promise<void> {
+    try {
+      await closePanel();
+    } catch {
+      actionError = "Byte could not close the Quick Panel.";
+    }
+  }
+
+  function handleKeydown(event: KeyboardEvent): void {
+    if (event.key !== "Escape") return;
+    event.preventDefault();
+    void requestClose();
   }
 
   async function runRecommendedAction(
@@ -160,37 +176,58 @@
 
   function handleBlur(): void {
     if (!panelOpen || busyAction) return;
-    void closePanel();
+    void requestClose();
   }
 
   onMount(() => {
     const cleanups: Array<() => void> = [];
+    let disposed = false;
 
-    void refresh();
+    const register = <T,>(
+      eventName: string,
+      handler: (event: { payload: T }) => void,
+    ): void => {
+      void listen<T>(eventName, handler)
+        .then((unlisten: UnlistenFn) => {
+          if (disposed) unlisten();
+          else cleanups.push(unlisten);
+        })
+        .catch(() => {});
+    };
 
     if (isTauri()) {
-      void listen<boolean>("byte://quick-panel-opened", () => {
+      register<boolean>("byte://quick-panel-opened", () => {
         startRefreshing();
-      }).then((unlisten: UnlistenFn) => cleanups.push(unlisten));
-
-      void listen<boolean>("byte://quick-panel-closed", () => {
+      });
+      register<boolean>("byte://quick-panel-closed", () => {
         stopRefreshing();
-      }).then((unlisten: UnlistenFn) => cleanups.push(unlisten));
-    } else {
-      startRefreshing();
+      });
     }
 
+    if (document.hasFocus()) startRefreshing();
+    else void refresh();
+
+    window.addEventListener("focus", startRefreshing);
     window.addEventListener("blur", handleBlur);
 
     return () => {
+      disposed = true;
       stopRefreshing();
+      window.removeEventListener("focus", startRefreshing);
       window.removeEventListener("blur", handleBlur);
       for (const cleanup of cleanups) cleanup();
     };
   });
 </script>
 
-<div class="panel">
+<div
+  class="panel"
+  role="dialog"
+  aria-label="Byte Quick Panel"
+  tabindex="-1"
+  bind:this={panelElement}
+  onkeydown={handleKeydown}
+>
   <header>
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">B</span>
@@ -202,12 +239,12 @@
     <button
       class="icon-button"
       aria-label="Close Byte panel"
-      onclick={() => void closePanel()}
+      onclick={() => void requestClose()}
     >×</button>
   </header>
 
   {#if errorMessage}
-    <div class="message error" role="status">{errorMessage}</div>
+    <div class="message error" role="alert">{errorMessage}</div>
   {:else if snapshot && snapshotReady(snapshot)}
     <section
       class="status-card"
@@ -306,6 +343,7 @@
         {#each DISPLAY_MODES as mode}
           <button
             class:selected={preferences?.companion.display_mode === mode.id}
+            aria-pressed={preferences?.companion.display_mode === mode.id}
             disabled={Boolean(busyAction)}
             onclick={() => void changeMode(mode.id)}
           >{mode.label}</button>
@@ -318,6 +356,7 @@
         </button>
         <button
           class:active={shell?.click_through}
+          aria-pressed={Boolean(shell?.click_through)}
           disabled={Boolean(busyAction)}
           onclick={() => void toggleClickThrough()}
         >
@@ -327,7 +366,7 @@
     </section>
 
     {#if actionError}
-      <div class="inline-error" role="status">{actionError}</div>
+      <div class="inline-error" role="alert">{actionError}</div>
     {/if}
   {:else}
     <div class="message" role="status">{unavailableMessage()}</div>
@@ -344,6 +383,10 @@
     border: 1px solid var(--border-default);
     border-radius: var(--radius-panel);
     box-shadow: var(--shadow-panel);
+  }
+
+  .panel:focus {
+    outline: none;
   }
 
   header,
