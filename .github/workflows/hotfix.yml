@@ -1,6 +1,12 @@
 name: Byte Hotfix
 
 on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/hotfix.yml"
+      - "scripts/verify-hotfix-version.mjs"
+      - "scripts/prepare-release.mjs"
   workflow_dispatch:
     inputs:
       base_tag:
@@ -20,10 +26,36 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  contract:
+    if: github.event_name == 'pull_request'
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Verify maintenance contract
+        run: npm run maintenance:verify
+
+      - name: Check hotfix and release scripts
+        run: |
+          node --check scripts/verify-hotfix-version.mjs
+          node --check scripts/prepare-release.mjs
+          node --check scripts/extract-release-notes.mjs
+
   certify-and-tag:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     timeout-minutes: 50
     env:
+      GH_TOKEN: ${{ github.token }}
       BASE_TAG: ${{ inputs.base_tag }}
       HOTFIX_TAG: ${{ inputs.hotfix_tag }}
 
@@ -65,6 +97,17 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "main is not descended from the selected base release." }
           git show-ref --verify --quiet "refs/tags/$env:HOTFIX_TAG"
           if ($LASTEXITCODE -eq 0) { throw "Hotfix tag already exists: $env:HOTFIX_TAG" }
+
+      - name: Require certified main release candidate
+        shell: pwsh
+        run: |
+          $sha = (git rev-parse HEAD).Trim()
+          $runs = gh run list --workflow "Byte Packaging Certification" --commit $sha --event push --limit 10 --json status,conclusion,databaseId | ConvertFrom-Json
+          $certified = $runs | Where-Object { $_.status -eq "completed" -and $_.conclusion -eq "success" } | Select-Object -First 1
+          if ($null -eq $certified) {
+            throw "The exact main commit does not have a successful push-triggered Packaging Certification run."
+          }
+          Write-Host "Using certified main candidate from run $($certified.databaseId)."
 
       - name: Extract hotfix release notes
         shell: pwsh
