@@ -121,6 +121,7 @@ pub fn update_app_preferences(
 
     if !previous.onboarding_completed && preferences.onboarding_completed {
         let _ = windowing::apply_companion_layout(&app, &config.companion);
+        crate::start_background_integrations(&app);
     }
 
     state.lifecycle.wake_waiters();

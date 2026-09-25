@@ -20,6 +20,20 @@ use tauri::{
     Manager,
 };
 
+pub(crate) fn start_background_integrations(app: &tauri::AppHandle) {
+    // Fresh installs do not create monitoring/input workers until onboarding
+    // has explicitly completed. Existing installations start them normally.
+    let _ = fullscreen::start(app.clone());
+
+    if telemetry::runtime::start(app.clone()).is_err() {
+        app.state::<AppState>().set_snapshot_unavailable();
+    }
+
+    if let Ok(input_runtime) = InputRuntime::start(app.clone()) {
+        app.state::<AppState>().install_input_runtime(input_runtime);
+    }
+}
+
 fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let open = MenuItemBuilder::with_id("open", "Open Byte").build(app)?;
     let toggle = MenuItemBuilder::with_id("toggle", "Show / Hide Companion").build(app)?;
@@ -150,10 +164,8 @@ pub fn run() {
             // and are materialized here from their canonical WindowConfig.
             create_configured_windows(app)?;
 
-            // Desktop awareness, capture exclusion, telemetry, and global input
-            // are optional integrations. A Windows/API failure must not make
-            // Byte itself fail to launch.
-            let _ = fullscreen::start(app.handle().clone());
+            // Native window state and startup registration are safe to prepare
+            // during onboarding. Background monitoring/input workers are not.
             let _ = windowing::apply_capture_affinity(
                 app.handle(),
                 initial_app_preferences.exclude_from_capture,
@@ -161,12 +173,10 @@ pub fn run() {
             windowing::initialize(app.handle())?;
             let _ = startup::apply(initial_app_preferences.launch_at_startup);
 
-            if telemetry::runtime::start(app.handle().clone()).is_err() {
+            if initial_app_preferences.onboarding_completed {
+                start_background_integrations(app.handle());
+            } else {
                 app.state::<AppState>().set_snapshot_unavailable();
-            }
-
-            if let Ok(input_runtime) = InputRuntime::start(app.handle().clone()) {
-                app.state::<AppState>().install_input_runtime(input_runtime);
             }
 
             setup_tray(app)?;
