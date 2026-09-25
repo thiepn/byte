@@ -21,10 +21,11 @@ if (!changelog.includes("## [Unreleased]")) {
   throw new Error("CHANGELOG.md must retain an [Unreleased] section.");
 }
 
-const currentHeading = new RegExp("^## \\[" + tauri.version.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\if (!changelog.includes("## [Unreleased]")) {
-  throw new Error("CHANGELOG.md must retain an [Unreleased] section.");
-}
-") + "\\](?: - \\d{4}-\\d{2}-\\d{2})?\\s*$", "m");
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const currentHeading = new RegExp(
+  "^## \\[" + escapeRegex(tauri.version) + "\\](?: - \\d{4}-\\d{2}-\\d{2})?\\s*$",
+  "m",
+);
 if (!currentHeading.test(changelog)) {
   throw new Error("CHANGELOG.md must contain release notes for current version " + tauri.version + ".");
 }
@@ -48,4 +49,8 @@ if (!stable.test(tag) && !beta.test(tag)) {
   throw new Error("Current Byte version " + tauri.version + " matches neither Stable nor Beta release policy.");
 }
 
-console.log("Maintenance policy verified: schema " + schemaMatch[1] + ", migration floor " + minMatch[1] + ", version " + tauri.version + ".");
+console.log(
+  "Maintenance policy verified: schema " + schemaMatch[1] +
+    ", migration floor " + minMatch[1] +
+    ", version " + tauri.version + ".",
+);
