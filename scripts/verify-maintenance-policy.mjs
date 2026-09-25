@@ -21,6 +21,14 @@ if (!changelog.includes("## [Unreleased]")) {
   throw new Error("CHANGELOG.md must retain an [Unreleased] section.");
 }
 
+const currentHeading = new RegExp("^## \\[" + tauri.version.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\if (!changelog.includes("## [Unreleased]")) {
+  throw new Error("CHANGELOG.md must retain an [Unreleased] section.");
+}
+") + "\\](?: - \\d{4}-\\d{2}-\\d{2})?\\s*$", "m");
+if (!currentHeading.test(changelog)) {
+  throw new Error("CHANGELOG.md must contain release notes for current version " + tauri.version + ".");
+}
+
 const schemaMatch = configSource.match(/CURRENT_SCHEMA_VERSION:\s*u32\s*=\s*(\d+)/);
 const minMatch = configSource.match(/MIN_MIGRATABLE_SCHEMA_VERSION:\s*u32\s*=\s*(\d+)/);
 if (!schemaMatch || !minMatch) {
