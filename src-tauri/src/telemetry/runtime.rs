@@ -211,7 +211,6 @@ mod tests {
 
     #[test]
     fn repeated_sampling_failures_cross_unavailable_threshold() {
-        assert!(1 < SAMPLE_FAILURE_UNAVAILABLE_THRESHOLD);
         assert_eq!(SAMPLE_FAILURE_UNAVAILABLE_THRESHOLD, 2);
     }
 
