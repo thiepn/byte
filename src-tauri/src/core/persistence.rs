@@ -1,10 +1,25 @@
 use crate::core::error::ByteError;
-use std::{fs::File, io::Read, path::Path};
+use std::{
+    fs::{self, File},
+    io::Read,
+    path::{Path, PathBuf},
+};
 
 pub enum BoundedText {
     Missing,
     Present(String),
     Invalid,
+}
+
+pub fn quarantine_corrupt_file(path: &Path) -> Option<PathBuf> {
+    if !path.exists() {
+        return None;
+    }
+
+    let quarantine = path.with_extension("corrupt.json");
+    let _ = fs::remove_file(&quarantine);
+    fs::rename(path, &quarantine).ok()?;
+    Some(quarantine)
 }
 
 pub fn read_bounded_text(path: &Path, max_bytes: u64) -> Result<BoundedText, ByteError> {
@@ -51,6 +66,19 @@ mod tests {
             read_bounded_text(&invalid, 32).expect("read"),
             BoundedText::Invalid
         ));
+    }
+
+    #[test]
+    fn corrupt_files_are_quarantined_without_deleting_the_original_bytes() {
+        let temp = tempfile::tempdir().expect("temp");
+        let file = temp.path().join("collection.json");
+        fs::write(&file, b"broken").expect("write");
+
+        let quarantine = quarantine_corrupt_file(&file).expect("quarantine");
+
+        assert!(!file.exists());
+        assert_eq!(quarantine, temp.path().join("collection.corrupt.json"));
+        assert_eq!(fs::read(quarantine).expect("read"), b"broken");
     }
 
     #[test]
