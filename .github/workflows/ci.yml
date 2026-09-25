@@ -29,6 +29,9 @@ jobs:
       - name: Frontend dependency audit
         run: npm audit --audit-level=high
 
+      - name: Maintenance policy
+        run: npm run maintenance:verify
+
       - name: Frontend type check
         run: npm run check
 
