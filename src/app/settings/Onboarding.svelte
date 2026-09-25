@@ -5,6 +5,8 @@
   import { CHARACTER_CHOICES, HABITAT_CHOICES } from "../../companion/customization/catalog";
 
   export let preferences: ByteConfig;
+  export let rerun = false;
+  export let onCancel: () => void = () => {};
   export let onComplete: (config: ByteConfig) => void = () => {};
 
   const MODES: Array<{ id: DisplayMode; name: string; note: string }> = [
@@ -17,10 +19,12 @@
   let step = 0;
   let companion: CompanionPreferences = clone(preferences.companion);
   let app = clone(preferences.app);
-  // A fresh install should never opt itself into OS notifications. Existing
-  // installations never render onboarding, so their migrated preference is
-  // preserved.
-  app.notifications_enabled = false;
+  // Only a genuine first run defaults native notifications off. Re-running
+  // onboarding is a UI-only tutorial mode and preserves the user's saved
+  // notification preference unless they explicitly change it in step 2.
+  if (!preferences.app.onboarding_completed) {
+    app.notifications_enabled = false;
+  }
   let saving = false;
   let error = "";
 
@@ -162,7 +166,14 @@
     {#if error}<div class="error" role="alert">{error}</div>{/if}
 
     <footer>
-      <button class="back" disabled={step === 0 || saving} onclick={() => goToStep(step - 1)}>Back</button>
+      <div class="footer-left">
+        {#if rerun}
+          <button class="back" disabled={saving} onclick={onCancel}>Exit setup</button>
+        {/if}
+        {#if step > 0}
+          <button class="back" disabled={saving} onclick={() => goToStep(step - 1)}>Back</button>
+        {/if}
+      </div>
       {#if step < 3}
         <button class="primary" onclick={() => goToStep(step + 1)}>Continue</button>
       {:else}
@@ -209,6 +220,7 @@
   input[type="checkbox"] { width:18px; height:18px; accent-color:var(--accent-primary); }
   .error { padding:9px 11px; border:1px solid var(--status-critical); border-radius:9px; color:var(--status-critical); font-size:10px; }
   footer { display:flex; justify-content:space-between; gap:8px; }
+  .footer-left { display:flex; gap:8px; }
   footer button { padding:9px 14px; border-radius:9px; font:inherit; font-size:11px; font-weight:700; cursor:pointer; }
   .back { border:1px solid var(--border-default); background:transparent; color:var(--text-secondary); }
   .primary { border:0; background:var(--accent-primary); color:var(--accent-contrast); }

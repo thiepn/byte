@@ -13,6 +13,7 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ### Fixed
 
+- "Run onboarding again" is now a UI-only tutorial mode: it preserves saved notification/runtime state, can be exited without saving, and no longer toggles the first-run completion flag behind the scenes.
 - Re-running onboarding no longer spawns duplicate desktop-awareness, telemetry, or global-input workers when setup is completed again.
 - Tray/Quick Panel actions can no longer bypass first-run setup: tray clicks return to onboarding, and Move Mode stays unavailable until onboarding completes.
 - Eliminated an intermittent startup race by deferring all configured WebViews until after `AppState` is managed; early frontend IPC can no longer abort Byte with Windows status `0xC0000409`.

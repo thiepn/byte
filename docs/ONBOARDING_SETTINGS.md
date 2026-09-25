@@ -164,9 +164,9 @@ Changing channels does not contact GitHub by itself.
 
 ## Re-running onboarding
 
-Settings can reopen onboarding by setting `onboarding_completed = false`.
+Settings can reopen onboarding as a UI-only tutorial mode without changing the persisted `onboarding_completed` flag.
 
-This does not delete customization or collection progress. An already-running installation keeps its background worker objects, but telemetry sampling and anonymous input capture are gated off while onboarding is open. Completing the flow again reuses the existing workers idempotently instead of starting duplicates.
+This does not delete customization or collection progress, does not pause/restart an already-running monitoring runtime, and preserves the current Smart Notifications choice. The user can exit the rerun without saving. If they finish it, the edited onboarding choices are persisted normally while the existing background runtime is reused idempotently.
 
 ## Acceptance
 

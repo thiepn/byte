@@ -33,6 +33,7 @@
   export let preferences: ByteConfig;
   export let onSaved: (config: ByteConfig) => void = () => {};
   export let onOpenCustomize: () => void = () => {};
+  export let onRunOnboarding: () => void = () => {};
 
   let source = preferences;
   let draft: AppPreferences = clone(preferences.app);
@@ -426,7 +427,7 @@
     <section class="settings-group">
       <div class="group-heading"><h2>Local data & setup</h2><p>Manage the small amount of state Byte keeps on this PC.</p></div>
       <div class="setting-row"><span><strong>Clear Activity history</strong><small>Deletes saved meaningful events and current session trend points. Customization and collection unlocks stay intact.</small></span><button class="danger-soft" onclick={() => void clearHistory()}>Clear history</button></div>
-      <div class="setting-row"><span><strong>Run onboarding again</strong><small>Reopens the short setup flow without deleting your customization.</small></span><button onclick={() => change((next) => (next.onboarding_completed = false))}>Open onboarding</button></div>
+      <div class="setting-row"><span><strong>Run onboarding again</strong><small>Reopens the short setup flow without changing your saved settings unless you finish it.</small></span><button onclick={onRunOnboarding}>Open onboarding</button></div>
       {#if dataMessage}<div class="data-message" role="status">{dataMessage}</div>{/if}
     </section>
   </div>

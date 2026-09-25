@@ -120,6 +120,7 @@
   let appsLoading = false;
   let saving = false;
   let runningAction = "";
+  let rerunOnboarding = false;
 
   async function load(): Promise<void> {
     try {
@@ -384,11 +385,17 @@
   });
 </script>
 
-{#if preferences && !preferences.app.onboarding_completed}
+{#if preferences && (!preferences.app.onboarding_completed || rerunOnboarding)}
   <Onboarding
     {preferences}
+    rerun={rerunOnboarding}
+    onCancel={() => {
+      rerunOnboarding = false;
+      selectView("settings");
+    }}
     onComplete={(next) => {
       preferences = next;
+      rerunOnboarding = false;
       selectView("overview");
     }}
   />
@@ -700,6 +707,7 @@
             preferences = next;
           }}
           onOpenCustomize={() => selectView("customize")}
+          onRunOnboarding={() => (rerunOnboarding = true)}
         />
       {/if}
     {/if}
