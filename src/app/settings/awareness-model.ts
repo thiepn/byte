@@ -21,7 +21,7 @@ export function awarenessDetail(snapshot: DesktopAwarenessSnapshot | null): stri
   if (!snapshot) return "Waiting for the native awareness service.";
   if (!snapshot.suppressed) {
     return snapshot.capture_exclusion_enabled
-      ? "Screen-capture exclusion is active."
+      ? "Screen-capture exclusion is requested from Windows."
       : "Screen-capture exclusion is off.";
   }
 
