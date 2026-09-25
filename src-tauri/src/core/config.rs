@@ -16,7 +16,8 @@ use std::{
 };
 use tempfile::NamedTempFile;
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 8;
+pub const CURRENT_SCHEMA_VERSION: u32 = 9;
+pub const MIN_MIGRATABLE_SCHEMA_VERSION: u32 = 1;
 const MAX_CONFIG_FILE_BYTES: u64 = 256 * 1024;
 
 pub struct ConfigStore {
@@ -111,15 +112,16 @@ fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
 
     match config.schema_version {
         CURRENT_SCHEMA_VERSION => {}
-        1..=5 => {
+        MIN_MIGRATABLE_SCHEMA_VERSION..=5 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
             // Installations predating Phase 20 already passed through Byte
             // without onboarding. Do not force first-run setup on them.
             config.app.onboarding_completed = true;
         }
-        6 | 7 => {
+        6..=8 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
             // Phase 20+ already persisted onboarding state; preserve it.
+            // Phase 28 adds a serde-defaulted Stable update channel.
         }
         other => {
             return Err(ByteError::Config(format!(
@@ -476,6 +478,38 @@ mod tests {
         assert!(app.hide_in_presentation);
         assert!(app.exclude_from_capture);
         assert!(app.hidden_foreground_apps.is_empty());
+    }
+
+    #[test]
+    fn v8_config_migrates_to_stable_release_channel() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = temp.path().join("config.json");
+        let mut legacy = serde_json::to_value(ByteConfig::default()).expect("serialize");
+        legacy["schema_version"] = serde_json::Value::from(8);
+        legacy["app"]
+            .as_object_mut()
+            .expect("app object")
+            .remove("update_channel");
+        fs::write(&path, serde_json::to_vec_pretty(&legacy).expect("json")).expect("write");
+
+        let migrated = ConfigStore::load(path).expect("migrate");
+
+        assert_eq!(migrated.snapshot().schema_version, CURRENT_SCHEMA_VERSION);
+        assert_eq!(
+            migrated.snapshot().app.update_channel,
+            crate::models::ReleaseChannel::Stable
+        );
+    }
+
+    #[test]
+    fn schema_compatibility_window_is_explicit() {
+        assert_eq!(MIN_MIGRATABLE_SCHEMA_VERSION, 1);
+        assert_eq!(CURRENT_SCHEMA_VERSION, 9);
+
+        let mut future = serde_json::to_value(ByteConfig::default()).expect("serialize");
+        future["schema_version"] = serde_json::Value::from(CURRENT_SCHEMA_VERSION + 1);
+        let raw = serde_json::to_string(&future).expect("json");
+        assert!(decode_and_migrate(&raw).is_err());
     }
 
     #[test]

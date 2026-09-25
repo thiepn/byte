@@ -6,6 +6,7 @@
     ByteConfig,
     DesktopAwarenessSnapshot,
     NotificationPermissionState,
+    ReleaseChannel,
   } from "../../lib/types/domain";
   import {
     clearActivityHistory,
@@ -45,6 +46,7 @@
   let notificationPermission: NotificationPermissionState | null = null;
   let permissionBusy = false;
   let version = "0.1.0";
+  let updateMessage = "";
 
   $: if (preferences !== source) {
     source = preferences;
@@ -159,6 +161,25 @@
       value.notification_snoozed_until_epoch_ms =
         next.notification_snoozed_until_epoch_ms;
       value.notification_quiet_mode = false;
+    });
+  }
+
+  async function checkForUpdates(): Promise<void> {
+    updateMessage = "";
+    try {
+      await openReleasePage(draft.update_channel);
+      updateMessage =
+        draft.update_channel === "BETA"
+          ? "Opened Byte releases, including preview builds."
+          : "Opened the latest stable Byte release.";
+    } catch {
+      updateMessage = "Windows could not open Byte's release page.";
+    }
+  }
+
+  function setUpdateChannel(channel: ReleaseChannel): void {
+    change((next) => {
+      next.update_channel = channel;
     });
   }
 
@@ -349,8 +370,33 @@
     </section>
 
     <section class="settings-group">
-      <div class="group-heading"><h2>Updates</h2><p>Byte does not run a generic background network service.</p></div>
-      <div class="setting-row"><span><strong>Byte {version}</strong><small>Release/update delivery uses Byte's fixed GitHub release channel.</small></span><button onclick={() => void openReleasePage()}>Open releases</button></div>
+      <div class="group-heading"><h2>Updates</h2><p>Byte never polls for updates in the background. Checking is explicit and opens Byte's fixed GitHub release destination.</p></div>
+      <div class="setting-row">
+        <span>
+          <strong>Release channel</strong>
+          <small>Stable opens only the latest normal release. Beta opens the full releases page so you can choose preview builds yourself.</small>
+        </span>
+        <div class="segmented" aria-label="Release channel">
+          <button
+            class:selected={draft.update_channel === "STABLE"}
+            aria-pressed={draft.update_channel === "STABLE"}
+            onclick={() => setUpdateChannel("STABLE")}
+          >Stable</button>
+          <button
+            class:selected={draft.update_channel === "BETA"}
+            aria-pressed={draft.update_channel === "BETA"}
+            onclick={() => setUpdateChannel("BETA")}
+          >Beta</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span>
+          <strong>Byte {version}</strong>
+          <small>No update is downloaded or installed automatically. Your browser handles the release page and you decide whether to download anything.</small>
+        </span>
+        <button onclick={() => void checkForUpdates()}>Check for updates</button>
+      </div>
+      {#if updateMessage}<div class="data-message" role="status">{updateMessage}</div>{/if}
     </section>
 
     <section class="settings-group">

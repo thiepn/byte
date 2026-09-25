@@ -83,7 +83,8 @@ Rust's action layer contains a fixed allowlist only:
 - Task Manager
 - Windows Storage Settings
 - Windows Battery Settings
-- Byte's fixed GitHub releases page
+- Byte's fixed Stable GitHub release destination
+- Byte's fixed Beta GitHub release destination
 - Byte's own main window
 
 No frontend string becomes an executable path, URI, shell argument, or command line.
@@ -209,3 +210,12 @@ The release workflow grants the minimum extra permissions required for provenanc
 The installer and portable ZIP are attested only after package/runtime certification succeeds. The workflow then verifies both attestations before publishing the GitHub Release.
 
 Release provenance links a binary to its source workflow and commit; it is an integrity/provenance control, not a claim that the binary is free of vulnerabilities.
+
+
+## Post-release maintenance security
+
+Phase 28 keeps update discovery user-initiated. Selecting Stable or Beta stores only a local enum; Byte performs no background release polling and exposes no arbitrary update URL.
+
+Weekly maintenance automation re-runs npm and RustSec dependency audits even when the source tree is otherwise quiet. Dependabot groups routine minor/patch maintenance, while all resulting changes still pass the normal security and packaging gates.
+
+Emergency recovery is patch-forward. Byte does not weaken installer downgrade protection to perform a rollback. A corrective higher patch is certified and released through the normal provenance pipeline.

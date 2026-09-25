@@ -12,12 +12,13 @@ import type {
   EdgeAnchor,
   NotificationPermissionState,
   RecommendedActionKind,
+  ReleaseChannel,
   SystemSnapshot,
   WindowShellState,
 } from "../types/domain";
 
 const DEFAULT_CONFIG: ByteConfig = {
-  schema_version: 8,
+  schema_version: 9,
   companion: {
     character: "BYTE",
     palette: "default",
@@ -69,6 +70,7 @@ const DEFAULT_CONFIG: ByteConfig = {
     reduce_motion: false,
     high_contrast: false,
     text_scale_percent: 100,
+    update_channel: "STABLE",
     onboarding_completed: false,
   },
 };
@@ -232,8 +234,8 @@ export async function clearActivityHistory(): Promise<ActivitySnapshot> {
   return invoke<ActivitySnapshot>("clear_activity_history");
 }
 
-export async function openReleasePage(): Promise<void> {
-  if (inTauri()) await invoke("open_release_page");
+export async function openReleasePage(channel: ReleaseChannel): Promise<void> {
+  if (inTauri()) await invoke("open_release_page", { channel });
 }
 
 export async function updateCompanionPreferences(

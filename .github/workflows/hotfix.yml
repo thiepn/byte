@@ -1,0 +1,156 @@
+name: Byte Hotfix
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/hotfix.yml"
+      - "scripts/verify-hotfix-version.mjs"
+      - "scripts/prepare-release.mjs"
+  workflow_dispatch:
+    inputs:
+      base_tag:
+        description: "Published stable release being hotfixed (for example v1.2.3)"
+        required: true
+        type: string
+      hotfix_tag:
+        description: "New higher patch tag already reflected in source manifests (for example v1.2.4)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: byte-hotfix
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    if: github.event_name == 'pull_request'
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Verify maintenance contract
+        run: npm run maintenance:verify
+
+      - name: Check hotfix and release scripts
+        run: |
+          node --check scripts/verify-hotfix-version.mjs
+          node --check scripts/prepare-release.mjs
+          node --check scripts/extract-release-notes.mjs
+
+  certify-and-tag:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    timeout-minutes: 50
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BASE_TAG: ${{ inputs.base_tag }}
+      HOTFIX_TAG: ${{ inputs.hotfix_tag }}
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+
+      - name: Rust
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Verify hotfix version and maintenance policy
+        shell: pwsh
+        run: |
+          npm run release:verify -- --tag $env:HOTFIX_TAG
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run maintenance:verify
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/verify-hotfix-version.mjs --base $env:BASE_TAG --current $env:HOTFIX_TAG
+
+      - name: Verify hotfix lineage
+        shell: pwsh
+        run: |
+          git rev-parse "$env:BASE_TAG^{commit}" *> $null
+          if ($LASTEXITCODE -ne 0) { throw "Base tag does not exist: $env:BASE_TAG" }
+          git merge-base --is-ancestor $env:BASE_TAG HEAD
+          if ($LASTEXITCODE -ne 0) { throw "main is not descended from the selected base release." }
+          git show-ref --verify --quiet "refs/tags/$env:HOTFIX_TAG"
+          if ($LASTEXITCODE -eq 0) { throw "Hotfix tag already exists: $env:HOTFIX_TAG" }
+
+      - name: Require certified main release candidate
+        shell: pwsh
+        run: |
+          $sha = (git rev-parse HEAD).Trim()
+          $runs = gh run list --workflow "Byte Packaging Certification" --commit $sha --event push --limit 10 --json status,conclusion,databaseId | ConvertFrom-Json
+          $certified = $runs | Where-Object { $_.status -eq "completed" -and $_.conclusion -eq "success" } | Select-Object -First 1
+          if ($null -eq $certified) {
+            throw "The exact main commit does not have a successful push-triggered Packaging Certification run."
+          }
+          Write-Host "Using certified main candidate from run $($certified.databaseId)."
+
+      - name: Extract hotfix release notes
+        shell: pwsh
+        run: |
+          $version = $env:HOTFIX_TAG.TrimStart("v")
+          node scripts/extract-release-notes.mjs --version $version --output hotfix-notes.md
+
+      - name: Frontend dependency audit
+        run: npm audit --audit-level=high
+
+      - name: Frontend type check
+        run: npm run check
+
+      - name: Frontend tests
+        run: npm run test
+
+      - name: Frontend production build
+        run: npm run build
+
+      - name: Rust format
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+
+      - name: Rust tests
+        run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked --version 0.22.2
+
+      - name: Rust dependency audit
+        working-directory: src-tauri
+        run: cargo audit
+
+      - name: Rust clippy
+        run: cargo clippy --locked --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+
+      - name: Rust check
+        run: cargo check --locked --manifest-path src-tauri/Cargo.toml
+
+      - name: Create certified hotfix tag
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a $env:HOTFIX_TAG -m "Certified Byte hotfix $env:HOTFIX_TAG from $env:BASE_TAG"
+          git push origin "refs/tags/$env:HOTFIX_TAG"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

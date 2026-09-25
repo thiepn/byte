@@ -398,3 +398,18 @@ Tagged releases add GitHub artifact provenance attestations for the installer an
 The public-release workflow therefore publishes only artifacts that have passed both source-level CI and artifact-level runtime/installer certification.
 
 See [RELEASE_CERTIFICATION.md](RELEASE_CERTIFICATION.md).
+
+
+## Phase 28 post-release maintenance
+
+Phase 28 keeps updating outside Byte's background runtime. The application stores only a local Stable/Beta preference. An explicit user action opens one of two fixed GitHub release destinations; Byte does not poll, download, stage, or install updates itself.
+
+The configuration schema advances to version 9 for this release-channel preference. The direct migration window remains explicit from schema 1 through the current schema, and future unknown schemas fail closed rather than being interpreted opportunistically.
+
+Release preparation is deterministic across the npm, Cargo, Tauri, lockfile, and changelog version surfaces. GitHub Releases use the matching changelog section as curated release notes. Stable tags are normal releases; `-beta.N` tags are prereleases.
+
+Scheduled maintenance separates security auditing from runtime/toolchain compatibility. Weekly Windows Server 2022/2025 jobs build the release binary and launch Byte to exercise WebView2/Tauri startup, while supported Windows 11 desktop behavior remains a manual release-health check.
+
+Emergency recovery is patch-forward. The manual hotfix workflow validates a higher patch on the same major/minor line, certifies source/dependencies, and only then pushes the tag that triggers the normal artifact certification/release pipeline.
+
+See [MAINTENANCE.md](MAINTENANCE.md) and [RELEASE_HEALTH_CHECKLIST.md](RELEASE_HEALTH_CHECKLIST.md).

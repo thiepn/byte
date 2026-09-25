@@ -461,6 +461,14 @@ fn default_text_scale_percent() -> u16 {
     100
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ReleaseChannel {
+    #[default]
+    Stable,
+    Beta,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum VisibilitySuppressionReason {
@@ -520,6 +528,8 @@ pub struct AppPreferences {
     #[serde(default = "default_text_scale_percent")]
     pub text_scale_percent: u16,
     #[serde(default)]
+    pub update_channel: ReleaseChannel,
+    #[serde(default)]
     pub onboarding_completed: bool,
 }
 
@@ -545,6 +555,7 @@ impl Default for AppPreferences {
             reduce_motion: false,
             high_contrast: false,
             text_scale_percent: 100,
+            update_channel: ReleaseChannel::Stable,
             onboarding_completed: false,
         }
     }
@@ -560,7 +571,7 @@ pub struct ByteConfig {
 impl Default for ByteConfig {
     fn default() -> Self {
         Self {
-            schema_version: 8,
+            schema_version: 9,
             companion: CompanionPreferences::default(),
             app: AppPreferences::default(),
         }

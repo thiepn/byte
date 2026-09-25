@@ -3,26 +3,39 @@ import path from "node:path";
 
 const root = process.cwd();
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+const packageLock = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json"), "utf8"));
 const tauri = JSON.parse(
   fs.readFileSync(path.join(root, "src-tauri", "tauri.conf.json"), "utf8"),
 );
 const cargo = fs.readFileSync(path.join(root, "src-tauri", "Cargo.toml"), "utf8");
+const cargoLock = fs.readFileSync(path.join(root, "src-tauri", "Cargo.lock"), "utf8");
 
 const cargoPackage = cargo.match(/\[package\][\s\S]*?^version\s*=\s*"([^"]+)"/m);
 if (!cargoPackage) {
   throw new Error("Could not read [package] version from src-tauri/Cargo.toml");
 }
 
+const cargoLockPackage = cargoLock.match(
+  /\[\[package\]\]\s*\nname\s*=\s*"byte-desktop"\s*\nversion\s*=\s*"([^"]+)"/,
+);
+if (!cargoLockPackage) {
+  throw new Error("Could not read byte-desktop version from src-tauri/Cargo.lock");
+}
+
 const versions = {
   packageJson: packageJson.version,
+  packageLock: packageLock.version,
+  packageLockRoot: packageLock.packages?.[""]?.version,
   tauri: tauri.version,
   cargo: cargoPackage[1],
+  cargoLock: cargoLockPackage[1],
 };
 
 const unique = new Set(Object.values(versions));
 if (unique.size !== 1) {
   throw new Error(
-    `Release versions must match: package.json=${versions.packageJson}, tauri=${versions.tauri}, Cargo.toml=${versions.cargo}`,
+    "Release versions must match across package.json, package-lock.json, tauri.conf.json, Cargo.toml, and Cargo.lock: " +
+      JSON.stringify(versions),
   );
 }
 

@@ -37,6 +37,15 @@ jobs:
       - name: Verify release metadata
         run: npm run release:verify
 
+      - name: Verify maintenance policy
+        run: npm run maintenance:verify
+
+      - name: Verify current release notes extraction
+        shell: pwsh
+        run: |
+          $version = (Get-Content "src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json).version
+          node scripts/extract-release-notes.mjs --version $version --output "$env:RUNNER_TEMP\byte-release-notes.md"
+
       - name: Build production NSIS package
         shell: pwsh
         run: ./scripts/build-windows-release.ps1

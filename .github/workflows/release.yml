@@ -43,6 +43,15 @@ jobs:
         shell: pwsh
         run: npm run release:verify -- --tag $env:GITHUB_REF_NAME
 
+      - name: Verify maintenance policy
+        run: npm run maintenance:verify
+
+      - name: Extract curated release notes
+        shell: pwsh
+        run: |
+          $version = (Get-Content "src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json).version
+          node scripts/extract-release-notes.mjs --version $version --output release-notes.md
+
       - name: Frontend dependency audit
         run: npm audit --audit-level=high
 
@@ -183,8 +192,11 @@ jobs:
               "release", "create", $tag,
               "--verify-tag",
               "--title", "Byte $version",
-              "--generate-notes"
+              "--notes-file", "release-notes.md"
             )
+            if ($version -match "-beta\.") {
+              $arguments += "--prerelease"
+            }
             $arguments += $assets
             & gh @arguments
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
