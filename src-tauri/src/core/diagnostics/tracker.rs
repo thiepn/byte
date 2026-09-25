@@ -52,9 +52,9 @@ impl SustainedTracker {
                     .map(|deadline| now >= deadline)
                     .unwrap_or(true);
 
-                if critical_ready {
+                if cooldown_complete && critical_ready {
                     self.activate(ResourceState::Critical, now);
-                } else if high_ready && cooldown_complete {
+                } else if cooldown_complete && high_ready {
                     self.activate(ResourceState::High, now);
                 }
             }
@@ -200,6 +200,35 @@ mod tests {
         assert!(tracker
             .update(16_000, observed(false, false, true), POLICY)
             .is_none());
+    }
+
+    #[test]
+    fn critical_reopen_respects_cooldown() {
+        let policy = TrackerPolicy {
+            high_activation_ms: 0,
+            critical_activation_ms: 0,
+            recovery_ms: 0,
+            reopen_cooldown_ms: 10_000,
+        };
+        let mut tracker = SustainedTracker::default();
+
+        let active = tracker
+            .update(0, observed(true, true, false), policy)
+            .expect("initial critical");
+        assert_eq!(active.severity, ResourceState::Critical);
+
+        assert!(tracker
+            .update(1_000, observed(false, false, true), policy)
+            .is_none());
+
+        assert!(tracker
+            .update(5_000, observed(true, true, false), policy)
+            .is_none());
+
+        let reopened = tracker
+            .update(11_000, observed(true, true, false), policy)
+            .expect("critical after cooldown");
+        assert_eq!(reopened.severity, ResourceState::Critical);
     }
 
     #[test]
