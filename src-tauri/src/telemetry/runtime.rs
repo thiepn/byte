@@ -67,7 +67,11 @@ fn notifications_allowed(preferences: &AppPreferences, visibility_suppressed: bo
 
 #[cfg(target_os = "windows")]
 fn run_worker(app: AppHandle) {
-    let mut telemetry = TelemetryEngine::new(WindowsTelemetrySource::new());
+    // Keep the Windows telemetry source completely lazy. Its constructor
+    // enumerates hardware and reads several slow signals, so creating it before
+    // onboarding would violate the first-run privacy boundary even if sampling
+    // were skipped later.
+    let mut telemetry: Option<TelemetryEngine<WindowsTelemetrySource>> = None;
     let mut diagnostics = DiagnosticEngine::new();
     let mut last_sample_at: Option<Instant> = None;
     let mut consecutive_sample_failures = 0_u8;
@@ -90,7 +94,7 @@ fn run_worker(app: AppHandle) {
             .unwrap_or(false);
 
         if resumed_from_suspension || resumed_from_long_gap {
-            telemetry = TelemetryEngine::new(WindowsTelemetrySource::new());
+            telemetry = None;
             diagnostics = DiagnosticEngine::new();
             state.set_snapshot_unavailable();
             last_sample_at = None;
@@ -100,6 +104,7 @@ fn run_worker(app: AppHandle) {
         let app_preferences = state.app_preferences();
 
         if !app_preferences.onboarding_completed {
+            telemetry = None;
             monitoring_was_enabled = false;
             consecutive_sample_failures = 0;
             last_sample_at = None;
@@ -120,7 +125,9 @@ fn run_worker(app: AppHandle) {
             consecutive_sample_failures = 0;
 
             if app_preferences.system_monitoring_enabled {
-                telemetry = TelemetryEngine::new(WindowsTelemetrySource::new());
+                telemetry = Some(TelemetryEngine::new(WindowsTelemetrySource::new()));
+            } else {
+                telemetry = None;
             }
 
             monitoring_was_enabled = app_preferences.system_monitoring_enabled;
@@ -130,7 +137,10 @@ fn run_worker(app: AppHandle) {
             consecutive_sample_failures = 0;
             state.set_snapshot_unavailable();
             sampling_interval(lifecycle_after_wait, None, false)
-        } else if let Ok(snapshot) = telemetry.sample_snapshot() {
+        } else if let Ok(snapshot) = telemetry
+            .get_or_insert_with(|| TelemetryEngine::new(WindowsTelemetrySource::new()))
+            .sample_snapshot()
+        {
             consecutive_sample_failures = 0;
             last_sample_at = Some(Instant::now());
             let evaluated = diagnostics.evaluate(snapshot);
@@ -185,7 +195,7 @@ fn run_worker(app: AppHandle) {
 
             if consecutive_sample_failures == SAMPLE_FAILURE_UNAVAILABLE_THRESHOLD {
                 diagnostics = DiagnosticEngine::new();
-                telemetry = TelemetryEngine::new(WindowsTelemetrySource::new());
+                telemetry = Some(TelemetryEngine::new(WindowsTelemetrySource::new()));
                 last_sample_at = None;
 
                 let unavailable = crate::models::SystemSnapshot::unavailable();
