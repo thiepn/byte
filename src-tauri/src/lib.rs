@@ -106,6 +106,18 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     Ok(())
 }
 
+fn create_configured_windows(app: &tauri::App) -> tauri::Result<()> {
+    // WindowConfig entries stay in tauri.conf.json so geometry, URLs,
+    // transparency, and capabilities remain declarative. They are marked
+    // create:false and built only after AppState is managed, which prevents
+    // frontend IPC from racing backend state initialization.
+    for window_config in &app.config().app.windows {
+        tauri::WebviewWindowBuilder::from_config(app.handle(), window_config)?.build()?;
+    }
+
+    Ok(())
+}
+
 pub fn run() {
     // Keep one Byte process per interactive Windows session. If the named
     // mutex API itself is unavailable, fail open so an OS integration problem
@@ -132,6 +144,11 @@ pub fn run() {
                 collection,
                 smart_notifications,
             ));
+
+            // Do not allow any frontend surface to exist until AppState is
+            // available to IPC commands. Configured windows use create:false
+            // and are materialized here from their canonical WindowConfig.
+            create_configured_windows(app)?;
 
             // Desktop awareness, capture exclusion, telemetry, and global input
             // are optional integrations. A Windows/API failure must not make

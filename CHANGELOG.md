@@ -11,6 +11,7 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ### Fixed
 
+- Eliminated an intermittent startup race by deferring all configured WebViews until after `AppState` is managed; early frontend IPC can no longer abort Byte with Windows status `0xC0000409`.
 - Startup failures now exit with a diagnosable error instead of escalating through a top-level panic.
 
 ## [0.1.0]

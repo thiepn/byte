@@ -58,6 +58,21 @@ if (requestedTag) {
   }
 }
 
+const configuredWindows = tauri.app?.windows ?? [];
+const expectedWindowLabels = ["companion", "main", "quick-panel"];
+const actualWindowLabels = configuredWindows.map((window) => window.label).sort();
+
+if (JSON.stringify(actualWindowLabels) !== JSON.stringify(expectedWindowLabels)) {
+  throw new Error(
+    "Byte must keep exactly the companion, main, and quick-panel configured windows",
+  );
+}
+if (configuredWindows.some((window) => window.create !== false)) {
+  throw new Error(
+    "Every configured Byte window must use create:false so AppState is managed before frontend IPC starts",
+  );
+}
+
 const bundle = tauri.bundle ?? {};
 const windows = bundle.windows ?? {};
 const nsis = windows.nsis ?? {};

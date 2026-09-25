@@ -24,7 +24,8 @@
         "resizable": false,
         "alwaysOnTop": true,
         "skipTaskbar": true,
-        "shadow": false
+        "shadow": false,
+        "create": false
       },
       {
         "label": "quick-panel",
@@ -36,7 +37,8 @@
         "decorations": false,
         "resizable": false,
         "alwaysOnTop": true,
-        "skipTaskbar": true
+        "skipTaskbar": true,
+        "create": false
       },
       {
         "label": "main",
@@ -48,7 +50,8 @@
         "minHeight": 560,
         "visible": false,
         "center": true,
-        "resizable": true
+        "resizable": true,
+        "create": false
       }
     ],
     "security": {
