@@ -17,6 +17,7 @@ use std::{
 use tempfile::NamedTempFile;
 
 pub const CURRENT_SCHEMA_VERSION: u32 = 9;
+pub const MIN_MIGRATABLE_SCHEMA_VERSION: u32 = 1;
 const MAX_CONFIG_FILE_BYTES: u64 = 256 * 1024;
 
 pub struct ConfigStore {
@@ -111,7 +112,7 @@ fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
 
     match config.schema_version {
         CURRENT_SCHEMA_VERSION => {}
-        1..=5 => {
+        MIN_MIGRATABLE_SCHEMA_VERSION..=5 => {
             config.schema_version = CURRENT_SCHEMA_VERSION;
             // Installations predating Phase 20 already passed through Byte
             // without onboarding. Do not force first-run setup on them.
@@ -498,6 +499,17 @@ mod tests {
             migrated.snapshot().app.update_channel,
             crate::models::ReleaseChannel::Stable
         );
+    }
+
+    #[test]
+    fn schema_compatibility_window_is_explicit() {
+        assert_eq!(MIN_MIGRATABLE_SCHEMA_VERSION, 1);
+        assert_eq!(CURRENT_SCHEMA_VERSION, 9);
+
+        let mut future = serde_json::to_value(ByteConfig::default()).expect("serialize");
+        future["schema_version"] = serde_json::Value::from(CURRENT_SCHEMA_VERSION + 1);
+        let raw = serde_json::to_string(&future).expect("json");
+        assert!(decode_and_migrate(&raw).is_err());
     }
 
     #[test]
