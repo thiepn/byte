@@ -46,12 +46,14 @@ const packagePath = path.join(root, "package.json");
 const lockPath = path.join(root, "package-lock.json");
 const tauriPath = path.join(root, "src-tauri", "tauri.conf.json");
 const cargoPath = path.join(root, "src-tauri", "Cargo.toml");
+const cargoLockPath = path.join(root, "src-tauri", "Cargo.lock");
 const changelogPath = path.join(root, "CHANGELOG.md");
 
 const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
 const packageLock = JSON.parse(fs.readFileSync(lockPath, "utf8"));
 const tauri = JSON.parse(fs.readFileSync(tauriPath, "utf8"));
 let cargo = fs.readFileSync(cargoPath, "utf8");
+let cargoLock = fs.readFileSync(cargoLockPath, "utf8");
 let changelog = fs.readFileSync(changelogPath, "utf8");
 
 const current = tauri.version;
@@ -83,10 +85,17 @@ if (!cargoVersion.test(cargo)) {
 }
 cargo = cargo.replace(cargoVersion, "$1" + version + "$2");
 
+const cargoLockVersion = /(\[\[package\]\]\s*\nname\s*=\s*"byte-desktop"\s*\nversion\s*=\s*")[^"]+(")/;
+if (!cargoLockVersion.test(cargoLock)) {
+  throw new Error("Could not locate byte-desktop version in src-tauri/Cargo.lock.");
+}
+cargoLock = cargoLock.replace(cargoLockVersion, "$1" + version + "$2");
+
 fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + "\n");
 fs.writeFileSync(lockPath, JSON.stringify(packageLock, null, 2) + "\n");
 fs.writeFileSync(tauriPath, JSON.stringify(tauri, null, 2) + "\n");
 fs.writeFileSync(cargoPath, cargo);
+fs.writeFileSync(cargoLockPath, cargoLock);
 fs.writeFileSync(changelogPath, changelog);
 
 console.log("Prepared Byte " + version + " (" + channel + ").");
