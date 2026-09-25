@@ -1,7 +1,7 @@
 use crate::{
     core::{
         error::ByteError,
-        persistence::{read_bounded_text, BoundedText},
+        persistence::{quarantine_corrupt_file, read_bounded_text, BoundedText},
     },
     models::{
         now_epoch_ms, CollectionDiscoveryKind, CollectionItemKind, CollectionItemProgress,
@@ -90,16 +90,21 @@ impl CollectionStore {
         }
 
         let now = now_epoch_ms();
-        let (data, recovered) = match read_bounded_text(&path, MAX_COLLECTION_FILE_BYTES)? {
+        let (data, recovered, corrupt) = match read_bounded_text(&path, MAX_COLLECTION_FILE_BYTES)? {
             BoundedText::Present(raw) => match serde_json::from_str::<CollectionData>(&raw)
                 .ok()
                 .filter(|value| value.schema_version == COLLECTION_SCHEMA_VERSION)
             {
-                Some(value) => (value, false),
-                None => (CollectionData::new(now), true),
+                Some(value) => (value, false, false),
+                None => (CollectionData::new(now), true, true),
             },
-            BoundedText::Invalid | BoundedText::Missing => (CollectionData::new(now), true),
+            BoundedText::Invalid => (CollectionData::new(now), true, true),
+            BoundedText::Missing => (CollectionData::new(now), true, false),
         };
+
+        if corrupt {
+            let _ = quarantine_corrupt_file(&path);
+        }
 
         let mut store = Self {
             path,
@@ -472,6 +477,19 @@ mod tests {
             primary_issue: None,
             secondary_issue_count: 0,
         }
+    }
+
+    #[test]
+    fn corrupt_collection_is_quarantined_before_defaults_are_written() {
+        let temp = tempfile::tempdir().expect("temp");
+        let path = temp.path().join("collection.json");
+        fs::write(&path, "{ definitely invalid").expect("write");
+
+        let store = CollectionStore::load(path.clone()).expect("recover");
+
+        assert!(path.exists());
+        assert!(path.with_extension("corrupt.json").exists());
+        assert_eq!(store.data.typing_events, 0);
     }
 
     #[test]
