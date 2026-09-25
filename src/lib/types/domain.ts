@@ -129,6 +129,8 @@ export interface WindowShellState {
   click_through: boolean;
 }
 
+export type ReleaseChannel = "STABLE" | "BETA";
+
 export type VisibilitySuppressionReason =
   | "FULLSCREEN"
   | "PRESENTATION"
@@ -163,6 +165,7 @@ export interface AppPreferences {
   reduce_motion: boolean;
   high_contrast: boolean;
   text_scale_percent: 100 | 110 | 125;
+  update_channel: ReleaseChannel;
   onboarding_completed: boolean;
 }
 
