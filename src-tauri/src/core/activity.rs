@@ -1,7 +1,7 @@
 use crate::{
     core::{
         error::ByteError,
-        persistence::{read_bounded_text, BoundedText},
+        persistence::{quarantine_corrupt_file, read_bounded_text, BoundedText},
     },
     models::{IssueCategory, ResourceState, SystemIssue, SystemSnapshot},
 };
@@ -86,11 +86,12 @@ impl ActivityStore {
         }
 
         let events = match read_bounded_text(&path, MAX_ACTIVITY_FILE_BYTES)? {
-            BoundedText::Present(raw) => serde_json::from_str::<PersistedActivity>(&raw)
-                .ok()
-                .filter(|value| value.schema_version == ACTIVITY_SCHEMA_VERSION)
-                .map(|value| {
-                    value
+            BoundedText::Present(raw) => {
+                match serde_json::from_str::<PersistedActivity>(&raw)
+                    .ok()
+                    .filter(|value| value.schema_version == ACTIVITY_SCHEMA_VERSION)
+                {
+                    Some(value) => value
                         .events
                         .into_iter()
                         .rev()
@@ -98,10 +99,18 @@ impl ActivityStore {
                         .collect::<Vec<_>>()
                         .into_iter()
                         .rev()
-                        .collect::<VecDeque<_>>()
-                })
-                .unwrap_or_default(),
-            BoundedText::Invalid | BoundedText::Missing => VecDeque::new(),
+                        .collect::<VecDeque<_>>(),
+                    None => {
+                        let _ = quarantine_corrupt_file(&path);
+                        VecDeque::new()
+                    }
+                }
+            }
+            BoundedText::Invalid => {
+                let _ = quarantine_corrupt_file(&path);
+                VecDeque::new()
+            }
+            BoundedText::Missing => VecDeque::new(),
         };
 
         let next_id = events
@@ -397,6 +406,19 @@ mod tests {
             }),
             started_at_epoch_ms: 20_000,
         }
+    }
+
+    #[test]
+    fn corrupt_activity_history_is_quarantined_before_recovery() {
+        let temp = tempfile::tempdir().expect("temp");
+        let path = temp.path().join("activity.json");
+        fs::write(&path, "{ invalid").expect("write");
+
+        let store = ActivityStore::load(path.clone()).expect("recover");
+
+        assert!(!path.exists());
+        assert!(path.with_extension("corrupt.json").exists());
+        assert!(store.events.is_empty());
     }
 
     #[test]
