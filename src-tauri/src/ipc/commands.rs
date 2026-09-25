@@ -102,6 +102,13 @@ pub fn update_app_preferences(
         let _ = app.emit_to("companion", "byte://snapshot-updated", unavailable);
     }
 
+    if previous.activity_history_enabled && !preferences.activity_history_enabled {
+        state.reset_activity_observation_baseline();
+    }
+    if previous.system_monitoring_enabled && !preferences.system_monitoring_enabled {
+        state.reset_activity_observation_baseline();
+    }
+
     let _ = windowing::apply_capture_affinity(&app, preferences.exclude_from_capture);
     state.lifecycle.wake_waiters();
 
