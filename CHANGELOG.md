@@ -4,6 +4,10 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ## [Unreleased]
 
+### Fixed
+
+- Launching Byte while it is already running now activates the existing process and brings its main window forward instead of silently exiting; the session-scoped Windows event also removes the stale-file-lock edge case.
+
 ## [0.1.0]
 
 ### Added
