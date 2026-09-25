@@ -158,6 +158,7 @@ pub fn toggle_companion(app: &AppHandle) -> Result<(), ByteError> {
 }
 
 pub fn set_display_mode(app: &AppHandle, mode: DisplayMode) -> Result<ByteConfig, ByteError> {
+    let previous = companion_preferences(app);
     let config = {
         let state = app.state::<AppState>();
         let mut store = state
@@ -167,12 +168,17 @@ pub fn set_display_mode(app: &AppHandle, mode: DisplayMode) -> Result<ByteConfig
         store.update_companion_with(|preferences| preferences.display_mode = mode)?
     };
 
-    apply_companion_layout(app, &config.companion)?;
+    if let Err(error) = apply_companion_layout(app, &config.companion) {
+        rollback_companion_preferences(app, &previous);
+        return Err(error);
+    }
+
     let _ = app.emit_to("companion", "byte://display-mode-changed", mode);
     Ok(config)
 }
 
 pub fn set_companion_size(app: &AppHandle, size: CompanionSize) -> Result<ByteConfig, ByteError> {
+    let previous = companion_preferences(app);
     let config = {
         let state = app.state::<AppState>();
         let mut store = state
@@ -182,12 +188,17 @@ pub fn set_companion_size(app: &AppHandle, size: CompanionSize) -> Result<ByteCo
         store.update_companion_with(|preferences| preferences.size = size)?
     };
 
-    apply_companion_layout(app, &config.companion)?;
+    if let Err(error) = apply_companion_layout(app, &config.companion) {
+        rollback_companion_preferences(app, &previous);
+        return Err(error);
+    }
+
     let _ = app.emit_to("companion", "byte://companion-size-changed", size);
     Ok(config)
 }
 
 pub fn set_edge_anchor(app: &AppHandle, anchor: EdgeAnchor) -> Result<ByteConfig, ByteError> {
+    let previous = companion_preferences(app);
     let config = {
         let state = app.state::<AppState>();
         let mut store = state
@@ -198,7 +209,10 @@ pub fn set_edge_anchor(app: &AppHandle, anchor: EdgeAnchor) -> Result<ByteConfig
     };
 
     if config.companion.display_mode == DisplayMode::Edge {
-        apply_companion_layout(app, &config.companion)?;
+        if let Err(error) = apply_companion_layout(app, &config.companion) {
+            rollback_companion_preferences(app, &previous);
+            return Err(error);
+        }
     }
     Ok(config)
 }
@@ -694,6 +708,19 @@ fn logical_size(mode: DisplayMode, size: CompanionSize) -> (f64, f64) {
 
 fn physical_pixels(logical: f64, scale_factor: f64) -> u32 {
     (logical * scale_factor).round().max(1.0) as u32
+}
+
+fn rollback_companion_preferences(app: &AppHandle, previous: &CompanionPreferences) {
+    let state = app.state::<AppState>();
+    let result = state
+        .config
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .update_companion(previous.clone());
+
+    if result.is_ok() {
+        let _ = apply_companion_layout(app, previous);
+    }
 }
 
 fn companion_preferences(app: &AppHandle) -> CompanionPreferences {
