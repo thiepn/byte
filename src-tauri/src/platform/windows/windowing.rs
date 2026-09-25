@@ -218,15 +218,27 @@ pub fn begin_move_mode(app: &AppHandle) -> Result<WindowShellState, ByteError> {
     }
 
     let window = companion_window(app)?;
+    let previous_shell = shell_state(app);
+    let was_visible = window
+        .is_visible()
+        .map_err(|error| ByteError::Window(error.to_string()))?;
+
     window
         .set_ignore_cursor_events(false)
         .map_err(|error| ByteError::Window(error.to_string()))?;
-    window
-        .show()
-        .map_err(|error| ByteError::Window(error.to_string()))?;
-    window
-        .set_focus()
-        .map_err(|error| ByteError::Window(error.to_string()))?;
+
+    if let Err(error) = window.show() {
+        let _ = window.set_ignore_cursor_events(previous_shell.click_through);
+        return Err(ByteError::Window(error.to_string()));
+    }
+
+    if let Err(error) = window.set_focus() {
+        let _ = window.set_ignore_cursor_events(previous_shell.click_through);
+        if !was_visible {
+            let _ = window.hide();
+        }
+        return Err(ByteError::Window(error.to_string()));
+    }
 
     let shell = {
         let state = app.state::<AppState>();
@@ -281,7 +293,13 @@ pub fn finish_move_mode(app: &AppHandle) -> Result<WindowShellState, ByteError> 
 pub fn set_click_through(app: &AppHandle, enabled: bool) -> Result<WindowShellState, ByteError> {
     let window = companion_window(app)?;
 
-    {
+    // Apply the native state before publishing it to Rust/UI state. If Windows
+    // refuses the operation, callers keep the last known-good shell state.
+    window
+        .set_ignore_cursor_events(enabled)
+        .map_err(|error| ByteError::Window(error.to_string()))?;
+
+    let shell = {
         let state = app.state::<AppState>();
         let mut shell = state
             .window_shell
@@ -291,18 +309,15 @@ pub fn set_click_through(app: &AppHandle, enabled: bool) -> Result<WindowShellSt
         if enabled {
             shell.move_mode = false;
         }
-    }
-
-    window
-        .set_ignore_cursor_events(enabled)
-        .map_err(|error| ByteError::Window(error.to_string()))?;
+        *shell
+    };
 
     if enabled {
         emit_move_mode(app, false);
     }
     emit_click_through(app, enabled);
 
-    Ok(shell_state(app))
+    Ok(shell)
 }
 
 pub fn toggle_click_through(app: &AppHandle) -> Result<WindowShellState, ByteError> {
