@@ -118,6 +118,13 @@ impl AppState {
             .clear()
     }
 
+    pub fn reset_activity_observation_baseline(&self) {
+        self.activity
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .reset_observation_baseline();
+    }
+
     pub fn app_preferences(&self) -> AppPreferences {
         self.config
             .lock()
