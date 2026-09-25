@@ -33,6 +33,8 @@ And what Byte does not collect:
 
 System monitoring can be disabled here.
 
+Smart Notifications are an explicit opt-in on a fresh install and default off. Native alerts remain suppressed until onboarding has completed even if a stored preference is enabled.
+
 ### 3 — Character and habitat
 
 The user chooses one of the four production characters and one of the six production habitats. Character changes begin from that character's authored default palette.
@@ -47,6 +49,8 @@ The user chooses Habitat, Perch, Mini, or Edge and may enable:
 - Hide during fullscreen
 
 Finishing writes the existing CompanionPreferences and AppPreferences; there is no separate onboarding profile.
+
+On a fresh install, Byte does not start desktop-awareness, telemetry, or global-input background workers until this completion is persisted. Telemetry sources are also constructed lazily, so disk/network/battery/thermal enumeration does not happen behind the onboarding screen.
 
 ## Migration
 
@@ -162,7 +166,7 @@ Changing channels does not contact GitHub by itself.
 
 Settings can reopen onboarding by setting `onboarding_completed = false`.
 
-This does not delete customization or collection progress.
+This does not delete customization or collection progress. An already-running installation keeps its background worker objects, but telemetry sampling and anonymous input capture are gated off while onboarding is open. Completing the flow again reuses the existing workers idempotently instead of starting duplicates.
 
 ## Acceptance
 

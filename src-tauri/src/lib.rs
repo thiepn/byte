@@ -22,15 +22,22 @@ use tauri::{
 
 pub(crate) fn start_background_integrations(app: &tauri::AppHandle) {
     // Fresh installs do not create monitoring/input workers until onboarding
-    // has explicitly completed. Existing installations start them normally.
-    let _ = fullscreen::start(app.clone());
+    // has explicitly completed. This helper is idempotent because Settings can
+    // intentionally reopen onboarding without tearing down the existing runtime.
+    let state = app.state::<AppState>();
 
-    if telemetry::runtime::start(app.clone()).is_err() {
-        app.state::<AppState>().set_snapshot_unavailable();
+    if !state.fullscreen_worker_running() {
+        let _ = fullscreen::start(app.clone());
     }
 
-    if let Ok(input_runtime) = InputRuntime::start(app.clone()) {
-        app.state::<AppState>().install_input_runtime(input_runtime);
+    if !state.telemetry_worker_running() && telemetry::runtime::start(app.clone()).is_err() {
+        state.set_snapshot_unavailable();
+    }
+
+    if !state.input_runtime_installed() {
+        if let Ok(input_runtime) = InputRuntime::start(app.clone()) {
+            state.install_input_runtime(input_runtime);
+        }
     }
 }
 

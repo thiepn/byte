@@ -154,6 +154,8 @@ CPU and memory Activity events do not persist process attribution or process nam
 
 Phase 25 does not widen the existing anonymous input contract. No key identity, typed text, clipboard content, window title, mouse coordinates, or input history is stored.
 
+Fresh installs do not create the global-input hook runtime until onboarding is completed. If onboarding is intentionally reopened later, capture is disabled immediately and stays disabled until the existing runtime is reactivated by completing setup again.
+
 ## Unsafe/native code
 
 The Rust crate denies unsafe operations inside unsafe functions unless those operations are placed in explicit unsafe blocks.

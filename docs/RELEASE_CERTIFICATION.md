@@ -65,7 +65,9 @@ The portable ZIP must contain exactly one `Byte.exe`.
 
 The portable executable is extracted and started from an isolated roaming-app-data environment.
 
-Byte must remain alive for the observation window instead of crashing during:
+Certification requires **three consecutive launches** from that isolated environment. Each launch must remain alive for the observation window before the process is terminated and the next launch begins. A failure reports the signed/decimal exit status, captured process output, and matching Windows Application Error / Windows Error Reporting events when available.
+
+Byte must remain alive for every observation window instead of crashing during:
 
 - process startup
 - WebView2 initialization
@@ -73,7 +75,7 @@ Byte must remain alive for the observation window instead of crashing during:
 - local state creation
 - window/tray setup
 
-The process is terminated after the smoke window and all temporary test data is removed.
+Each process is terminated after its smoke window; after all three starts succeed, all temporary test data is removed.
 
 ### 5. Installer lifecycle certification
 

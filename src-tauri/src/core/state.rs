@@ -275,11 +275,38 @@ impl AppState {
             .inspect()
     }
 
+    pub fn telemetry_worker_running(&self) -> bool {
+        self.telemetry_worker
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .as_ref()
+            .map(|worker| !worker.is_finished())
+            .unwrap_or(false)
+    }
+
     pub fn install_telemetry_worker(&self, worker: JoinHandle<()>) {
         *self
             .telemetry_worker
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner()) = Some(worker);
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn fullscreen_worker_running(&self) -> bool {
+        self.fullscreen_worker
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .as_ref()
+            .map(|worker| !worker.is_finished())
+            .unwrap_or(false)
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn input_runtime_installed(&self) -> bool {
+        self.input_runtime
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .is_some()
     }
 
     #[cfg(target_os = "windows")]
