@@ -17,6 +17,10 @@
   let step = 0;
   let companion: CompanionPreferences = clone(preferences.companion);
   let app = clone(preferences.app);
+  // A fresh install should never opt itself into OS notifications. Existing
+  // installations never render onboarding, so their migrated preference is
+  // preserved.
+  app.notifications_enabled = false;
   let saving = false;
   let error = "";
 
@@ -102,6 +106,10 @@
         <label class="toggle-row">
           <span><strong>System monitoring</strong><small>Needed for system-health explanations.</small></span>
           <input type="checkbox" bind:checked={app.system_monitoring_enabled} />
+        </label>
+        <label class="toggle-row">
+          <span><strong>Smart notifications</strong><small>Optional Windows alerts for sustained, actionable system-health problems. You can change this later in Settings.</small></span>
+          <input type="checkbox" bind:checked={app.notifications_enabled} />
         </label>
       </section>
     {:else if step === 2}
