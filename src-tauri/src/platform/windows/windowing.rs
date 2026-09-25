@@ -81,6 +81,10 @@ pub fn show_main_window(app: &AppHandle) -> Result<(), ByteError> {
 }
 
 pub fn show_quick_panel(app: &AppHandle) -> Result<(), ByteError> {
+    if !app.state::<AppState>().app_preferences().onboarding_completed {
+        return show_main_window(app);
+    }
+
     if app.state::<AppState>().is_visibility_suppressed() {
         return Ok(());
     }
@@ -218,6 +222,12 @@ pub fn set_edge_anchor(app: &AppHandle, anchor: EdgeAnchor) -> Result<ByteConfig
 }
 
 pub fn begin_move_mode(app: &AppHandle) -> Result<WindowShellState, ByteError> {
+    if !app.state::<AppState>().app_preferences().onboarding_completed {
+        return Err(ByteError::Window(
+            "Complete Byte setup before entering Move Mode".into(),
+        ));
+    }
+
     if app.state::<AppState>().is_visibility_suppressed() {
         return Err(ByteError::Window(
             "Byte cannot enter Move Mode while desktop awareness is hiding it".into(),

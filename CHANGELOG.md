@@ -13,6 +13,7 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ### Fixed
 
+- Tray/Quick Panel actions can no longer bypass first-run setup: tray clicks return to onboarding, and Move Mode stays unavailable until onboarding completes.
 - Eliminated an intermittent startup race by deferring all configured WebViews until after `AppState` is managed; early frontend IPC can no longer abort Byte with Windows status `0xC0000409`.
 - Startup failures now exit with a diagnosable error instead of escalating through a top-level panic.
 
