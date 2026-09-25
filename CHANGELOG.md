@@ -4,6 +4,15 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ## [Unreleased]
 
+### Changed
+
+- Fresh installs now make Smart Notifications an explicit onboarding choice that defaults off, and native alerts remain suppressed until onboarding is complete.
+- Windows launch certification and maintenance smokes now capture process output, hexadecimal exit status, and matching Windows crash events when Byte exits unexpectedly.
+
+### Fixed
+
+- Startup failures now exit with a diagnosable error instead of escalating through a top-level panic.
+
 ## [0.1.0]
 
 ### Added
