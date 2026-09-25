@@ -434,14 +434,14 @@ mod tests {
         let path = temp.path().join("activity.json");
         let mut store = ActivityStore::load(path).expect("load");
 
-        let mut active = snapshot(1_000, false);
+        let mut active = snapshot(1_000);
         active.primary_issue = Some(issue());
         store.record(&active, true).expect("initial");
 
         let unavailable = SystemSnapshot::unavailable();
         store.record(&unavailable, true).expect("gap");
 
-        let recovered = snapshot(5_000, false);
+        let recovered = snapshot(5_000);
         store.record(&recovered, true).expect("recovered");
 
         assert!(store.events.iter().any(|event| {
