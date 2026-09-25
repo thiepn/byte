@@ -135,6 +135,11 @@ impl ActivityStore {
         }
     }
 
+    pub fn reset_observation_baseline(&mut self) {
+        self.previous = None;
+        self.last_trend_at = None;
+    }
+
     pub fn clear(&mut self) -> Result<ActivitySnapshot, ByteError> {
         let previous_events = self.events.clone();
         let previous_trends = self.trends.clone();
