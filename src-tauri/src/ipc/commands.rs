@@ -11,7 +11,7 @@ use crate::{
         AppDiagnosticsSnapshot, AppPreferences, ByteConfig, CollectionDiscoveryKind,
         CollectionSnapshot, CompanionPreferences, CompanionSize, DesktopAwarenessSnapshot,
         DisplayMode, EdgeAnchor, NotificationPermissionState, RecommendedActionKind,
-        SystemSnapshot, WindowShellState,
+        ReleaseChannel, SystemSnapshot, WindowShellState,
     },
     platform::windows::{actions, startup, windowing},
 };
@@ -140,8 +140,8 @@ pub fn clear_activity_history(state: State<'_, AppState>) -> Result<ActivitySnap
 }
 
 #[tauri::command]
-pub fn open_release_page() -> Result<(), ByteError> {
-    actions::open_release_page()
+pub fn open_release_page(channel: ReleaseChannel) -> Result<(), ByteError> {
+    actions::open_release_page(channel)
 }
 
 #[tauri::command]
