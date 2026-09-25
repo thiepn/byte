@@ -406,6 +406,14 @@ pub fn apply_companion_layout(
         .set_skip_taskbar(true)
         .map_err(|error| ByteError::Window(error.to_string()))?;
 
+    if !app.state::<AppState>().app_preferences().onboarding_completed {
+        window
+            .hide()
+            .map_err(|error| ByteError::Window(error.to_string()))?;
+        emit_companion_visibility(app, false);
+        return Ok(());
+    }
+
     if app.state::<AppState>().is_visibility_suppressed() {
         window
             .hide()
