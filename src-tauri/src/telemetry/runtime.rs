@@ -87,10 +87,12 @@ fn run_worker(app: AppHandle) {
             diagnostics = DiagnosticEngine::new();
             state.set_snapshot_unavailable();
             last_sample_at = None;
+            consecutive_sample_failures = 0;
         }
 
         let app_preferences = state.app_preferences();
         let interval = if !app_preferences.system_monitoring_enabled {
+            consecutive_sample_failures = 0;
             state.set_snapshot_unavailable();
             sampling_interval(lifecycle_after_wait, None, false)
         } else if let Ok(snapshot) = telemetry.sample_snapshot() {
