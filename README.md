@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–26 are implemented.
+Phases 1–27 are implemented.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -41,9 +41,26 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Phase 24 hardens accessibility and failure recovery: keyboard navigation and focus transfer, screen-reader selected/progress/error semantics, forced-colors support, 100–125% text-scale resilience without scaling companion pixel art, explicit unavailable-monitoring states, missing-asset preservation, display hot-unplug recovery, and non-fatal optional Windows integrations.
 - Phase 25 hardens security and privacy: per-window Tauri command ACLs, listen-only frontend event permissions, strict local CSP plus prototype freezing, backend allowlists for preference/customization payloads, bounded persisted-state reads, generic privacy-safe native notifications, non-persistent process attribution in Activity history, committed npm/Cargo lockfiles with frozen CI installs, exact security-sensitive Tauri pins, SHA-pinned CI actions, dependency audits, and Dependabot coverage.
 - Phase 26 makes Byte distributable: a current-user NSIS installer, stable `Byte.exe` binary naming, downgrade protection, WebView2 bootstrap recovery, uninstall cleanup for the HKCU startup entry, version/tag invariants, portable ZIP + release manifest + SHA-256 artifacts, real install/reinstall/uninstall packaging CI, optional Windows Authenticode signing, and tag-driven GitHub Releases.
+- Phase 27 certifies the actual downloadable binaries: staged-artifact SHA-256 validation, x64 PE/version checks, portable launch smoke testing, application-data preservation across reinstall/uninstall, machine-readable release certification, exact-main release candidates, and GitHub provenance attestations verified before tagged releases are published.
 - Activity persists only meaningful events locally; trend points are session-only and globally bounded.
 - Customization and personality are entirely local; there is no account, store, virtual currency, unlock timer, or cloud inventory.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
+
+## Download
+
+Official Windows builds are published from the [GitHub Releases](https://github.com/thiepn/byte/releases) page.
+
+- **Installer:** `Byte-vX.Y.Z-windows-x64-setup.exe` — recommended for normal use.
+- **Portable:** `Byte-vX.Y.Z-windows-x64-portable.zip` — contains the standalone `Byte.exe`.
+- Every certified release also includes `SHA256SUMS.txt`, `release-manifest.json`, and `release-certification.json`.
+- Installer and portable artifacts from tagged releases receive GitHub build-provenance attestations.
+
+To verify a downloaded installer:
+
+```powershell
+Get-FileHash .\Byte-vX.Y.Z-windows-x64-setup.exe -Algorithm SHA256
+gh attestation verify .\Byte-vX.Y.Z-windows-x64-setup.exe --repo thiepn/byte
+```
 
 ## Development
 
@@ -92,5 +109,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Accessibility & resilience](docs/ACCESSIBILITY_RESILIENCE.md)
 - [Security & privacy](docs/SECURITY_PRIVACY.md)
 - [Packaging & releases](docs/PACKAGING_RELEASE.md)
+- [Final release certification](docs/RELEASE_CERTIFICATION.md)
 
-Next: Phase 27 — Final Release Certification & Distribution.
+Next: Phase 28 — Post-Release Updates & Maintenance.

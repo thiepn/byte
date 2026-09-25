@@ -1,9 +1,15 @@
 name: Byte Packaging Certification
 
 on:
+  push:
+    branches: ["main"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
+
+concurrency:
+  group: byte-packaging-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -39,17 +45,34 @@ jobs:
         shell: pwsh
         run: ./scripts/stage-release.ps1
 
-      - name: Install, reinstall, and uninstall smoke test
+      - name: Verify staged release artifacts
+        shell: pwsh
+        run: ./scripts/verify-release-artifacts.ps1
+
+      - name: Portable launch smoke test
+        shell: pwsh
+        run: |
+          $portable = (Get-ChildItem "release-artifacts\*-portable.zip" -File | Select-Object -First 1).FullName
+          ./scripts/test-portable-launch.ps1 -Portable $portable
+
+      - name: Install, reinstall, data-preservation, and uninstall smoke test
         shell: pwsh
         run: |
           $installer = (Get-ChildItem "release-artifacts\*-setup.exe" -File | Select-Object -First 1).FullName
           ./scripts/test-windows-installer.ps1 -Installer $installer
 
-      - name: Upload packaged build
-        if: always()
+      - name: Finalize release certification
+        shell: pwsh
+        run: ./scripts/finalize-release-certification.ps1
+
+      - name: Verify certified release artifacts
+        shell: pwsh
+        run: ./scripts/verify-release-artifacts.ps1 -RequireCertification
+
+      - name: Upload certified release candidate
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: byte-windows-package-${{ github.sha }}
+          name: byte-release-candidate-${{ github.sha }}
           path: release-artifacts/
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14
