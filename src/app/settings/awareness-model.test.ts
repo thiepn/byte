@@ -12,7 +12,7 @@ describe("desktop awareness settings model", () => {
     expect(normalizeExcludedAppInput("C:\\Apps\\game.exe")).toBeNull();
   });
 
-  it("explains capture protection while active", () => {
+  it("describes capture protection as a Windows request", () => {
     expect(
       awarenessDetail({
         suppressed: false,
@@ -20,7 +20,7 @@ describe("desktop awareness settings model", () => {
         foreground_app: null,
         capture_exclusion_enabled: true,
       }),
-    ).toContain("capture exclusion is active");
+    ).toContain("capture exclusion is requested");
   });
 
   it("names excluded foreground apps without exposing paths", () => {
