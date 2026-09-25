@@ -43,6 +43,8 @@ See [INPUT_REACTIONS.md](INPUT_REACTIONS.md).
 
 The shell service owns one reusable transparent companion surface plus Quick Panel and main windows. It handles monitor selection, DPI-aware sizing, taskbar-aware work areas, normalized placement persistence, off-screen recovery, Move Mode, native dragging, click-through state, and tray-driven display modes.
 
+Byte also owns one session-scoped Windows activation event. The first process keeps that kernel object alive; a duplicate launch opens the same event, signals it, and exits. A lightweight listener in the existing process then reveals/focuses the already-created main window. This keeps single-instance behavior crash-clean without a stale lock file and makes relaunching Byte useful instead of silent.
+
 See [WINDOWING.md](WINDOWING.md).
 
 ## Character animation runtime

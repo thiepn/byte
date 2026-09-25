@@ -99,6 +99,16 @@ The tray menu provides:
 
 Left-clicking the tray icon opens the Quick Panel.
 
+## Second launch behavior
+
+Byte uses one session-scoped Windows auto-reset event as both the single-instance marker and activation signal.
+
+- The first process creates and owns the event for the lifetime of the Tauri event loop.
+- A second launch detects the existing event, signals it, and exits before creating windows, hooks, telemetry, or tray state.
+- The existing process receives the signal and shows/unminimizes/focuses the main Byte window.
+- If a duplicate launch happens while the first process is still starting, the event remains signaled until the listener is installed, so the activation request is not lost.
+- Process crashes cannot leave a stale lock artifact because Windows destroys the named event after the final handle closes.
+
 Explicit Quit stops and joins the telemetry worker before exiting.
 
 ## Configuration migration

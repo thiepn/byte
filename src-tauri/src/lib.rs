@@ -14,6 +14,7 @@ use models::DisplayMode;
 use platform::windows::{
     fullscreen, input::InputRuntime, single_instance::SingleInstanceGuard, startup, windowing,
 };
+use std::sync::{Arc, Mutex};
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -154,18 +155,20 @@ fn create_configured_windows(app: &tauri::App) -> tauri::Result<()> {
 }
 
 pub fn run() {
-    // Keep one Byte process per interactive Windows session. If the named
-    // mutex API itself is unavailable, fail open so an OS integration problem
-    // does not prevent Byte from starting.
-    let _instance_guard = match SingleInstanceGuard::acquire() {
-        Ok(Some(guard)) => Some(guard),
+    // Keep one Byte process per interactive Windows session. A duplicate launch
+    // signals the session-scoped activation event and exits; the first process
+    // then reveals/focuses its existing main window. If this optional Windows
+    // primitive itself is unavailable, fail open rather than blocking startup.
+    let instance_guard = match SingleInstanceGuard::acquire() {
+        Ok(Some(guard)) => Some(Arc::new(Mutex::new(guard))),
         Ok(None) => return,
         Err(_) => None,
     };
+    let activation_guard = instance_guard.clone();
 
-    tauri::Builder::default()
+    let run_result = tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
-        .setup(|app| {
+        .setup(move |app| {
             let app_config_dir = app.path().app_config_dir()?;
             let config = ConfigStore::load(app_config_dir.join("config.json"))?;
             let activity = ActivityStore::load(app_config_dir.join("activity.json"))?;
@@ -184,6 +187,13 @@ pub fn run() {
             // available to IPC commands. Configured windows use create:false
             // and are materialized here from their canonical WindowConfig.
             create_configured_windows(app)?;
+
+            if let Some(guard) = activation_guard.as_ref() {
+                let mut guard = guard
+                    .lock()
+                    .unwrap_or_else(|poisoned| poisoned.into_inner());
+                let _ = guard.start_activation_listener(app.handle().clone());
+            }
 
             // Native window state and startup registration are safe to prepare
             // during onboarding. Background monitoring/input workers are not.
@@ -248,12 +258,16 @@ pub fn run() {
             ipc::commands::hide_companion,
             ipc::commands::quit_byte
         ])
-        .run(tauri::generate_context!())
-        .unwrap_or_else(|error| {
-            // A startup integration failure should remain an ordinary,
-            // diagnosable process failure. Panicking here can turn a useful
-            // Tauri error into an opaque Windows fast-fail status.
-            eprintln!("Byte failed to start: {error}");
-            std::process::exit(1);
-        });
+        .run(tauri::generate_context!());
+
+    // Keep the named event alive until Tauri's event loop has fully stopped.
+    drop(instance_guard);
+
+    run_result.unwrap_or_else(|error| {
+        // A startup integration failure should remain an ordinary,
+        // diagnosable process failure. Panicking here can turn a useful
+        // Tauri error into an opaque Windows fast-fail status.
+        eprintln!("Byte failed to start: {error}");
+        std::process::exit(1);
+    });
 }
