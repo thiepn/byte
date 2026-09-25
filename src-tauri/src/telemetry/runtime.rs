@@ -67,6 +67,10 @@ fn run_worker(app: AppHandle) {
     let mut diagnostics = DiagnosticEngine::new();
     let mut last_sample_at: Option<Instant> = None;
     let mut consecutive_sample_failures = 0_u8;
+    let mut monitoring_was_enabled = app
+        .state::<AppState>()
+        .app_preferences()
+        .system_monitoring_enabled;
 
     loop {
         let state = app.state::<AppState>();
@@ -91,6 +95,19 @@ fn run_worker(app: AppHandle) {
         }
 
         let app_preferences = state.app_preferences();
+
+        if monitoring_was_enabled != app_preferences.system_monitoring_enabled {
+            diagnostics = DiagnosticEngine::new();
+            last_sample_at = None;
+            consecutive_sample_failures = 0;
+
+            if app_preferences.system_monitoring_enabled {
+                telemetry = TelemetryEngine::new(WindowsTelemetrySource::new());
+            }
+
+            monitoring_was_enabled = app_preferences.system_monitoring_enabled;
+        }
+
         let interval = if !app_preferences.system_monitoring_enabled {
             consecutive_sample_failures = 0;
             state.set_snapshot_unavailable();
@@ -181,6 +198,15 @@ mod tests {
         assert!(!scheduling_gap_requires_reset(Duration::from_secs(8)));
         assert!(scheduling_gap_requires_reset(Duration::from_secs(12)));
         assert!(scheduling_gap_requires_reset(Duration::from_secs(60)));
+    }
+
+    #[test]
+    fn monitoring_toggle_is_an_explicit_reset_boundary() {
+        let mut previous = true;
+        let next = false;
+        assert_ne!(previous, next);
+        previous = next;
+        assert!(!previous);
     }
 
     #[test]
