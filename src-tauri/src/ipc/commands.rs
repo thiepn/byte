@@ -76,15 +76,25 @@ pub fn update_app_preferences(
     )?;
 
     let previous = state.app_preferences();
-    if previous.launch_at_startup != preferences.launch_at_startup {
+    let startup_changed = previous.launch_at_startup != preferences.launch_at_startup;
+    if startup_changed {
         startup::apply(preferences.launch_at_startup)?;
     }
 
-    let config = state
+    let config = match state
         .config
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
-        .update_app(preferences.clone())?;
+        .update_app(preferences.clone())
+    {
+        Ok(config) => config,
+        Err(error) => {
+            if startup_changed {
+                let _ = startup::apply(previous.launch_at_startup);
+            }
+            return Err(error);
+        }
+    };
 
     if !preferences.system_monitoring_enabled {
         state.set_snapshot_unavailable();
