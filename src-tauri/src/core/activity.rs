@@ -165,15 +165,24 @@ impl ActivityStore {
         snapshot: &SystemSnapshot,
         history_enabled: bool,
     ) -> Result<(), ByteError> {
+        if !history_enabled {
+            // Do not let diagnostics observed while history is disabled become
+            // the baseline for future persisted events after the user opts in
+            // again.
+            self.previous = None;
+            self.last_trend_at = None;
+            return Ok(());
+        }
+
         let ready = snapshot.cpu.state != ResourceState::Unknown
             || snapshot.memory.state != ResourceState::Unknown;
 
-        if ready && history_enabled {
+        if ready {
             self.record_trend(snapshot);
         }
 
         let mut changed = false;
-        if ready && history_enabled {
+        if ready {
             if let Some(previous) = self.previous.clone().filter(snapshot_ready) {
                 changed |= self.record_issue_changes(&previous, snapshot);
                 changed |= self.record_power_change(&previous, snapshot);
@@ -529,6 +538,24 @@ mod tests {
         store.record(&snapshot(15_000), true).expect("interval");
 
         assert_eq!(store.snapshot().trends.len(), 2);
+    }
+
+    #[test]
+    fn re_enabling_history_does_not_record_disabled_period_transitions() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let mut store = ActivityStore::load(temp.path().join("activity.json")).expect("load");
+
+        let mut hidden_issue = snapshot(1_000);
+        hidden_issue.primary_issue = Some(issue());
+        store.record(&hidden_issue, false).expect("disabled issue");
+
+        let resolved_after_enable = snapshot(20_000);
+        store
+            .record(&resolved_after_enable, true)
+            .expect("reenabled baseline");
+
+        assert!(store.snapshot().events.is_empty());
+        assert_eq!(store.snapshot().trends.len(), 1);
     }
 
     #[test]
