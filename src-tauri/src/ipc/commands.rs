@@ -97,7 +97,9 @@ pub fn update_app_preferences(
     };
 
     if !preferences.system_monitoring_enabled {
-        state.set_snapshot_unavailable();
+        let unavailable = SystemSnapshot::unavailable();
+        state.replace_snapshot(unavailable.clone());
+        let _ = app.emit_to("companion", "byte://snapshot-updated", unavailable);
     }
 
     let _ = windowing::apply_capture_affinity(&app, preferences.exclude_from_capture);
