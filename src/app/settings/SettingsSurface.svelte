@@ -198,11 +198,34 @@
   }
 
   onMount(() => {
+    let awarenessTimer: number | null = null;
+
+    const stopAwarenessPolling = (): void => {
+      if (awarenessTimer == null) return;
+      window.clearInterval(awarenessTimer);
+      awarenessTimer = null;
+    };
+
+    const startAwarenessPolling = (): void => {
+      if (awarenessTimer != null) return;
+      void refreshAwareness();
+      awarenessTimer = window.setInterval(() => void refreshAwareness(), 1_500);
+    };
+
     void getVersion().then((value) => (version = value)).catch(() => {});
     void refreshNotificationPermission();
-    void refreshAwareness();
-    const awarenessTimer = window.setInterval(() => void refreshAwareness(), 1_500);
-    return () => window.clearInterval(awarenessTimer);
+
+    if (document.hasFocus()) startAwarenessPolling();
+    else void refreshAwareness();
+
+    window.addEventListener("focus", startAwarenessPolling);
+    window.addEventListener("blur", stopAwarenessPolling);
+
+    return () => {
+      stopAwarenessPolling();
+      window.removeEventListener("focus", startAwarenessPolling);
+      window.removeEventListener("blur", stopAwarenessPolling);
+    };
   });
 </script>
 
@@ -213,10 +236,10 @@
       <h1>Settings</h1>
       <p class="lede">Control how Byte starts, monitors, notifies, behaves in fullscreen, and adapts to accessibility preferences. Everything here is stored locally.</p>
     </div>
-    <span class="save-state">{saving || pending ? "Saving…" : "Saved locally"}</span>
+    <span class="save-state" aria-live="polite" aria-atomic="true">{saving || pending ? "Saving…" : "Saved locally"}</span>
   </div>
 
-  {#if saveError}<div class="notice" role="status">{saveError}</div>{/if}
+  {#if saveError}<div class="notice" role="alert">{saveError}</div>{/if}
 
   <div class="settings-sections">
     <section class="settings-group">
@@ -254,6 +277,7 @@
           <input
             type="text"
             maxlength="96"
+            aria-label="Foreground app executable name"
             placeholder="e.g. obs64 or powerpnt"
             bind:value={excludedAppInput}
             onkeydown={(event) => {
@@ -265,7 +289,7 @@
           />
           <button onclick={addExcludedApp}>Add app</button>
         </div>
-        {#if exclusionMessage}<small class="exclusion-message">{exclusionMessage}</small>{/if}
+        {#if exclusionMessage}<small class="exclusion-message" role="alert">{exclusionMessage}</small>{/if}
         {#if draft.hidden_foreground_apps.length > 0}
           <div class="excluded-chips">
             {#each draft.hidden_foreground_apps as appName}
@@ -366,7 +390,7 @@
       <div class="group-heading"><h2>Accessibility</h2><p>These settings apply across Byte's windows and companion.</p></div>
       <label class="setting-row"><span><strong>Reduce motion</strong><small>Forces reduced animation even when Windows itself does not request reduced motion.</small></span><input type="checkbox" checked={draft.reduce_motion} onchange={(event) => change((next) => (next.reduce_motion = event.currentTarget.checked))} /></label>
       <label class="setting-row"><span><strong>High contrast</strong><small>Strengthens UI contrast and borders without changing diagnostic meaning.</small></span><input type="checkbox" checked={draft.high_contrast} onchange={(event) => change((next) => (next.high_contrast = event.currentTarget.checked))} /></label>
-      <div class="setting-row"><span><strong>Text scale</strong><small>Scales Byte's application interface. Companion pixel art keeps its authored proportions.</small></span><div class="segmented">{#each [100,110,125] as scale}<button class:selected={draft.text_scale_percent === scale} onclick={() => change((next) => (next.text_scale_percent = scale as 100 | 110 | 125))}>{scale}%</button>{/each}</div></div>
+      <div class="setting-row"><span><strong>Text scale</strong><small>Scales Byte's application interface. Companion pixel art keeps its authored proportions.</small></span><div class="segmented" aria-label="Text scale">{#each [100,110,125] as scale}<button class:selected={draft.text_scale_percent === scale} aria-pressed={draft.text_scale_percent === scale} onclick={() => change((next) => (next.text_scale_percent = scale as 100 | 110 | 125))}>{scale}%</button>{/each}</div></div>
     </section>
 
     <section class="settings-group">
