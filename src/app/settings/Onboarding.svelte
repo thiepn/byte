@@ -3,6 +3,7 @@
   import { updateAppPreferences, updateCompanionPreferences } from "../../lib/ipc/client";
   import { loadCharacterManifest } from "../../companion/assets/registry";
   import { CHARACTER_CHOICES, HABITAT_CHOICES } from "../../companion/customization/catalog";
+  import { createOnboardingAppDraft } from "./onboarding-model";
 
   export let preferences: ByteConfig;
   export let rerun = false;
@@ -18,13 +19,7 @@
 
   let step = 0;
   let companion: CompanionPreferences = clone(preferences.companion);
-  let app = clone(preferences.app);
-  // Only a genuine first run defaults native notifications off. Re-running
-  // onboarding is a UI-only tutorial mode and preserves the user's saved
-  // notification preference unless they explicitly change it in step 2.
-  if (!preferences.app.onboarding_completed) {
-    app.notifications_enabled = false;
-  }
+  let app = createOnboardingAppDraft(preferences.app);
   let saving = false;
   let error = "";
 
