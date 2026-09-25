@@ -13,6 +13,11 @@ on:
         description: "Published stable release being hotfixed (for example v1.2.3)"
         required: true
         type: string
+      source_ref:
+        description: "Certified branch or commit containing the patch-forward fix"
+        required: true
+        default: "main"
+        type: string
       hotfix_tag:
         description: "New higher patch tag already reflected in source manifests (for example v1.2.4)"
         required: true
@@ -60,10 +65,10 @@ jobs:
       HOTFIX_TAG: ${{ inputs.hotfix_tag }}
 
     steps:
-      - name: Checkout main
+      - name: Checkout hotfix source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: main
+          ref: ${{ inputs.source_ref }}
           fetch-depth: 0
 
       - name: Node
@@ -94,20 +99,20 @@ jobs:
           git rev-parse "$env:BASE_TAG^{commit}" *> $null
           if ($LASTEXITCODE -ne 0) { throw "Base tag does not exist: $env:BASE_TAG" }
           git merge-base --is-ancestor $env:BASE_TAG HEAD
-          if ($LASTEXITCODE -ne 0) { throw "main is not descended from the selected base release." }
+          if ($LASTEXITCODE -ne 0) { throw "The selected hotfix source is not descended from the base release." }
           git show-ref --verify --quiet "refs/tags/$env:HOTFIX_TAG"
           if ($LASTEXITCODE -eq 0) { throw "Hotfix tag already exists: $env:HOTFIX_TAG" }
 
-      - name: Require certified main release candidate
+      - name: Require certified source release candidate
         shell: pwsh
         run: |
           $sha = (git rev-parse HEAD).Trim()
-          $runs = gh run list --workflow "Byte Packaging Certification" --commit $sha --event push --limit 10 --json status,conclusion,databaseId | ConvertFrom-Json
+          $runs = gh run list --workflow "Byte Packaging Certification" --commit $sha --limit 20 --json status,conclusion,databaseId,event | ConvertFrom-Json
           $certified = $runs | Where-Object { $_.status -eq "completed" -and $_.conclusion -eq "success" } | Select-Object -First 1
           if ($null -eq $certified) {
-            throw "The exact main commit does not have a successful push-triggered Packaging Certification run."
+            throw "The exact hotfix source commit does not have a successful Packaging Certification run."
           }
-          Write-Host "Using certified main candidate from run $($certified.databaseId)."
+          Write-Host "Using certified source candidate from run $($certified.databaseId) ($($certified.event))."
 
       - name: Extract hotfix release notes
         shell: pwsh

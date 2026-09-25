@@ -1,7 +1,7 @@
 use crate::{
     core::{
         error::ByteError,
-        persistence::{read_bounded_text, BoundedText},
+        persistence::{quarantine_corrupt_file, read_bounded_text, BoundedText},
     },
     models::{IssueCategory, ResourceState, SystemIssue, SystemSnapshot},
 };
@@ -86,11 +86,12 @@ impl ActivityStore {
         }
 
         let events = match read_bounded_text(&path, MAX_ACTIVITY_FILE_BYTES)? {
-            BoundedText::Present(raw) => serde_json::from_str::<PersistedActivity>(&raw)
-                .ok()
-                .filter(|value| value.schema_version == ACTIVITY_SCHEMA_VERSION)
-                .map(|value| {
-                    value
+            BoundedText::Present(raw) => {
+                match serde_json::from_str::<PersistedActivity>(&raw)
+                    .ok()
+                    .filter(|value| value.schema_version == ACTIVITY_SCHEMA_VERSION)
+                {
+                    Some(value) => value
                         .events
                         .into_iter()
                         .rev()
@@ -98,10 +99,18 @@ impl ActivityStore {
                         .collect::<Vec<_>>()
                         .into_iter()
                         .rev()
-                        .collect::<VecDeque<_>>()
-                })
-                .unwrap_or_default(),
-            BoundedText::Invalid | BoundedText::Missing => VecDeque::new(),
+                        .collect::<VecDeque<_>>(),
+                    None => {
+                        let _ = quarantine_corrupt_file(&path);
+                        VecDeque::new()
+                    }
+                }
+            }
+            BoundedText::Invalid => {
+                let _ = quarantine_corrupt_file(&path);
+                VecDeque::new()
+            }
+            BoundedText::Missing => VecDeque::new(),
         };
 
         let next_id = events
@@ -126,13 +135,33 @@ impl ActivityStore {
         }
     }
 
+    pub fn reset_observation_baseline(&mut self) {
+        self.previous = None;
+        self.last_trend_at = None;
+    }
+
     pub fn clear(&mut self) -> Result<ActivitySnapshot, ByteError> {
+        let previous_events = self.events.clone();
+        let previous_trends = self.trends.clone();
+        let previous_snapshot = self.previous.clone();
+        let previous_last_trend_at = self.last_trend_at;
+        let previous_next_id = self.next_id;
+
         self.events.clear();
         self.trends.clear();
         self.previous = None;
         self.last_trend_at = None;
         self.next_id = 1;
-        self.save()?;
+
+        if let Err(error) = self.save() {
+            self.events = previous_events;
+            self.trends = previous_trends;
+            self.previous = previous_snapshot;
+            self.last_trend_at = previous_last_trend_at;
+            self.next_id = previous_next_id;
+            return Err(error);
+        }
+
         Ok(self.snapshot())
     }
 
@@ -141,25 +170,51 @@ impl ActivityStore {
         snapshot: &SystemSnapshot,
         history_enabled: bool,
     ) -> Result<(), ByteError> {
+        if !history_enabled {
+            // Do not let diagnostics observed while history is disabled become
+            // the baseline for future persisted events after the user opts in
+            // again.
+            self.previous = None;
+            self.last_trend_at = None;
+            return Ok(());
+        }
+
         let ready = snapshot.cpu.state != ResourceState::Unknown
             || snapshot.memory.state != ResourceState::Unknown;
 
-        if ready && history_enabled {
+        if ready {
             self.record_trend(snapshot);
         }
 
+        let previous_events = self.events.clone();
+        let previous_snapshot = self.previous.clone();
+        let previous_next_id = self.next_id;
+
         let mut changed = false;
-        if ready && history_enabled {
+        if ready {
             if let Some(previous) = self.previous.clone().filter(snapshot_ready) {
                 changed |= self.record_issue_changes(&previous, snapshot);
                 changed |= self.record_power_change(&previous, snapshot);
             }
         }
 
-        self.previous = Some(snapshot.clone());
+        // An unavailable snapshot is a data gap, not evidence that the
+        // previous issue/power state changed. Preserve the last valid sample so
+        // the next real observation can still record the eventual transition.
+        if ready {
+            self.previous = Some(snapshot.clone());
+        }
 
         if changed {
-            self.save()?;
+            if let Err(error) = self.save() {
+                // The caller intentionally treats history persistence as
+                // best-effort for telemetry. Roll back the event transition and
+                // comparison baseline so a later sample can retry it.
+                self.events = previous_events;
+                self.previous = previous_snapshot;
+                self.next_id = previous_next_id;
+                return Err(error);
+            }
         }
 
         Ok(())
@@ -400,6 +455,40 @@ mod tests {
     }
 
     #[test]
+    fn unavailable_gap_preserves_previous_valid_snapshot_for_resolution() {
+        let temp = tempfile::tempdir().expect("temp");
+        let path = temp.path().join("activity.json");
+        let mut store = ActivityStore::load(path).expect("load");
+
+        let mut active = snapshot(1_000);
+        active.primary_issue = Some(issue());
+        store.record(&active, true).expect("initial");
+
+        let unavailable = SystemSnapshot::unavailable();
+        store.record(&unavailable, true).expect("gap");
+
+        let recovered = snapshot(5_000);
+        store.record(&recovered, true).expect("recovered");
+
+        assert!(store.events.iter().any(|event| {
+            event.kind == ActivityEventKind::IssueResolved && event.title.starts_with("Resolved:")
+        }));
+    }
+
+    #[test]
+    fn corrupt_activity_history_is_quarantined_before_recovery() {
+        let temp = tempfile::tempdir().expect("temp");
+        let path = temp.path().join("activity.json");
+        fs::write(&path, "{ invalid").expect("write");
+
+        let store = ActivityStore::load(path.clone()).expect("recover");
+
+        assert!(!path.exists());
+        assert!(path.with_extension("corrupt.json").exists());
+        assert!(store.events.is_empty());
+    }
+
+    #[test]
     fn persisted_cpu_and_memory_events_omit_process_names() {
         let mut current = issue();
         current.category = IssueCategory::Cpu;
@@ -414,6 +503,28 @@ mod tests {
         let detail = persisted_issue_detail(&current);
         assert!(!detail.contains("SensitiveApp"));
         assert!(detail.contains("not stored"));
+    }
+
+    #[test]
+    fn failed_event_persistence_rolls_back_transition_for_retry() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let file_path = temp.path().join("activity.json");
+        let mut store = ActivityStore::load(file_path).expect("load");
+
+        store.record(&snapshot(1_000), true).expect("baseline");
+        store.path = temp.path().to_path_buf();
+
+        let mut pressured = snapshot(20_000);
+        pressured.primary_issue = Some(issue());
+
+        assert!(store.record(&pressured, true).is_err());
+        assert!(store.events.is_empty());
+        assert!(store
+            .previous
+            .as_ref()
+            .and_then(|value| value.primary_issue.as_ref())
+            .is_none());
+        assert_eq!(store.next_id, 1);
     }
 
     #[test]
@@ -465,6 +576,24 @@ mod tests {
         store.record(&snapshot(15_000), true).expect("interval");
 
         assert_eq!(store.snapshot().trends.len(), 2);
+    }
+
+    #[test]
+    fn re_enabling_history_does_not_record_disabled_period_transitions() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let mut store = ActivityStore::load(temp.path().join("activity.json")).expect("load");
+
+        let mut hidden_issue = snapshot(1_000);
+        hidden_issue.primary_issue = Some(issue());
+        store.record(&hidden_issue, false).expect("disabled issue");
+
+        let resolved_after_enable = snapshot(20_000);
+        store
+            .record(&resolved_after_enable, true)
+            .expect("reenabled baseline");
+
+        assert!(store.snapshot().events.is_empty());
+        assert_eq!(store.snapshot().trends.len(), 1);
     }
 
     #[test]

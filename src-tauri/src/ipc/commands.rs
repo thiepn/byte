@@ -76,21 +76,45 @@ pub fn update_app_preferences(
     )?;
 
     let previous = state.app_preferences();
-    if previous.launch_at_startup != preferences.launch_at_startup {
+    let startup_changed = previous.launch_at_startup != preferences.launch_at_startup;
+    if startup_changed {
         startup::apply(preferences.launch_at_startup)?;
     }
 
-    let config = state
+    let config = match state
         .config
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
-        .update_app(preferences.clone())?;
+        .update_app(preferences.clone())
+    {
+        Ok(config) => config,
+        Err(error) => {
+            if startup_changed {
+                let _ = startup::apply(previous.launch_at_startup);
+            }
+            return Err(error);
+        }
+    };
 
     if !preferences.system_monitoring_enabled {
-        state.set_snapshot_unavailable();
+        let unavailable = SystemSnapshot::unavailable();
+        state.replace_snapshot(unavailable.clone());
+        let _ = app.emit_to("companion", "byte://snapshot-updated", unavailable);
+    }
+
+    if previous.activity_history_enabled && !preferences.activity_history_enabled {
+        state.reset_activity_observation_baseline();
+    }
+    if previous.system_monitoring_enabled && !preferences.system_monitoring_enabled {
+        state.reset_activity_observation_baseline();
     }
 
     let _ = windowing::apply_capture_affinity(&app, preferences.exclude_from_capture);
+
+    if !previous.onboarding_completed && preferences.onboarding_completed {
+        let _ = windowing::apply_companion_layout(&app, &config.companion);
+    }
+
     state.lifecycle.wake_waiters();
 
     let _ = app.emit("byte://app-preferences-changed", preferences);
@@ -153,13 +177,31 @@ pub fn update_companion_preferences(
     validate_companion_preferences(&preferences)?;
     state.validate_collection_preferences(&preferences)?;
 
+    let previous = state
+        .config
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .snapshot()
+        .companion;
+
     let config = state
         .config
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
         .update_companion(preferences)?;
 
-    windowing::apply_companion_layout(&app, &config.companion)?;
+    if let Err(error) = windowing::apply_companion_layout(&app, &config.companion) {
+        let rollback = state
+            .config
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .update_companion(previous.clone());
+        if rollback.is_ok() {
+            let _ = windowing::apply_companion_layout(&app, &previous);
+        }
+        return Err(error);
+    }
+
     let _ = app.emit_to(
         "companion",
         "byte://companion-preferences-changed",

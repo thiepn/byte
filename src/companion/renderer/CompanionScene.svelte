@@ -99,6 +99,9 @@
     pressed = true;
     try {
       await showQuickPanel();
+    } catch {
+      // A transient native/window failure should not become an unhandled
+      // promise rejection or take down the companion renderer.
     } finally {
       window.setTimeout(() => (pressed = false), 120);
     }
@@ -121,6 +124,8 @@
           animator,
         );
       }
+    } catch {
+      // Keep Move Mode active so the user can retry or press Done.
     } finally {
       dragging = false;
     }
@@ -128,9 +133,14 @@
 
   async function finishMove(event: MouseEvent): Promise<void> {
     event.stopPropagation();
-    const shell = await finishMoveMode();
-    moveMode = shell.move_mode;
-    suppressClickUntil = Date.now() + 250;
+    try {
+      const shell = await finishMoveMode();
+      moveMode = shell.move_mode;
+      suppressClickUntil = Date.now() + 250;
+    } catch {
+      // Keep the current UI state. Native finish_move_mode clears its latch
+      // before attempting placement recovery, and lifecycle events can resync.
+    }
   }
 
   function handleKeydown(event: KeyboardEvent): void {
@@ -169,9 +179,9 @@
     if (frame.behavior !== lastObservedBehavior) {
       lastObservedBehavior = frame.behavior;
       if (frame.source === "idle" && frame.behavior === "rare_a") {
-        void recordCollectionDiscovery("RARE_A");
+        void recordCollectionDiscovery("RARE_A").catch(() => {});
       } else if (frame.source === "idle" && frame.behavior === "rare_b") {
-        void recordCollectionDiscovery("RARE_B");
+        void recordCollectionDiscovery("RARE_B").catch(() => {});
       }
     }
     positionCharacter(frame);
@@ -383,45 +393,50 @@
       }
     };
 
-    void getWindowShellState().then((shell) => {
-      if (!disposed) moveMode = shell.move_mode;
-    });
+    void getWindowShellState()
+      .then((shell) => {
+        if (!disposed) moveMode = shell.move_mode;
+      })
+      .catch(() => {});
+
+    const register = <T,>(
+      eventName: string,
+      handler: (payload: T) => void,
+    ): void => {
+      void listen<T>(eventName, (event) => handler(event.payload))
+        .then((unlisten: UnlistenFn) => {
+          if (disposed) unlisten();
+          else cleanups.push(unlisten);
+        })
+        .catch(() => {});
+    };
 
     if (isTauri()) {
-      void listen<boolean>("byte://move-mode-changed", (event) => {
-        if (!disposed) moveMode = event.payload;
-      }).then((unlisten: UnlistenFn) => {
-        if (disposed) unlisten();
-        else cleanups.push(unlisten);
+      register<boolean>("byte://move-mode-changed", (payload) => {
+        if (!disposed) moveMode = payload;
       });
 
-      void listen<DisplayMode>("byte://display-mode-changed", (event) => {
+      register<DisplayMode>("byte://display-mode-changed", (payload) => {
         if (disposed) return;
-        displayMode = event.payload;
+        displayMode = payload;
         habitatState = { ...habitatState, displayMode };
         if (animator) positionCharacter(animator.frame());
-      }).then((unlisten: UnlistenFn) => {
-        if (disposed) unlisten();
-        else cleanups.push(unlisten);
       });
 
-      void listen<boolean>("byte://companion-visibility-changed", (event) => {
+      register<boolean>("byte://companion-visibility-changed", (payload) => {
         if (disposed) return;
-        companionVisible = event.payload;
+        companionVisible = payload;
         if (companionVisible && !lifecycleSuspended) {
           startAnimation();
           void refreshSystemState();
         } else {
           stopAnimation();
         }
-      }).then((unlisten: UnlistenFn) => {
-        if (disposed) unlisten();
-        else cleanups.push(unlisten);
       });
 
-      void listen<LifecycleState>("byte://lifecycle-changed", (event) => {
+      register<LifecycleState>("byte://lifecycle-changed", (payload) => {
         if (disposed) return;
-        const suspended = lifecycleSuspendsVisuals(event.payload);
+        const suspended = lifecycleSuspendsVisuals(payload);
         if (suspended === lifecycleSuspended) return;
 
         lifecycleSuspended = suspended;
@@ -431,63 +446,47 @@
           startAnimation();
           void refreshSystemState();
         }
-      }).then((unlisten: UnlistenFn) => {
-        if (disposed) unlisten();
-        else cleanups.push(unlisten);
       });
 
-      void listen<SystemSnapshot>("byte://snapshot-updated", (event) => {
+      register<SystemSnapshot>("byte://snapshot-updated", (payload) => {
         if (!disposed && !lifecycleSuspended) {
-          applySystemSnapshot(event.payload);
+          applySystemSnapshot(payload);
         }
-      }).then((unlisten: UnlistenFn) => {
-        if (disposed) unlisten();
-        else cleanups.push(unlisten);
       });
 
-      void listen<AppPreferences>("byte://app-preferences-changed", (event) => {
+      register<AppPreferences>("byte://app-preferences-changed", (payload) => {
         if (disposed) return;
-        forceReducedMotion = event.payload.reduce_motion;
+        forceReducedMotion = payload.reduce_motion;
         const reduced = forceReducedMotion || (mediaQuery?.matches ?? false);
         animator?.setReducedMotion(reduced);
         habitatState = { ...habitatState, reducedMotion: reduced };
-      }).then((unlisten: UnlistenFn) => {
-        if (disposed) unlisten();
-        else cleanups.push(unlisten);
       });
 
-      void listen<CompanionPreferences>(
+      register<CompanionPreferences>(
         "byte://companion-preferences-changed",
-        (event) => {
-          if (!disposed) void applyVisualPreferences(event.payload);
+        (payload) => {
+          if (disposed) return;
+          void applyVisualPreferences(payload).catch(() => {
+            if (!disposed) runtimeError = true;
+          });
         },
-      ).then((unlisten: UnlistenFn) => {
-        if (disposed) unlisten();
-        else cleanups.push(unlisten);
-      });
+      );
 
-      void listen<CollectionSnapshot>("byte://collection-updated", () => {
+      register<CollectionSnapshot>("byte://collection-updated", () => {
         if (!disposed && !lifecycleSuspended && animator) {
           animator.requestBehavior({
             behavior: "happy",
             source: "personality",
           });
         }
-      }).then((unlisten: UnlistenFn) => {
-        if (disposed) unlisten();
-        else cleanups.push(unlisten);
       });
 
-      void listen<InputReactionEvent>("byte://input-reaction", (event) => {
+      register<InputReactionEvent>("byte://input-reaction", (payload) => {
         if (!disposed && !lifecycleSuspended && animator) {
-          applyInputReaction(animator, event.payload, personalityDirector ?? undefined);
+          applyInputReaction(animator, payload, personalityDirector ?? undefined);
         }
-      }).then((unlisten: UnlistenFn) => {
-        if (disposed) unlisten();
-        else cleanups.push(unlisten);
       });
     }
-
     void initialize();
 
     return () => {

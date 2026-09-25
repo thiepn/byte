@@ -160,9 +160,16 @@
     }
   }
 
+  function selectView(next: View): void {
+    view = next;
+    if (next === "apps" && !appDiagnostics) void refreshApps();
+    window.requestAnimationFrame(() => {
+      document.getElementById("main-content")?.focus();
+    });
+  }
+
   function openApps(): void {
-    view = "apps";
-    if (!appDiagnostics) void refreshApps();
+    selectView("apps");
   }
 
   function sortedApps(): AppUsageSummary[] {
@@ -382,28 +389,29 @@
     {preferences}
     onComplete={(next) => {
       preferences = next;
-      view = "overview";
+      selectView("overview");
     }}
   />
 {:else}
+<a class="skip-link" href="#main-content">Skip to main content</a>
 <div class="app-shell">
   <aside class="sidebar" aria-label="Byte navigation">
     <div class="brand">
       <div class="brand-mark" aria-hidden="true">B</div>
       <div><strong>Byte</strong><span>Local companion</span></div>
     </div>
-    <nav>
-      <button class:active={view === "overview"} onclick={() => (view = "overview")}>Overview</button>
-      <button class:active={view === "activity"} onclick={() => (view = "activity")}>Activity</button>
-      <button class:active={view === "apps"} onclick={openApps}>Apps</button>
-      <button class:active={view === "customize"} onclick={() => (view = "customize")}>Customize</button>
+    <nav aria-label="Main sections">
+      <button class:active={view === "overview"} aria-current={view === "overview" ? "page" : undefined} onclick={() => selectView("overview")}>Overview</button>
+      <button class:active={view === "activity"} aria-current={view === "activity" ? "page" : undefined} onclick={() => selectView("activity")}>Activity</button>
+      <button class:active={view === "apps"} aria-current={view === "apps" ? "page" : undefined} onclick={openApps}>Apps</button>
+      <button class:active={view === "customize"} aria-current={view === "customize" ? "page" : undefined} onclick={() => selectView("customize")}>Customize</button>
     </nav>
-    <button class:active={view === "settings"} class="settings-link" onclick={() => (view = "settings")}>Settings</button>
+    <button class:active={view === "settings"} aria-current={view === "settings" ? "page" : undefined} class="settings-link" onclick={() => selectView("settings")}>Settings</button>
   </aside>
 
-  <main class="content">
+  <main id="main-content" class="content" tabindex="-1">
     {#if errorMessage}
-      <div class="notice error">{errorMessage}</div>
+      <div class="notice error" role="alert">{errorMessage}</div>
     {/if}
 
     {#if view === "overview"}
@@ -437,7 +445,7 @@
             {/if}
           </article>
 
-          {#if actionError}<div class="notice error compact">{actionError}</div>{/if}
+          {#if actionError}<div class="notice error compact" role="alert">{actionError}</div>{/if}
 
           <div class="overview-grid">
             {#each quickMetrics(snapshot) as metric}
@@ -465,7 +473,7 @@
 
           <div class="overview-footer">
             <span>{activity.trends.length > 1 ? "Trend lines show this session's recent samples." : "Trend lines appear as session samples accumulate."}</span>
-            <button onclick={() => (view = "activity")}>View activity</button>
+            <button onclick={() => selectView("activity")}>View activity</button>
           </div>
         {/if}
       </section>
@@ -487,7 +495,7 @@
 
         <div class="filter-row">
           {#each ACTIVITY_FILTERS as filter}
-            <button class:selected={activityFilter === filter.id} onclick={() => (activityFilter = filter.id)}>{filter.label}</button>
+            <button class:selected={activityFilter === filter.id} aria-pressed={activityFilter === filter.id} onclick={() => (activityFilter = filter.id)}>{filter.label}</button>
           {/each}
         </div>
 
@@ -546,7 +554,7 @@
         </div>
 
         {#if appsError}
-          <div class="notice error compact">{appsError}</div>
+          <div class="notice error compact" role="alert">{appsError}</div>
         {/if}
 
         {#if snapshot?.primary_issue}
@@ -600,9 +608,9 @@
 
           <div class="apps-toolbar">
             <div class="sort-control" aria-label="Sort apps">
-              <button class:selected={appSort === "RELEVANCE"} onclick={() => (appSort = "RELEVANCE")}>Relevant</button>
-              <button class:selected={appSort === "CPU"} onclick={() => (appSort = "CPU")}>CPU</button>
-              <button class:selected={appSort === "MEMORY"} onclick={() => (appSort = "MEMORY")}>Memory</button>
+              <button class:selected={appSort === "RELEVANCE"} aria-pressed={appSort === "RELEVANCE"} onclick={() => (appSort = "RELEVANCE")}>Relevant</button>
+              <button class:selected={appSort === "CPU"} aria-pressed={appSort === "CPU"} onclick={() => (appSort = "CPU")}>CPU</button>
+              <button class:selected={appSort === "MEMORY"} aria-pressed={appSort === "MEMORY"} onclick={() => (appSort = "MEMORY")}>Memory</button>
             </div>
             <span>{relativeFreshness(appDiagnostics.timestamp_epoch_ms)}</span>
           </div>
@@ -619,7 +627,7 @@
               {#each sortedApps() as app}
                 <div class="apps-row" role="row">
                   <div class="app-name" role="cell">
-                    <span class="app-avatar">{app.name.slice(0, 1).toUpperCase()}</span>
+                    <span class="app-avatar" aria-hidden="true">{app.name.slice(0, 1).toUpperCase()}</span>
                     <strong>{app.name}</strong>
                   </div>
                   <span role="cell">{app.process_count}</span>
@@ -691,7 +699,7 @@
           onSaved={(next) => {
             preferences = next;
           }}
-          onOpenCustomize={() => (view = "customize")}
+          onOpenCustomize={() => selectView("customize")}
         />
       {/if}
     {/if}
@@ -700,6 +708,8 @@
 {/if}
 
 <style>
+  .skip-link { position: fixed; left: 12px; top: 12px; z-index: 1000; transform: translateY(-200%); padding: 8px 10px; border-radius: 8px; background: var(--surface-overlay); color: var(--text-primary); }
+  .skip-link:focus { transform: translateY(0); }
   .app-shell { min-height: 100vh; display: grid; grid-template-columns: 196px 1fr; background: var(--surface-base); color: var(--text-primary); }
   .sidebar { padding: 24px 16px; border-right: 1px solid var(--border-default); background: var(--surface-raised); display: flex; flex-direction: column; gap: 24px; }
   .brand { display: flex; align-items: center; gap: 11px; padding: 0 8px; }
@@ -712,7 +722,8 @@
   button.selected { box-shadow: inset 0 0 0 1px var(--accent-primary); }
   button:disabled { cursor: default; opacity: .58; }
   .settings-link { margin-top: auto; }
-  .content { padding: 42px 48px 64px; overflow: auto; }
+  .content { min-width: 0; padding: 42px 48px 64px; overflow: auto; overflow-wrap: anywhere; }
+  .content:focus { outline: none; }
   .page { max-width: 980px; margin: 0 auto; }
   .studio-page { max-width: 1180px; margin: 0 auto; }
   .eyebrow { margin: 0 0 8px; color: var(--text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
@@ -720,12 +731,12 @@
   h1 { font-size: 29px; }
   h2 { font-size: 16px; }
   .lede { max-width: 690px; margin: 11px 0 26px; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
-  .page-heading { display: flex; gap: 24px; align-items: flex-start; justify-content: space-between; }
+  .page-heading { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; justify-content: space-between; }
   .freshness { flex: 0 0 auto; padding-top: 3px; color: var(--text-muted); font-size: 11px; }
   .notice, .custom-card, .preview-card, .settings-card { padding: 16px; border-radius: var(--radius-card); border: 1px solid var(--border-default); background: var(--surface-raised); }
   .error { border-color: var(--status-critical); }
   .compact { margin: 12px 0; }
-  .hero-status { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px; border: 1px solid var(--border-default); border-radius: 16px; background: var(--surface-raised); margin-bottom: 12px; }
+  .hero-status { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; padding: 18px; border: 1px solid var(--border-default); border-radius: 16px; background: var(--surface-raised); margin-bottom: 12px; }
   .hero-status.warning { border-color: color-mix(in srgb, var(--status-warning) 50%, var(--border-default)); }
   .hero-status.critical { border-color: color-mix(in srgb, var(--status-critical) 55%, var(--border-default)); }
   .hero-copy { display: grid; gap: 7px; }
@@ -772,8 +783,8 @@
   .apps-toolbar > span { color: var(--text-muted); font-size: 10px; }
   .sort-control { display: flex; gap: 5px; }
   .sort-control button { padding: 6px 9px; border: 1px solid var(--border-default); background: var(--surface-raised); font-size: 10px; }
-  .apps-table { overflow: hidden; border: 1px solid var(--border-default); border-radius: 13px; background: var(--border-default); }
-  .apps-row { display: grid; grid-template-columns: minmax(180px,1.7fr) .65fr .8fr 1fr 1.1fr; gap: 10px; align-items: center; min-height: 58px; padding: 8px 12px; background: var(--surface-raised); border-top: 1px solid var(--border-default); font-size: 11px; }
+  .apps-table { overflow-x: auto; overflow-y: hidden; border: 1px solid var(--border-default); border-radius: 13px; background: var(--border-default); }
+  .apps-row { min-width: 650px; display: grid; grid-template-columns: minmax(180px,1.7fr) .65fr .8fr 1fr 1.1fr; gap: 10px; align-items: center; min-height: 58px; padding: 8px 12px; background: var(--surface-raised); border-top: 1px solid var(--border-default); font-size: 11px; }
   .apps-row:first-child { border-top: 0; }
   .apps-header { min-height: 34px; background: var(--surface-selected); color: var(--text-muted); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
   .app-name { display: flex; align-items: center; gap: 9px; min-width: 0; }
@@ -827,7 +838,6 @@
     .overview-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
     .characters,.palette-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
     .habitats,.personality-grid,.settings-grid,.signal-grid { grid-template-columns: 1fr; }
-    .apps-row { grid-template-columns: minmax(150px,1.4fr) .6fr .8fr 1fr; }
-    .apps-row > :last-child { display: none; }
+    .apps-row { grid-template-columns: minmax(180px,1.7fr) .65fr .8fr 1fr 1.1fr; }
   }
 </style>

@@ -158,6 +158,7 @@ pub fn toggle_companion(app: &AppHandle) -> Result<(), ByteError> {
 }
 
 pub fn set_display_mode(app: &AppHandle, mode: DisplayMode) -> Result<ByteConfig, ByteError> {
+    let previous = companion_preferences(app);
     let config = {
         let state = app.state::<AppState>();
         let mut store = state
@@ -167,12 +168,17 @@ pub fn set_display_mode(app: &AppHandle, mode: DisplayMode) -> Result<ByteConfig
         store.update_companion_with(|preferences| preferences.display_mode = mode)?
     };
 
-    apply_companion_layout(app, &config.companion)?;
+    if let Err(error) = apply_companion_layout(app, &config.companion) {
+        rollback_companion_preferences(app, &previous);
+        return Err(error);
+    }
+
     let _ = app.emit_to("companion", "byte://display-mode-changed", mode);
     Ok(config)
 }
 
 pub fn set_companion_size(app: &AppHandle, size: CompanionSize) -> Result<ByteConfig, ByteError> {
+    let previous = companion_preferences(app);
     let config = {
         let state = app.state::<AppState>();
         let mut store = state
@@ -182,12 +188,17 @@ pub fn set_companion_size(app: &AppHandle, size: CompanionSize) -> Result<ByteCo
         store.update_companion_with(|preferences| preferences.size = size)?
     };
 
-    apply_companion_layout(app, &config.companion)?;
+    if let Err(error) = apply_companion_layout(app, &config.companion) {
+        rollback_companion_preferences(app, &previous);
+        return Err(error);
+    }
+
     let _ = app.emit_to("companion", "byte://companion-size-changed", size);
     Ok(config)
 }
 
 pub fn set_edge_anchor(app: &AppHandle, anchor: EdgeAnchor) -> Result<ByteConfig, ByteError> {
+    let previous = companion_preferences(app);
     let config = {
         let state = app.state::<AppState>();
         let mut store = state
@@ -198,7 +209,10 @@ pub fn set_edge_anchor(app: &AppHandle, anchor: EdgeAnchor) -> Result<ByteConfig
     };
 
     if config.companion.display_mode == DisplayMode::Edge {
-        apply_companion_layout(app, &config.companion)?;
+        if let Err(error) = apply_companion_layout(app, &config.companion) {
+            rollback_companion_preferences(app, &previous);
+            return Err(error);
+        }
     }
     Ok(config)
 }
@@ -218,15 +232,27 @@ pub fn begin_move_mode(app: &AppHandle) -> Result<WindowShellState, ByteError> {
     }
 
     let window = companion_window(app)?;
+    let previous_shell = shell_state(app);
+    let was_visible = window
+        .is_visible()
+        .map_err(|error| ByteError::Window(error.to_string()))?;
+
     window
         .set_ignore_cursor_events(false)
         .map_err(|error| ByteError::Window(error.to_string()))?;
-    window
-        .show()
-        .map_err(|error| ByteError::Window(error.to_string()))?;
-    window
-        .set_focus()
-        .map_err(|error| ByteError::Window(error.to_string()))?;
+
+    if let Err(error) = window.show() {
+        let _ = window.set_ignore_cursor_events(previous_shell.click_through);
+        return Err(ByteError::Window(error.to_string()));
+    }
+
+    if let Err(error) = window.set_focus() {
+        let _ = window.set_ignore_cursor_events(previous_shell.click_through);
+        if !was_visible {
+            let _ = window.hide();
+        }
+        return Err(ByteError::Window(error.to_string()));
+    }
 
     let shell = {
         let state = app.state::<AppState>();
@@ -281,7 +307,13 @@ pub fn finish_move_mode(app: &AppHandle) -> Result<WindowShellState, ByteError> 
 pub fn set_click_through(app: &AppHandle, enabled: bool) -> Result<WindowShellState, ByteError> {
     let window = companion_window(app)?;
 
-    {
+    // Apply the native state before publishing it to Rust/UI state. If Windows
+    // refuses the operation, callers keep the last known-good shell state.
+    window
+        .set_ignore_cursor_events(enabled)
+        .map_err(|error| ByteError::Window(error.to_string()))?;
+
+    let shell = {
         let state = app.state::<AppState>();
         let mut shell = state
             .window_shell
@@ -291,18 +323,15 @@ pub fn set_click_through(app: &AppHandle, enabled: bool) -> Result<WindowShellSt
         if enabled {
             shell.move_mode = false;
         }
-    }
-
-    window
-        .set_ignore_cursor_events(enabled)
-        .map_err(|error| ByteError::Window(error.to_string()))?;
+        *shell
+    };
 
     if enabled {
         emit_move_mode(app, false);
     }
     emit_click_through(app, enabled);
 
-    Ok(shell_state(app))
+    Ok(shell)
 }
 
 pub fn toggle_click_through(app: &AppHandle) -> Result<WindowShellState, ByteError> {
@@ -376,6 +405,18 @@ pub fn apply_companion_layout(
     window
         .set_skip_taskbar(true)
         .map_err(|error| ByteError::Window(error.to_string()))?;
+
+    if !app
+        .state::<AppState>()
+        .app_preferences()
+        .onboarding_completed
+    {
+        window
+            .hide()
+            .map_err(|error| ByteError::Window(error.to_string()))?;
+        emit_companion_visibility(app, false);
+        return Ok(());
+    }
 
     if app.state::<AppState>().is_visibility_suppressed() {
         window
@@ -679,6 +720,19 @@ fn logical_size(mode: DisplayMode, size: CompanionSize) -> (f64, f64) {
 
 fn physical_pixels(logical: f64, scale_factor: f64) -> u32 {
     (logical * scale_factor).round().max(1.0) as u32
+}
+
+fn rollback_companion_preferences(app: &AppHandle, previous: &CompanionPreferences) {
+    let state = app.state::<AppState>();
+    let result = state
+        .config
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .update_companion(previous.clone());
+
+    if result.is_ok() {
+        let _ = apply_companion_layout(app, previous);
+    }
 }
 
 fn companion_preferences(app: &AppHandle) -> CompanionPreferences {

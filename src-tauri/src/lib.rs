@@ -11,7 +11,9 @@ use core::{
     smart_notifications::SmartNotificationEngine, state::AppState,
 };
 use models::DisplayMode;
-use platform::windows::{fullscreen, input::InputRuntime, startup, windowing};
+use platform::windows::{
+    fullscreen, input::InputRuntime, single_instance::SingleInstanceGuard, startup, windowing,
+};
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -105,6 +107,15 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 }
 
 pub fn run() {
+    // Keep one Byte process per interactive Windows session. If the named
+    // mutex API itself is unavailable, fail open so an OS integration problem
+    // does not prevent Byte from starting.
+    let _instance_guard = match SingleInstanceGuard::acquire() {
+        Ok(Some(guard)) => Some(guard),
+        Ok(None) => return,
+        Err(_) => None,
+    };
+
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
         .setup(|app| {

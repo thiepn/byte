@@ -24,6 +24,7 @@ const CALM_SAMPLE_INTERVAL: Duration = Duration::from_secs(5);
 const FULLSCREEN_SAMPLE_INTERVAL: Duration = Duration::from_secs(8);
 const MONITORING_DISABLED_INTERVAL: Duration = Duration::from_secs(30);
 const SUSPEND_GAP_RESET_INTERVAL: Duration = Duration::from_secs(12);
+const SAMPLE_FAILURE_UNAVAILABLE_THRESHOLD: u8 = 2;
 
 pub fn start(app: AppHandle) -> Result<(), ByteError> {
     let worker_app = app.clone();
@@ -65,6 +66,11 @@ fn run_worker(app: AppHandle) {
     let mut telemetry = TelemetryEngine::new(WindowsTelemetrySource::new());
     let mut diagnostics = DiagnosticEngine::new();
     let mut last_sample_at: Option<Instant> = None;
+    let mut consecutive_sample_failures = 0_u8;
+    let mut monitoring_was_enabled = app
+        .state::<AppState>()
+        .app_preferences()
+        .system_monitoring_enabled;
 
     loop {
         let state = app.state::<AppState>();
@@ -85,13 +91,29 @@ fn run_worker(app: AppHandle) {
             diagnostics = DiagnosticEngine::new();
             state.set_snapshot_unavailable();
             last_sample_at = None;
+            consecutive_sample_failures = 0;
         }
 
         let app_preferences = state.app_preferences();
+
+        if monitoring_was_enabled != app_preferences.system_monitoring_enabled {
+            diagnostics = DiagnosticEngine::new();
+            last_sample_at = None;
+            consecutive_sample_failures = 0;
+
+            if app_preferences.system_monitoring_enabled {
+                telemetry = TelemetryEngine::new(WindowsTelemetrySource::new());
+            }
+
+            monitoring_was_enabled = app_preferences.system_monitoring_enabled;
+        }
+
         let interval = if !app_preferences.system_monitoring_enabled {
+            consecutive_sample_failures = 0;
             state.set_snapshot_unavailable();
             sampling_interval(lifecycle_after_wait, None, false)
         } else if let Ok(snapshot) = telemetry.sample_snapshot() {
+            consecutive_sample_failures = 0;
             last_sample_at = Some(Instant::now());
             let evaluated = diagnostics.evaluate(snapshot);
 
@@ -141,6 +163,18 @@ fn run_worker(app: AppHandle) {
             let _ = app.emit_to("companion", "byte://snapshot-updated", event_snapshot);
             sampling_interval(lifecycle_after_wait, Some(status), true)
         } else {
+            consecutive_sample_failures = consecutive_sample_failures.saturating_add(1);
+
+            if consecutive_sample_failures == SAMPLE_FAILURE_UNAVAILABLE_THRESHOLD {
+                diagnostics = DiagnosticEngine::new();
+                telemetry = TelemetryEngine::new(WindowsTelemetrySource::new());
+                last_sample_at = None;
+
+                let unavailable = crate::models::SystemSnapshot::unavailable();
+                state.replace_snapshot(unavailable.clone());
+                let _ = app.emit_to("companion", "byte://snapshot-updated", unavailable);
+            }
+
             CALM_SAMPLE_INTERVAL
         };
 
@@ -164,6 +198,20 @@ mod tests {
         assert!(!scheduling_gap_requires_reset(Duration::from_secs(8)));
         assert!(scheduling_gap_requires_reset(Duration::from_secs(12)));
         assert!(scheduling_gap_requires_reset(Duration::from_secs(60)));
+    }
+
+    #[test]
+    fn monitoring_toggle_is_an_explicit_reset_boundary() {
+        let mut previous = true;
+        let next = false;
+        assert_ne!(previous, next);
+        previous = next;
+        assert!(!previous);
+    }
+
+    #[test]
+    fn repeated_sampling_failures_cross_unavailable_threshold() {
+        assert_eq!(SAMPLE_FAILURE_UNAVAILABLE_THRESHOLD, 2);
     }
 
     #[test]

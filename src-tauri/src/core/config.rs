@@ -1,7 +1,7 @@
 use crate::{
     core::{
         error::ByteError,
-        persistence::{read_bounded_text, BoundedText},
+        persistence::{quarantine_corrupt_file, read_bounded_text, BoundedText},
         security::{
             normalize_and_validate_app_preferences, normalize_and_validate_config,
             validate_companion_preferences,
@@ -35,12 +35,12 @@ impl ConfigStore {
             BoundedText::Present(raw) => match decode_and_migrate(&raw) {
                 Ok(value) => value,
                 Err(_) => {
-                    quarantine_corrupt_config(&path);
+                    let _ = quarantine_corrupt_file(&path);
                     ByteConfig::default()
                 }
             },
             BoundedText::Invalid => {
-                quarantine_corrupt_config(&path);
+                let _ = quarantine_corrupt_file(&path);
                 ByteConfig::default()
             }
             BoundedText::Missing => ByteConfig::default(),
@@ -132,15 +132,6 @@ fn decode_and_migrate(raw: &str) -> Result<ByteConfig, ByteError> {
 
     normalize_and_validate_config(&mut config)?;
     Ok(config)
-}
-
-fn quarantine_corrupt_config(path: &Path) {
-    if !path.exists() {
-        return;
-    }
-    let quarantine = path.with_extension("corrupt.json");
-    let _ = fs::remove_file(&quarantine);
-    let _ = fs::rename(path, quarantine);
 }
 
 #[cfg(test)]
