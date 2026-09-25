@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–27 are implemented.
+Phases 1–28 are implemented.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -42,6 +42,7 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Phase 25 hardens security and privacy: per-window Tauri command ACLs, listen-only frontend event permissions, strict local CSP plus prototype freezing, backend allowlists for preference/customization payloads, bounded persisted-state reads, generic privacy-safe native notifications, non-persistent process attribution in Activity history, committed npm/Cargo lockfiles with frozen CI installs, exact security-sensitive Tauri pins, SHA-pinned CI actions, dependency audits, and Dependabot coverage.
 - Phase 26 makes Byte distributable: a current-user NSIS installer, stable `Byte.exe` binary naming, downgrade protection, WebView2 bootstrap recovery, uninstall cleanup for the HKCU startup entry, version/tag invariants, portable ZIP + release manifest + SHA-256 artifacts, real install/reinstall/uninstall packaging CI, optional Windows Authenticode signing, and tag-driven GitHub Releases.
 - Phase 27 certifies the actual downloadable binaries: staged-artifact SHA-256 validation, x64 PE/version checks, portable launch smoke testing, application-data preservation across reinstall/uninstall, machine-readable release certification, exact-main release candidates, and GitHub provenance attestations verified before tagged releases are published.
+- Phase 28 establishes post-release maintenance: explicit Stable/Beta update channels without background polling, schema-v9 migration policy, monotonic release-preparation tooling, changelog-backed release notes, grouped Dependabot maintenance, weekly security and Windows/WebView2 regression jobs, a patch-forward certified hotfix workflow, and a formal release-health checklist.
 - Activity persists only meaningful events locally; trend points are session-only and globally bounded.
 - Customization and personality are entirely local; there is no account, store, virtual currency, unlock timer, or cloud inventory.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
@@ -110,5 +111,7 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Security & privacy](docs/SECURITY_PRIVACY.md)
 - [Packaging & releases](docs/PACKAGING_RELEASE.md)
 - [Final release certification](docs/RELEASE_CERTIFICATION.md)
+- [Post-release maintenance](docs/MAINTENANCE.md)
+- [Release health checklist](docs/RELEASE_HEALTH_CHECKLIST.md)
 
-Next: Phase 28 — Post-Release Updates & Maintenance.
+The planned production roadmap is complete through Phase 28. Ongoing work should now enter the maintenance/release process instead of creating another catch-all feature phase.
