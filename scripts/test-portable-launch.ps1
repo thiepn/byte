@@ -87,6 +87,7 @@ New-Item -ItemType Directory -Path $isolatedAppData -Force | Out-Null
 
 $oldAppData = $env:APPDATA
 $process = $null
+$duplicateProcess = $null
 
 try {
   Expand-Archive -Path $portablePath -DestinationPath $extract -Force
@@ -128,8 +129,59 @@ try {
   }
 
   Write-Host "Portable repeat-start certification passed across $LaunchAttempts consecutive launches."
+
+  $primaryStdoutPath = Join-Path $temp "byte.duplicate-primary.stdout.log"
+  $primaryStderrPath = Join-Path $temp "byte.duplicate-primary.stderr.log"
+  $duplicateStdoutPath = Join-Path $temp "byte.duplicate-secondary.stdout.log"
+  $duplicateStderrPath = Join-Path $temp "byte.duplicate-secondary.stderr.log"
+  $startedAt = Get-Date
+
+  $process = Start-Process -FilePath $exe -PassThru `
+    -RedirectStandardOutput $primaryStdoutPath `
+    -RedirectStandardError $primaryStderrPath
+  Start-Sleep -Seconds 2
+
+  if ($process.HasExited) {
+    Write-LaunchFailureDiagnostics `
+      -Process $process `
+      -StartedAt $startedAt `
+      -StdoutPath $primaryStdoutPath `
+      -StderrPath $primaryStderrPath
+    throw "Primary Byte process exited before duplicate-launch certification."
+  }
+
+  $duplicateProcess = Start-Process -FilePath $exe -PassThru `
+    -RedirectStandardOutput $duplicateStdoutPath `
+    -RedirectStandardError $duplicateStderrPath
+
+  if (-not $duplicateProcess.WaitForExit(5000)) {
+    throw "Duplicate Byte process did not hand off to the existing instance within 5 seconds."
+  }
+  if ($duplicateProcess.ExitCode -ne 0) {
+    throw "Duplicate Byte process exited with code $($duplicateProcess.ExitCode) instead of handing off cleanly."
+  }
+
+  Start-Sleep -Milliseconds 500
+  if ($process.HasExited) {
+    Write-LaunchFailureDiagnostics `
+      -Process $process `
+      -StartedAt $startedAt `
+      -StdoutPath $primaryStdoutPath `
+      -StderrPath $primaryStderrPath
+    throw "Primary Byte process exited during duplicate-launch certification."
+  }
+
+  Write-Host "Portable duplicate-launch handoff passed; the second process exited and the original instance remained alive."
+  Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+  try { $process.WaitForExit(5000) | Out-Null } catch {}
+  $process = $null
+  $duplicateProcess = $null
 } finally {
   $env:APPDATA = $oldAppData
+  if ($null -ne $duplicateProcess -and -not $duplicateProcess.HasExited) {
+    Stop-Process -Id $duplicateProcess.Id -Force -ErrorAction SilentlyContinue
+    try { $duplicateProcess.WaitForExit(5000) | Out-Null } catch {}
+  }
   if ($null -ne $process -and -not $process.HasExited) {
     Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
     try { $process.WaitForExit(5000) | Out-Null } catch {}

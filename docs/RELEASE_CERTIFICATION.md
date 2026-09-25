@@ -75,7 +75,7 @@ Byte must remain alive for every observation window instead of crashing during:
 - local state creation
 - window/tray setup
 
-Each process is terminated after its smoke window; after all three starts succeed, all temporary test data is removed.
+Each process is terminated after its smoke window. After all three sequential starts succeed, certification performs one concurrent duplicate-launch handoff: the primary process must remain alive while a second Byte process exits cleanly within five seconds. This exercises the packaged single-instance boundary in addition to the Rust-level activation-event tests. After the duplicate-launch check succeeds, all temporary test data is removed.
 
 ### 5. Installer lifecycle certification
 
