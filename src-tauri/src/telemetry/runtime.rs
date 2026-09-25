@@ -61,13 +61,8 @@ fn sampling_interval(
     }
 }
 
-fn notifications_allowed(
-    preferences: &AppPreferences,
-    visibility_suppressed: bool,
-) -> bool {
-    preferences.onboarding_completed
-        && preferences.notifications_enabled
-        && !visibility_suppressed
+fn notifications_allowed(preferences: &AppPreferences, visibility_suppressed: bool) -> bool {
+    preferences.onboarding_completed && preferences.notifications_enabled && !visibility_suppressed
 }
 
 #[cfg(target_os = "windows")]
