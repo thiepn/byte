@@ -50,9 +50,9 @@ Finishing writes the existing CompanionPreferences and AppPreferences; there is 
 
 ## Migration
 
-ByteConfig schema version is now **8**.
+ByteConfig schema version is now **9**.
 
-Existing schema versions 1–5 gain Phase 20 defaults and are migrated with onboarding marked complete. This prevents an upgrade from interrupting an already configured user with first-run setup.
+Existing schema versions remain directly migratable from schema 1 through schema 8. Phase 28 adds the serde-defaulted Stable release channel while preserving onboarding and all existing preferences. This prevents an upgrade from interrupting or resetting an already configured user.
 
 ## Windows startup
 
@@ -149,13 +149,14 @@ Keyboard focus rings, native buttons, semantic labels, and screen-reader-friendl
 
 ## Updates
 
-Settings shows the installed Byte version and exposes one fixed trusted **Open releases** destination:
+Settings shows the installed Byte version and stores one local release-channel choice:
 
-`https://github.com/thiepn/byte/releases`
+- **Stable** → `https://github.com/thiepn/byte/releases/latest`
+- **Beta** → `https://github.com/thiepn/byte/releases`
 
-There is no generic URL/shell field and no background update daemon.
+**Check for updates** explicitly opens the corresponding fixed allowlisted destination in the browser. There is no generic URL/shell field, background update polling, automatic download, or forced installation.
 
-Signed release/update installation infrastructure remains part of the later release/update-hardening roadmap.
+Changing channels does not contact GitHub by itself.
 
 ## Re-running onboarding
 
@@ -176,4 +177,4 @@ Phase 20 is complete when an unfamiliar user can:
 - reopen onboarding
 - reach customization and releases from Settings
 
-Next: **Phase 23 — Power & Performance Hardening**.
+Phase 28 supersedes the old update note with the explicit Stable/Beta maintenance model.
