@@ -186,6 +186,10 @@ impl ActivityStore {
             self.record_trend(snapshot);
         }
 
+        let previous_events = self.events.clone();
+        let previous_snapshot = self.previous.clone();
+        let previous_next_id = self.next_id;
+
         let mut changed = false;
         if ready {
             if let Some(previous) = self.previous.clone().filter(snapshot_ready) {
@@ -202,7 +206,15 @@ impl ActivityStore {
         }
 
         if changed {
-            self.save()?;
+            if let Err(error) = self.save() {
+                // The caller intentionally treats history persistence as
+                // best-effort for telemetry. Roll back the event transition and
+                // comparison baseline so a later sample can retry it.
+                self.events = previous_events;
+                self.previous = previous_snapshot;
+                self.next_id = previous_next_id;
+                return Err(error);
+            }
         }
 
         Ok(())
@@ -491,6 +503,27 @@ mod tests {
         let detail = persisted_issue_detail(&current);
         assert!(!detail.contains("SensitiveApp"));
         assert!(detail.contains("not stored"));
+    }
+
+    #[test]
+    fn failed_event_persistence_rolls_back_transition_for_retry() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let file_path = temp.path().join("activity.json");
+        let mut store = ActivityStore::load(file_path).expect("load");
+
+        store.record(&snapshot(1_000), true).expect("baseline");
+        store.path = temp.path().to_path_buf();
+
+        let mut pressured = snapshot(20_000);
+        pressured.primary_issue = Some(issue());
+
+        assert!(store.record(&pressured, true).is_err());
+        assert!(store.events.is_empty());
+        assert_eq!(
+            store.previous.as_ref().and_then(|value| value.primary_issue.as_ref()),
+            None
+        );
+        assert_eq!(store.next_id, 1);
     }
 
     #[test]
