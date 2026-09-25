@@ -37,6 +37,9 @@ jobs:
       - name: Verify release metadata
         run: npm run release:verify
 
+      - name: Verify maintenance policy
+        run: npm run maintenance:verify
+
       - name: Build production NSIS package
         shell: pwsh
         run: ./scripts/build-windows-release.ps1
