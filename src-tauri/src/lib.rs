@@ -81,7 +81,10 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     tray.on_menu_event(|app, event| {
         let action = event.id().as_ref();
 
-        if !app.state::<AppState>().app_preferences().onboarding_completed
+        if !app
+            .state::<AppState>()
+            .app_preferences()
+            .onboarding_completed
             && !matches!(action, "open" | "quit")
         {
             let _ = windowing::show_main_window(app);

@@ -546,10 +546,7 @@ mod tests {
     fn capture_is_disabled_until_onboarding_completes() {
         assert!(!capture_allowed(false, LifecycleState::Active));
         assert!(capture_allowed(true, LifecycleState::Active));
-        assert!(!capture_allowed(
-            true,
-            LifecycleState::FullscreenReduced
-        ));
+        assert!(!capture_allowed(true, LifecycleState::FullscreenReduced));
     }
 
     #[test]

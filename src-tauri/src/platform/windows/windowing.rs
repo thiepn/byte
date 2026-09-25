@@ -81,7 +81,11 @@ pub fn show_main_window(app: &AppHandle) -> Result<(), ByteError> {
 }
 
 pub fn show_quick_panel(app: &AppHandle) -> Result<(), ByteError> {
-    if !app.state::<AppState>().app_preferences().onboarding_completed {
+    if !app
+        .state::<AppState>()
+        .app_preferences()
+        .onboarding_completed
+    {
         return show_main_window(app);
     }
 
@@ -222,7 +226,11 @@ pub fn set_edge_anchor(app: &AppHandle, anchor: EdgeAnchor) -> Result<ByteConfig
 }
 
 pub fn begin_move_mode(app: &AppHandle) -> Result<WindowShellState, ByteError> {
-    if !app.state::<AppState>().app_preferences().onboarding_completed {
+    if !app
+        .state::<AppState>()
+        .app_preferences()
+        .onboarding_completed
+    {
         return Err(ByteError::Window(
             "Complete Byte setup before entering Move Mode".into(),
         ));
