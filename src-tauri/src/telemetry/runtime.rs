@@ -71,10 +71,9 @@ fn run_worker(app: AppHandle) {
     let mut diagnostics = DiagnosticEngine::new();
     let mut last_sample_at: Option<Instant> = None;
     let mut consecutive_sample_failures = 0_u8;
-    let mut monitoring_was_enabled = app
-        .state::<AppState>()
-        .app_preferences()
-        .system_monitoring_enabled;
+    let initial_preferences = app.state::<AppState>().app_preferences();
+    let mut monitoring_was_enabled =
+        initial_preferences.onboarding_completed && initial_preferences.system_monitoring_enabled;
 
     loop {
         let state = app.state::<AppState>();
@@ -99,6 +98,21 @@ fn run_worker(app: AppHandle) {
         }
 
         let app_preferences = state.app_preferences();
+
+        if !app_preferences.onboarding_completed {
+            monitoring_was_enabled = false;
+            consecutive_sample_failures = 0;
+            last_sample_at = None;
+            state.set_snapshot_unavailable();
+
+            if !state
+                .lifecycle
+                .wait_for_change_or_timeout(MONITORING_DISABLED_INTERVAL)
+            {
+                break;
+            }
+            continue;
+        }
 
         if monitoring_was_enabled != app_preferences.system_monitoring_enabled {
             diagnostics = DiagnosticEngine::new();
@@ -202,6 +216,16 @@ mod tests {
         assert!(!scheduling_gap_requires_reset(Duration::from_secs(8)));
         assert!(scheduling_gap_requires_reset(Duration::from_secs(12)));
         assert!(scheduling_gap_requires_reset(Duration::from_secs(60)));
+    }
+
+    #[test]
+    fn onboarding_is_a_monitoring_boundary() {
+        let onboarding_completed = false;
+        let monitoring_enabled = true;
+        assert!(!(onboarding_completed && monitoring_enabled));
+
+        let onboarding_completed = true;
+        assert!(onboarding_completed && monitoring_enabled);
     }
 
     #[test]

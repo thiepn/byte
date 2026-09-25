@@ -210,7 +210,10 @@ fn apply_observation(
             state.set_snapshot_unavailable();
         }
 
-        input::set_capture_enabled(!input::lifecycle_suspends_input(next_lifecycle));
+        input::set_capture_enabled(input::capture_allowed(
+            config.app.onboarding_completed,
+            next_lifecycle,
+        ));
         state.lifecycle.transition(next_lifecycle);
         state.notify_input_lifecycle_changed();
         let _ = app.emit_to("companion", "byte://lifecycle-changed", next_lifecycle);

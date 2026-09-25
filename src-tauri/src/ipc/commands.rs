@@ -13,7 +13,7 @@ use crate::{
         DisplayMode, EdgeAnchor, NotificationPermissionState, RecommendedActionKind,
         ReleaseChannel, SystemSnapshot, WindowShellState,
     },
-    platform::windows::{actions, startup, windowing},
+    platform::windows::{actions, input, startup, windowing},
 };
 use tauri::{plugin::PermissionState, AppHandle, Emitter, State};
 use tauri_plugin_notification::NotificationExt;
@@ -110,6 +110,14 @@ pub fn update_app_preferences(
     }
 
     let _ = windowing::apply_capture_affinity(&app, preferences.exclude_from_capture);
+
+    if previous.onboarding_completed != preferences.onboarding_completed {
+        input::set_capture_enabled(input::capture_allowed(
+            preferences.onboarding_completed,
+            state.lifecycle.current(),
+        ));
+        state.notify_input_lifecycle_changed();
+    }
 
     if !previous.onboarding_completed && preferences.onboarding_completed {
         let _ = windowing::apply_companion_layout(&app, &config.companion);

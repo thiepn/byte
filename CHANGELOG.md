@@ -6,6 +6,8 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ### Changed
 
+- System telemetry sampling and anonymous global input reactions remain inactive until onboarding is completed; finishing setup opens those local gates immediately while still respecting fullscreen, lock, and sleep suppression.
+- Release and maintenance certification now require three consecutive healthy Byte launches instead of a single startup probe.
 - Fresh installs now make Smart Notifications an explicit onboarding choice that defaults off, and native alerts remain suppressed until onboarding is complete.
 - Windows launch certification and maintenance smokes now capture process output, hexadecimal exit status, and matching Windows crash events when Byte exits unexpectedly.
 

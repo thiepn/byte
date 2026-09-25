@@ -1,9 +1,14 @@
 param(
   [string]$Executable = "src-tauri/target/release/Byte.exe",
-  [int]$ObservationSeconds = 5
+  [int]$ObservationSeconds = 5,
+  [int]$LaunchAttempts = 3
 )
 
 $ErrorActionPreference = "Stop"
+
+if ($LaunchAttempts -lt 1) {
+  throw "LaunchAttempts must be at least 1."
+}
 
 function Write-LaunchFailureDiagnostics(
   [System.Diagnostics.Process]$Process,
@@ -72,36 +77,44 @@ function Write-LaunchFailureDiagnostics(
 $exe = (Resolve-Path $Executable).Path
 $temp = Join-Path $env:RUNNER_TEMP ("byte-maintenance-launch-" + [guid]::NewGuid().ToString("N"))
 $isolatedAppData = Join-Path $temp "appdata"
-$stdoutPath = Join-Path $temp "byte.stdout.log"
-$stderrPath = Join-Path $temp "byte.stderr.log"
 New-Item -ItemType Directory -Path $isolatedAppData -Force | Out-Null
 
 $oldAppData = $env:APPDATA
 $process = $null
 try {
   $env:APPDATA = $isolatedAppData
-  $startedAt = Get-Date
-  $process = Start-Process -FilePath $exe -PassThru `
-    -RedirectStandardOutput $stdoutPath `
-    -RedirectStandardError $stderrPath
-  Start-Sleep -Seconds $ObservationSeconds
 
-  if ($process.HasExited) {
-    Write-LaunchFailureDiagnostics `
-      -Process $process `
-      -StartedAt $startedAt `
-      -StdoutPath $stdoutPath `
-      -StderrPath $stderrPath
+  for ($attempt = 1; $attempt -le $LaunchAttempts; $attempt++) {
+    $stdoutPath = Join-Path $temp ("byte.stdout." + $attempt + ".log")
+    $stderrPath = Join-Path $temp ("byte.stderr." + $attempt + ".log")
+    $startedAt = Get-Date
+    $process = Start-Process -FilePath $exe -PassThru `
+      -RedirectStandardOutput $stdoutPath `
+      -RedirectStandardError $stderrPath
+    Start-Sleep -Seconds $ObservationSeconds
 
-    $exitBits = [System.BitConverter]::ToUInt32(
-      [System.BitConverter]::GetBytes([int]$process.ExitCode),
-      0
-    )
-    $exitHex = "0x{0:X8}" -f $exitBits
-    throw "Byte exited during WebView2 maintenance smoke with code $($process.ExitCode) ($exitHex)."
+    if ($process.HasExited) {
+      Write-LaunchFailureDiagnostics `
+        -Process $process `
+        -StartedAt $startedAt `
+        -StdoutPath $stdoutPath `
+        -StderrPath $stderrPath
+
+      $exitBits = [System.BitConverter]::ToUInt32(
+        [System.BitConverter]::GetBytes([int]$process.ExitCode),
+        0
+      )
+      $exitHex = "0x{0:X8}" -f $exitBits
+      throw "Byte exited during WebView2 maintenance smoke attempt $attempt/$LaunchAttempts with code $($process.ExitCode) ($exitHex)."
+    }
+
+    Write-Host "Runtime launch attempt $attempt/$LaunchAttempts passed on $env:RUNNER_OS."
+    Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+    try { $process.WaitForExit(5000) | Out-Null } catch {}
+    $process = $null
   }
 
-  Write-Host "WebView2/runtime maintenance smoke passed for $env:RUNNER_OS."
+  Write-Host "WebView2/runtime repeat-start smoke passed for $env:RUNNER_OS across $LaunchAttempts launches."
 } finally {
   $env:APPDATA = $oldAppData
   if ($null -ne $process -and -not $process.HasExited) {

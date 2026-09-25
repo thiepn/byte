@@ -85,8 +85,10 @@ pub struct InputRuntime {
 
 impl InputRuntime {
     pub fn start(app: AppHandle) -> Result<Self, ByteError> {
-        set_capture_enabled(!lifecycle_suspends_input(
-            app.state::<AppState>().lifecycle.current(),
+        let initial_state = app.state::<AppState>();
+        set_capture_enabled(capture_allowed(
+            initial_state.app_preferences().onboarding_completed,
+            initial_state.lifecycle.current(),
         ));
         let (raw_tx, raw_rx) = mpsc::channel::<RawInputMessage>();
         let (ready_tx, ready_rx) = mpsc::sync_channel::<Result<u32, String>>(1);
@@ -166,6 +168,10 @@ pub(crate) fn lifecycle_suspends_input(state: LifecycleState) -> bool {
             | LifecycleState::SystemSleep
             | LifecycleState::ShuttingDown
     )
+}
+
+pub(crate) fn capture_allowed(onboarding_completed: bool, state: LifecycleState) -> bool {
+    onboarding_completed && !lifecycle_suspends_input(state)
 }
 
 fn callback_sender() -> &'static Mutex<Option<Sender<RawInputMessage>>> {
@@ -283,7 +289,10 @@ fn processor_loop(app: AppHandle, receiver: Receiver<RawInputMessage>) {
     let mut interpreter = InputInterpreter::new(now_epoch_ms());
 
     loop {
-        if lifecycle_suspends_input(app.state::<AppState>().lifecycle.current()) {
+        let state = app.state::<AppState>();
+        if !state.app_preferences().onboarding_completed
+            || lifecycle_suspends_input(state.lifecycle.current())
+        {
             match receiver.recv() {
                 Ok(RawInputMessage::Shutdown) | Err(_) => break,
                 Ok(RawInputMessage::LifecycleChanged) => {
@@ -531,6 +540,16 @@ mod tests {
             kind,
             timestamp_epoch_ms,
         }
+    }
+
+    #[test]
+    fn capture_is_disabled_until_onboarding_completes() {
+        assert!(!capture_allowed(false, LifecycleState::Active));
+        assert!(capture_allowed(true, LifecycleState::Active));
+        assert!(!capture_allowed(
+            true,
+            LifecycleState::FullscreenReduced
+        ));
     }
 
     #[test]
