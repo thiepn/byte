@@ -519,10 +519,11 @@ mod tests {
 
         assert!(store.record(&pressured, true).is_err());
         assert!(store.events.is_empty());
-        assert_eq!(
-            store.previous.as_ref().and_then(|value| value.primary_issue.as_ref()),
-            None
-        );
+        assert!(store
+            .previous
+            .as_ref()
+            .and_then(|value| value.primary_issue.as_ref())
+            .is_none());
         assert_eq!(store.next_id, 1);
     }
 
