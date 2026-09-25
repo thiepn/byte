@@ -93,8 +93,8 @@
   }
 
   async function closePanel(): Promise<void> {
-    stopRefreshing();
     await hideQuickPanel();
+    stopRefreshing();
   }
 
   async function requestClose(): Promise<void> {
