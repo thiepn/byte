@@ -1,4 +1,8 @@
-use crate::{core::error::ByteError, models::RecommendedActionKind, platform::windows::windowing};
+use crate::{
+    core::error::ByteError,
+    models::{RecommendedActionKind, ReleaseChannel},
+    platform::windows::windowing,
+};
 use std::{ffi::OsStr, iter, os::windows::ffi::OsStrExt, ptr::null};
 use tauri::AppHandle;
 use windows_sys::Win32::{
@@ -6,7 +10,8 @@ use windows_sys::Win32::{
     UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOWNORMAL},
 };
 
-const RELEASES_URL: &str = "https://github.com/thiepn/byte/releases";
+const STABLE_RELEASES_URL: &str = "https://github.com/thiepn/byte/releases/latest";
+const BETA_RELEASES_URL: &str = "https://github.com/thiepn/byte/releases";
 
 pub fn execute(app: &AppHandle, action: RecommendedActionKind) -> Result<(), ByteError> {
     match action {
@@ -17,8 +22,11 @@ pub fn execute(app: &AppHandle, action: RecommendedActionKind) -> Result<(), Byt
     }
 }
 
-pub fn open_release_page() -> Result<(), ByteError> {
-    launch(RELEASES_URL)
+pub fn open_release_page(channel: ReleaseChannel) -> Result<(), ByteError> {
+    match channel {
+        ReleaseChannel::Stable => launch(STABLE_RELEASES_URL),
+        ReleaseChannel::Beta => launch(BETA_RELEASES_URL),
+    }
 }
 
 fn launch(target: &str) -> Result<(), ByteError> {
@@ -57,6 +65,15 @@ fn wide(value: &str) -> Vec<u16> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn release_channels_are_fixed_allowlisted_destinations() {
+        assert_eq!(
+            STABLE_RELEASES_URL,
+            "https://github.com/thiepn/byte/releases/latest"
+        );
+        assert_eq!(BETA_RELEASES_URL, "https://github.com/thiepn/byte/releases");
+    }
 
     #[test]
     fn wide_strings_are_null_terminated() {
