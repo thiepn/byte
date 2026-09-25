@@ -201,5 +201,11 @@ pub fn run() {
             ipc::commands::quit_byte
         ])
         .run(tauri::generate_context!())
-        .expect("Byte failed to start");
+        .unwrap_or_else(|error| {
+            // A startup integration failure should remain an ordinary,
+            // diagnosable process failure. Panicking here can turn a useful
+            // Tauri error into an opaque Windows fast-fail status.
+            eprintln!("Byte failed to start: {error}");
+            std::process::exit(1);
+        });
 }
