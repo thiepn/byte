@@ -57,17 +57,18 @@ impl SmartNotificationEngine {
             fs::create_dir_all(parent)?;
         }
 
-        let (persisted, recovered, corrupt) = match read_bounded_text(&path, MAX_NOTIFICATION_STATE_BYTES)? {
-            BoundedText::Present(raw) => match serde_json::from_str::<PersistedState>(&raw)
-                .ok()
-                .filter(|value| value.schema_version == STATE_SCHEMA_VERSION)
-            {
-                Some(value) => (value, false, false),
-                None => (PersistedState::default(), true, true),
-            },
-            BoundedText::Invalid => (PersistedState::default(), true, true),
-            BoundedText::Missing => (PersistedState::default(), true, false),
-        };
+        let (persisted, recovered, corrupt) =
+            match read_bounded_text(&path, MAX_NOTIFICATION_STATE_BYTES)? {
+                BoundedText::Present(raw) => match serde_json::from_str::<PersistedState>(&raw)
+                    .ok()
+                    .filter(|value| value.schema_version == STATE_SCHEMA_VERSION)
+                {
+                    Some(value) => (value, false, false),
+                    None => (PersistedState::default(), true, true),
+                },
+                BoundedText::Invalid => (PersistedState::default(), true, true),
+                BoundedText::Missing => (PersistedState::default(), true, false),
+            };
 
         if corrupt {
             let _ = quarantine_corrupt_file(&path);
