@@ -180,7 +180,12 @@ impl ActivityStore {
             }
         }
 
-        self.previous = Some(snapshot.clone());
+        // An unavailable snapshot is a data gap, not evidence that the
+        // previous issue/power state changed. Preserve the last valid sample so
+        // the next real observation can still record the eventual transition.
+        if ready {
+            self.previous = Some(snapshot.clone());
+        }
 
         if changed {
             self.save()?;
@@ -421,6 +426,28 @@ mod tests {
             }),
             started_at_epoch_ms: 20_000,
         }
+    }
+
+    #[test]
+    fn unavailable_gap_preserves_previous_valid_snapshot_for_resolution() {
+        let temp = tempfile::tempdir().expect("temp");
+        let path = temp.path().join("activity.json");
+        let mut store = ActivityStore::load(path).expect("load");
+
+        let mut active = snapshot(1_000, false);
+        active.primary_issue = Some(issue());
+        store.record(&active, true).expect("initial");
+
+        let unavailable = SystemSnapshot::unavailable();
+        store.record(&unavailable, true).expect("gap");
+
+        let recovered = snapshot(5_000, false);
+        store.record(&recovered, true).expect("recovered");
+
+        assert!(store.events.iter().any(|event| {
+            event.kind == ActivityEventKind::IssueResolved
+                && event.title.starts_with("Resolved:")
+        }));
     }
 
     #[test]
