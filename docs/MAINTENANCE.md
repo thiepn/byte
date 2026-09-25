@@ -36,7 +36,8 @@ The command:
 5. updates `package.json`
 6. updates `package-lock.json`
 7. updates `src-tauri/Cargo.toml`
-8. updates `src-tauri/tauri.conf.json`
+8. updates `src-tauri/Cargo.lock`
+9. updates `src-tauri/tauri.conf.json`
 
 The resulting changes still require a normal PR and full certification.
 
