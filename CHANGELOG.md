@@ -4,6 +4,15 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ## [Unreleased]
 
+## [0.1.0]
+
+### Added
+
+- Initial Windows x64 Byte desktop companion with local system-health monitoring, companion modes, customization, collection extras, Settings, notifications, accessibility, and lifecycle-aware performance behavior.
+- Certified NSIS installer and portable distribution with checksums, release manifests, release certification, and GitHub build provenance.
+- Stable and Beta release-channel selection with explicit user-initiated update discovery.
+- Release preparation, weekly maintenance certification, compatibility checks, and certified hotfix tooling.
+
 ### Changed
 
 - Fresh installs do not start telemetry, desktop-awareness, or global-input background workers until onboarding is completed; finishing setup starts the normal local runtime while still respecting monitoring preferences and fullscreen, lock, and sleep suppression.
@@ -18,15 +27,6 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 - Tray/Quick Panel actions can no longer bypass first-run setup: tray clicks return to onboarding, and Move Mode stays unavailable until onboarding completes.
 - Eliminated an intermittent startup race by deferring all configured WebViews until after `AppState` is managed; early frontend IPC can no longer abort Byte with Windows status `0xC0000409`.
 - Startup failures now exit with a diagnosable error instead of escalating through a top-level panic.
-
-## [0.1.0]
-
-### Added
-
-- Initial Windows x64 Byte desktop companion with local system-health monitoring, companion modes, customization, collection extras, Settings, notifications, accessibility, and lifecycle-aware performance behavior.
-- Certified NSIS installer and portable distribution with checksums, release manifests, release certification, and GitHub build provenance.
-- Stable and Beta release-channel selection with explicit user-initiated update discovery.
-- Release preparation, weekly maintenance certification, compatibility checks, and certified hotfix tooling.
 
 ### Security
 
