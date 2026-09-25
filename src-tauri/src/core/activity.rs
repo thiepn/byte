@@ -136,12 +136,27 @@ impl ActivityStore {
     }
 
     pub fn clear(&mut self) -> Result<ActivitySnapshot, ByteError> {
+        let previous_events = self.events.clone();
+        let previous_trends = self.trends.clone();
+        let previous_snapshot = self.previous.clone();
+        let previous_last_trend_at = self.last_trend_at;
+        let previous_next_id = self.next_id;
+
         self.events.clear();
         self.trends.clear();
         self.previous = None;
         self.last_trend_at = None;
         self.next_id = 1;
-        self.save()?;
+
+        if let Err(error) = self.save() {
+            self.events = previous_events;
+            self.trends = previous_trends;
+            self.previous = previous_snapshot;
+            self.last_trend_at = previous_last_trend_at;
+            self.next_id = previous_next_id;
+            return Err(error);
+        }
+
         Ok(self.snapshot())
     }
 
