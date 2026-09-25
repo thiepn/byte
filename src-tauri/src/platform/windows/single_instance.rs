@@ -106,8 +106,7 @@ fn create_activation_event(name: &str) -> io::Result<(usize, u32)> {
 
 fn activation_loop(activation_event: usize, stop: Arc<AtomicBool>, app: AppHandle) {
     loop {
-        let result =
-            unsafe { WaitForSingleObject(activation_event as HANDLE, ACTIVATION_WAIT_MS) };
+        let result = unsafe { WaitForSingleObject(activation_event as HANDLE, ACTIVATION_WAIT_MS) };
 
         if stop.load(Ordering::Acquire) {
             break;
@@ -133,10 +132,7 @@ mod tests {
 
     #[test]
     fn duplicate_acquire_signals_the_existing_instance_and_releases_cleanly() {
-        let name = format!(
-            "Local\\io.github.thiepn.byte.test.{}",
-            std::process::id()
-        );
+        let name = format!("Local\\io.github.thiepn.byte.test.{}", std::process::id());
 
         let first = SingleInstanceGuard::acquire_named(&name)
             .expect("first acquire")
