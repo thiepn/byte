@@ -185,9 +185,9 @@
 
     const register = <T,>(
       eventName: string,
-      handler: (event: { payload: T }) => void,
+      handler: (payload: T) => void,
     ): void => {
-      void listen<T>(eventName, handler)
+      void listen<T>(eventName, (event) => handler(event.payload))
         .then((unlisten: UnlistenFn) => {
           if (disposed) unlisten();
           else cleanups.push(unlisten);
