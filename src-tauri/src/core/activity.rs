@@ -459,8 +459,7 @@ mod tests {
         store.record(&recovered, true).expect("recovered");
 
         assert!(store.events.iter().any(|event| {
-            event.kind == ActivityEventKind::IssueResolved
-                && event.title.starts_with("Resolved:")
+            event.kind == ActivityEventKind::IssueResolved && event.title.starts_with("Resolved:")
         }));
     }
 
