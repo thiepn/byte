@@ -1,7 +1,7 @@
 use crate::{
     core::{
         error::ByteError,
-        persistence::{read_bounded_text, BoundedText},
+        persistence::{quarantine_corrupt_file, read_bounded_text, BoundedText},
     },
     models::{
         AppPreferences, Confidence, IssueCategory, NotificationCategory, ResourceState, SystemIssue,
@@ -57,16 +57,21 @@ impl SmartNotificationEngine {
             fs::create_dir_all(parent)?;
         }
 
-        let (persisted, recovered) = match read_bounded_text(&path, MAX_NOTIFICATION_STATE_BYTES)? {
+        let (persisted, recovered, corrupt) = match read_bounded_text(&path, MAX_NOTIFICATION_STATE_BYTES)? {
             BoundedText::Present(raw) => match serde_json::from_str::<PersistedState>(&raw)
                 .ok()
                 .filter(|value| value.schema_version == STATE_SCHEMA_VERSION)
             {
-                Some(value) => (value, false),
-                None => (PersistedState::default(), true),
+                Some(value) => (value, false, false),
+                None => (PersistedState::default(), true, true),
             },
-            BoundedText::Invalid | BoundedText::Missing => (PersistedState::default(), true),
+            BoundedText::Invalid => (PersistedState::default(), true, true),
+            BoundedText::Missing => (PersistedState::default(), true, false),
         };
+
+        if corrupt {
+            let _ = quarantine_corrupt_file(&path);
+        }
 
         let engine = Self {
             path,
@@ -335,6 +340,19 @@ mod tests {
         let engine =
             SmartNotificationEngine::load(temp.path().join("notifications.json")).expect("load");
         (temp, engine)
+    }
+
+    #[test]
+    fn corrupt_notification_state_is_quarantined_before_recovery() {
+        let temp = tempfile::tempdir().expect("temp");
+        let path = temp.path().join("notifications.json");
+        fs::write(&path, "{ invalid").expect("write");
+
+        let engine = SmartNotificationEngine::load(path.clone()).expect("recover");
+
+        assert!(path.exists());
+        assert!(path.with_extension("corrupt.json").exists());
+        assert!(engine.persisted.last_sent_epoch_ms.is_empty());
     }
 
     #[test]
