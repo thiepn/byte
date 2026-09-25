@@ -19,7 +19,10 @@
     "tauri:build": "tauri build",
     "verify": "npm run check && npm run test && npm run build",
     "release:verify": "node scripts/verify-release-version.mjs",
-    "bundle:windows": "tauri build --bundles nsis"
+    "bundle:windows": "tauri build --bundles nsis",
+    "release:prepare": "node scripts/prepare-release.mjs",
+    "release:notes": "node scripts/extract-release-notes.mjs",
+    "maintenance:verify": "node scripts/verify-maintenance-policy.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.11.1",
