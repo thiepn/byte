@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "product": "Byte",
+  "repository": "thiepn/byte",
+  "release_channels": {
+    "stable": {
+      "tag_pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "github_surface": "https://github.com/thiepn/byte/releases/latest",
+      "automatic_download": false,
+      "automatic_install": false
+    },
+    "beta": {
+      "tag_pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+-beta\\.[0-9]+$",
+      "github_surface": "https://github.com/thiepn/byte/releases",
+      "automatic_download": false,
+      "automatic_install": false
+    }
+  },
+  "compatibility": {
+    "target": "x86_64-pc-windows-msvc",
+    "primary_user_os": "Windows 11 versions supported by Microsoft",
+    "ci_runners": [
+      "windows-2022",
+      "windows-2025"
+    ],
+    "webview2_required": true
+  },
+  "configuration": {
+    "current_schema": 9,
+    "minimum_migratable_schema": 1,
+    "downgrade_supported": false,
+    "user_data_preserved_on_uninstall": true
+  },
+  "maintenance": {
+    "security_audit_cadence": "weekly",
+    "dependency_updates": "dependabot-weekly",
+    "hotfix_strategy": "patch-forward",
+    "forced_auto_update": false
+  }
+}

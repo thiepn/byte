@@ -1,0 +1,84 @@
+name: Byte Maintenance
+
+on:
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  security-audit:
+    name: Weekly security audit
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+
+      - name: Rust
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Verify maintenance policy
+        run: npm run maintenance:verify
+
+      - name: Frontend dependency audit
+        run: npm audit --audit-level=high
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked --version 0.22.2
+
+      - name: Rust dependency audit
+        working-directory: src-tauri
+        run: cargo audit
+
+  compatibility:
+    name: Runtime compatibility (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-2025]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+
+      - name: Rust
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Verify release and maintenance metadata
+        run: |
+          npm run release:verify
+          npm run maintenance:verify
+
+      - name: Frontend type check
+        run: npm run check
+
+      - name: Rust tests
+        run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+
+      - name: Build release binary without installer
+        run: npm run tauri:build -- --no-bundle
+
+      - name: WebView2 and startup regression smoke
+        shell: pwsh
+        run: ./scripts/test-built-app-launch.ps1

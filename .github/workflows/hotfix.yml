@@ -1,0 +1,108 @@
+name: Byte Hotfix
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_tag:
+        description: "Published stable release being hotfixed (for example v1.2.3)"
+        required: true
+        type: string
+      hotfix_tag:
+        description: "New higher patch tag already reflected in source manifests (for example v1.2.4)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: byte-hotfix
+  cancel-in-progress: false
+
+jobs:
+  certify-and-tag:
+    runs-on: windows-latest
+    timeout-minutes: 50
+    env:
+      BASE_TAG: ${{ inputs.base_tag }}
+      HOTFIX_TAG: ${{ inputs.hotfix_tag }}
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+
+      - name: Rust
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Verify hotfix version and maintenance policy
+        shell: pwsh
+        run: |
+          npm run release:verify -- --tag $env:HOTFIX_TAG
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run maintenance:verify
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/verify-hotfix-version.mjs --base $env:BASE_TAG --current $env:HOTFIX_TAG
+
+      - name: Verify hotfix lineage
+        shell: pwsh
+        run: |
+          git rev-parse "$env:BASE_TAG^{commit}" *> $null
+          if ($LASTEXITCODE -ne 0) { throw "Base tag does not exist: $env:BASE_TAG" }
+          git merge-base --is-ancestor $env:BASE_TAG HEAD
+          if ($LASTEXITCODE -ne 0) { throw "main is not descended from the selected base release." }
+          git show-ref --verify --quiet "refs/tags/$env:HOTFIX_TAG"
+          if ($LASTEXITCODE -eq 0) { throw "Hotfix tag already exists: $env:HOTFIX_TAG" }
+
+      - name: Extract hotfix release notes
+        shell: pwsh
+        run: |
+          $version = $env:HOTFIX_TAG.TrimStart("v")
+          node scripts/extract-release-notes.mjs --version $version --output hotfix-notes.md
+
+      - name: Frontend dependency audit
+        run: npm audit --audit-level=high
+
+      - name: Frontend verification
+        run: |
+          npm run check
+          npm run test
+          npm run build
+
+      - name: Rust format and tests
+        run: |
+          cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+          cargo test --locked --manifest-path src-tauri/Cargo.toml
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked --version 0.22.2
+
+      - name: Rust dependency audit
+        working-directory: src-tauri
+        run: cargo audit
+
+      - name: Rust clippy and check
+        run: |
+          cargo clippy --locked --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+          cargo check --locked --manifest-path src-tauri/Cargo.toml
+
+      - name: Create certified hotfix tag
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a $env:HOTFIX_TAG -m "Certified Byte hotfix $env:HOTFIX_TAG from $env:BASE_TAG"
+          git push origin "refs/tags/$env:HOTFIX_TAG"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
