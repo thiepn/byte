@@ -136,7 +136,11 @@
     try {
       preferences = await setDisplayMode(mode);
       if (mode === "TRAY") {
-        await closePanel();
+        try {
+          await closePanel();
+        } catch {
+          actionError = "Tray mode changed, but Byte could not close the Quick Panel.";
+        }
       }
     } catch {
       actionError = "Byte could not change display mode.";
@@ -166,7 +170,11 @@
 
     try {
       shell = await beginMoveMode();
-      await closePanel();
+      try {
+        await closePanel();
+      } catch {
+        actionError = "Move Mode started, but Byte could not close the Quick Panel.";
+      }
     } catch {
       actionError = "Byte could not enter Move Mode.";
     } finally {
