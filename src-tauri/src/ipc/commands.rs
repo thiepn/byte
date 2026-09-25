@@ -165,13 +165,31 @@ pub fn update_companion_preferences(
     validate_companion_preferences(&preferences)?;
     state.validate_collection_preferences(&preferences)?;
 
+    let previous = state
+        .config
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .snapshot()
+        .companion;
+
     let config = state
         .config
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
         .update_companion(preferences)?;
 
-    windowing::apply_companion_layout(&app, &config.companion)?;
+    if let Err(error) = windowing::apply_companion_layout(&app, &config.companion) {
+        let rollback = state
+            .config
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .update_companion(previous.clone());
+        if rollback.is_ok() {
+            let _ = windowing::apply_companion_layout(&app, &previous);
+        }
+        return Err(error);
+    }
+
     let _ = app.emit_to(
         "companion",
         "byte://companion-preferences-changed",
