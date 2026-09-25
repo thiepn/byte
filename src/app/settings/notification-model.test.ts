@@ -29,6 +29,7 @@ function preferences(): AppPreferences {
     reduce_motion: false,
     high_contrast: false,
     text_scale_percent: 100,
+    update_channel: "STABLE",
     onboarding_completed: true,
   };
 }
