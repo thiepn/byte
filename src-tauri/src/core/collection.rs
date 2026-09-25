@@ -90,7 +90,8 @@ impl CollectionStore {
         }
 
         let now = now_epoch_ms();
-        let (data, recovered, corrupt) = match read_bounded_text(&path, MAX_COLLECTION_FILE_BYTES)? {
+        let (data, recovered, corrupt) = match read_bounded_text(&path, MAX_COLLECTION_FILE_BYTES)?
+        {
             BoundedText::Present(raw) => match serde_json::from_str::<CollectionData>(&raw)
                 .ok()
                 .filter(|value| value.schema_version == COLLECTION_SCHEMA_VERSION)
