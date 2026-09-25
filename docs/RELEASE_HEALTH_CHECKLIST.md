@@ -26,6 +26,7 @@ On a currently supported Windows 11 desktop:
 - [ ] Main app opens and closes-to-tray correctly.
 - [ ] Companion appears in at least Habitat and Mini mode.
 - [ ] Move Mode works.
+- [ ] Launching Byte again while it is already running activates/focuses the existing Byte process and does not leave a second long-lived process.
 - [ ] Startup preference can be enabled/disabled.
 - [ ] Fullscreen suppression restores correctly.
 - [ ] Notification permission surface behaves normally.
