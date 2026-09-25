@@ -110,6 +110,11 @@ pub fn update_app_preferences(
     }
 
     let _ = windowing::apply_capture_affinity(&app, preferences.exclude_from_capture);
+
+    if !previous.onboarding_completed && preferences.onboarding_completed {
+        let _ = windowing::apply_companion_layout(&app, &config.companion);
+    }
+
     state.lifecycle.wake_waiters();
 
     let _ = app.emit("byte://app-preferences-changed", preferences);
