@@ -6,7 +6,7 @@ use crate::{
         lifecycle::{background_work_suspended, LifecycleState},
         state::AppState,
     },
-    models::SystemStatus,
+    models::{AppPreferences, SystemStatus},
 };
 use std::{
     thread,
@@ -59,6 +59,15 @@ fn sampling_interval(
         Some(SystemStatus::Busy) => BUSY_SAMPLE_INTERVAL,
         Some(SystemStatus::Calm) | None => CALM_SAMPLE_INTERVAL,
     }
+}
+
+fn notifications_allowed(
+    preferences: &AppPreferences,
+    visibility_suppressed: bool,
+) -> bool {
+    preferences.onboarding_completed
+        && preferences.notifications_enabled
+        && !visibility_suppressed
 }
 
 #[cfg(target_os = "windows")]
@@ -123,7 +132,7 @@ fn run_worker(app: AppHandle) {
             }
 
             let issues = diagnostics.active_issues();
-            if !state.is_visibility_suppressed() {
+            if notifications_allowed(&app_preferences, state.is_visibility_suppressed()) {
                 if let Some(notification) = state.next_smart_notification(
                     evaluated.timestamp_epoch_ms,
                     issues,
@@ -212,6 +221,26 @@ mod tests {
     #[test]
     fn repeated_sampling_failures_cross_unavailable_threshold() {
         assert_eq!(SAMPLE_FAILURE_UNAVAILABLE_THRESHOLD, 2);
+    }
+
+    #[test]
+    fn notifications_wait_until_onboarding_is_complete() {
+        let fresh_install = AppPreferences::default();
+        assert!(!notifications_allowed(&fresh_install, false));
+
+        let completed = AppPreferences {
+            onboarding_completed: true,
+            ..AppPreferences::default()
+        };
+        assert!(notifications_allowed(&completed, false));
+        assert!(!notifications_allowed(&completed, true));
+
+        let disabled = AppPreferences {
+            onboarding_completed: true,
+            notifications_enabled: false,
+            ..AppPreferences::default()
+        };
+        assert!(!notifications_allowed(&disabled, false));
     }
 
     #[test]
