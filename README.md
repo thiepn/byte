@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–28 are implemented.
+Phases 1–28 are implemented, followed by the post-v0.1 P1–P4 hardening track.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -43,6 +43,7 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Phase 26 makes Byte distributable: a current-user NSIS installer, stable `Byte.exe` binary naming, downgrade protection, WebView2 bootstrap recovery, uninstall cleanup for the HKCU startup entry, version/tag invariants, portable ZIP + release manifest + SHA-256 artifacts, real install/reinstall/uninstall packaging CI, optional Windows Authenticode signing, and tag-driven GitHub Releases.
 - Phase 27 certifies the actual downloadable binaries: staged-artifact SHA-256 validation, x64 PE/version checks, portable launch smoke testing, application-data preservation across reinstall/uninstall, machine-readable release certification, exact-main release candidates, and GitHub provenance attestations verified before tagged releases are published.
 - Phase 28 establishes post-release maintenance: explicit Stable/Beta update channels without background polling, schema-v9 migration policy, monotonic release-preparation tooling, changelog-backed release notes, grouped Dependabot maintenance, weekly security and Windows/WebView2 regression jobs, a patch-forward certified hotfix workflow, and a formal release-health checklist.
+- Post-v0.1 P1 hardens Windows signing/trust and distribution; P2 redesigns the application UI/UX and extends interface scaling through 200%; P3 polishes companion behavior and the Customization Studio; P4 adds packaged real-world product-state certification plus an explicit physical-device signoff matrix.
 - Activity persists only meaningful events locally; trend points are session-only and globally bounded.
 - Customization and personality are entirely local; there is no account, store, virtual currency, unlock timer, or cloud inventory.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
@@ -53,7 +54,7 @@ Official Windows builds are published from the [GitHub Releases](https://github.
 
 - **Installer:** `Byte-vX.Y.Z-windows-x64-setup.exe` — recommended for normal use.
 - **Portable:** `Byte-vX.Y.Z-windows-x64-portable.zip` — contains the standalone `Byte.exe`.
-- Every certified release also includes `SHA256SUMS.txt`, `release-manifest.json`, and `release-certification.json`.
+- Every certified release also includes `SHA256SUMS.txt`, `release-manifest.json`, `product-certification.json`, and `release-certification.json`.
 - Installer and portable artifacts from tagged releases receive GitHub build-provenance attestations.
 - **Future public releases after v0.1.0 are required to be Authenticode-signed and timestamped.** The tagged release workflow refuses publication if the installer and portable executable are unsigned, use different signers, or lack timestamps.
 - Byte v0.1.0 predates that fail-closed policy and is intentionally recorded as unsigned, so Windows SmartScreen can show an unknown-publisher warning for that release.
@@ -123,5 +124,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Final release certification](docs/RELEASE_CERTIFICATION.md)
 - [Post-release maintenance](docs/MAINTENANCE.md)
 - [Release health checklist](docs/RELEASE_HEALTH_CHECKLIST.md)
+- [P4 real-world product certification](docs/REAL_WORLD_PRODUCT_CERTIFICATION.md)
 
 The planned production roadmap is complete through Phase 28. Ongoing work should now enter the maintenance/release process instead of creating another catch-all feature phase.
