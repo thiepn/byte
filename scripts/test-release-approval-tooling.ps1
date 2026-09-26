@@ -39,7 +39,11 @@ $requiredRunnerFragments = @(
   'automatic_tag_created = $false',
   'automatic_release_published = $false',
   'working tree is not clean',
-  'local main'
+  'local main',
+  'VerifyOnly is side-effect-free',
+  'Remote main moved during physical signoff',
+  'More than one new workflow_dispatch run appeared',
+  'thiepn/byte repository'
 )
 foreach ($fragment in $requiredRunnerFragments) {
   if (-not $runner.Contains($fragment)) {
@@ -67,7 +71,8 @@ $requiredVerifierFragments = @(
   'automatic_release_published -ne $false',
   "device-report hash mismatch",
   "signed, timestamped artifacts from the same signer",
-  "public-release-ready physical device report"
+  "public-release-ready physical device report",
+  "candidate-type mismatch"
 )
 foreach ($fragment in $requiredVerifierFragments) {
   if (-not $verifier.Contains($fragment)) {
