@@ -267,6 +267,10 @@ if ([string]::IsNullOrWhiteSpace($DownloadRoot)) {
 }
 $DownloadRoot = [IO.Path]::GetFullPath($DownloadRoot)
 
+if ($VerifyOnly -and [string]::IsNullOrWhiteSpace($CandidateDir) -and -not $ReuseExistingCandidate) {
+  throw "VerifyOnly is side-effect-free: provide -CandidateDir or add -ReuseExistingCandidate."
+}
+
 $run = $null
 if ([string]::IsNullOrWhiteSpace($CandidateDir)) {
   $candidatePath = Join-Path $DownloadRoot ("candidate-" + $CandidateType + "-" + $remoteMain)
