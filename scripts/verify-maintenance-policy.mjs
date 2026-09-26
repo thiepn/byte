@@ -7,6 +7,7 @@ const configSource = fs.readFileSync("src-tauri/src/core/config.rs", "utf8");
 const releaseWorkflow = fs.readFileSync(".github/workflows/release.yml", "utf8");
 const packageWorkflow = fs.readFileSync(".github/workflows/package.yml", "utf8");
 const ciWorkflow = fs.readFileSync(".github/workflows/ci.yml", "utf8");
+const deviceCandidateWorkflow = fs.readFileSync(".github/workflows/device-signoff-candidate.yml", "utf8");
 
 
 if (policy.schema_version !== 1 || policy.product !== "Byte" || policy.repository !== "thiepn/byte") {
@@ -60,7 +61,9 @@ if (!physicalSignoff ||
     JSON.stringify(physicalSignoff.thresholds) !== JSON.stringify(expectedPhysicalThresholds) ||
     physicalSignoff.public_release_requires_signed_candidate !== true ||
     physicalSignoff.public_release_requires_dual_display_coverage !== true ||
-    physicalSignoff.public_release_allows_capability_gaps !== false) {
+    physicalSignoff.public_release_allows_capability_gaps !== false ||
+    physicalSignoff.signed_candidate_workflow !== ".github/workflows/device-signoff-candidate.yml" ||
+    physicalSignoff.signed_candidate_retention_days !== 14) {
   throw new Error("Physical Windows device signoff policy is incomplete or has been weakened.");
 }
 for (const script of [
@@ -74,8 +77,31 @@ for (const script of [
 }
 if (!ciWorkflow.includes("test-physical-device-signoff-tooling.ps1") ||
     !packageWorkflow.includes("test-physical-device-signoff-tooling.ps1") ||
-    !releaseWorkflow.includes("test-physical-device-signoff-tooling.ps1")) {
-  throw new Error("CI, packaging, and tagged release workflows must validate the physical-device signoff tooling.");
+    !releaseWorkflow.includes("test-physical-device-signoff-tooling.ps1") ||
+    !deviceCandidateWorkflow.includes("test-physical-device-signoff-tooling.ps1")) {
+  throw new Error("CI, packaging, tagged release, and signed-device-candidate workflows must validate the physical-device signoff tooling.");
+}
+
+const requiredDeviceCandidateFragments = [
+  "workflow_dispatch",
+  "prepare-windows-signing.ps1 -RequireSigning",
+  "build-windows-release.ps1 -RequireSigning",
+  "stage-release.ps1 -RequireSigning",
+  "test-windows-installer.ps1 -Installer $installer -RequireSigning",
+  "finalize-release-certification.ps1 -RequireSigning",
+  "verify-release-artifacts.ps1 -RequireCertification -RequireSigning",
+  "byte-device-signoff-candidate-${{ github.sha }}",
+  "cleanup-windows-signing.ps1",
+];
+for (const fragment of requiredDeviceCandidateFragments) {
+  if (!deviceCandidateWorkflow.includes(fragment)) {
+    throw new Error("Signed device candidate workflow is missing required gate: " + fragment);
+  }
+}
+if (deviceCandidateWorkflow.includes("gh release create") ||
+    deviceCandidateWorkflow.includes("gh release upload") ||
+    deviceCandidateWorkflow.includes("Publish GitHub Release")) {
+  throw new Error("Signed device candidate workflow must never publish a GitHub Release.");
 }
 
 const distribution = policy.distribution;
