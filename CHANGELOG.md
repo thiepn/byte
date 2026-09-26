@@ -6,12 +6,15 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ### Added
 
+- Added P3 companion polish: bounded interaction-driven habitat ambience in the live companion and Customization Studio preview, with reduced-motion suppression and the existing global particle cap preserved.
 - Added Application UI/UX V2: icon-led navigation, clearer Overview/Activity/Apps hierarchy, companion presence in the application shell, richer empty/error/privacy states, and interface-scale choices through 200%.
 - Added a fail-closed Windows trust pipeline for future public releases: Authenticode signer metadata, timestamp verification, installed-binary signer checks, and fresh public-download verification.
 - Added a dedicated Windows trust/code-signing runbook with certificate setup, rotation, SmartScreen expectations, and user verification commands.
 
 ### Changed
 
+- Refined companion behavior so incidental idles avoid immediate repetition and pointer/typing personality reactions rotate through authored alternatives with short anti-spam cooldowns.
+- Polished the Customization Studio around a larger live-preview focus, clearer section navigation, richer choice cards, and a more useful current-look summary.
 - Refined the application visual system with stronger typography, spacing, surfaces, status hierarchy, responsive behavior, and automatic shell compaction at 150–200% interface scaling.
 - Future tagged Stable and Beta releases now require valid timestamped Authenticode signatures on both the NSIS installer and portable `Byte.exe`; unsigned PR/`main` candidates remain supported.
 - Windows package metadata now uses publisher `THIEPN` and the Byte product homepage at `https://thiepn.dev/byte/`.
