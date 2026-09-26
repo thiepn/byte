@@ -16,7 +16,7 @@ Every pull request/main packaging candidate and every public tagged release runs
 
 against the staged portable production build.
 
-The harness uses isolated roaming-app-data roots and exercises the real packaged `Byte.exe`, not a mocked frontend.
+The harness exercises the real packaged `Byte.exe`, not a mocked frontend. On Windows, Tauri resolves `app_config_dir()` through the OS known-folder API rather than an arbitrary `APPDATA` environment override, so P4 backs up the runner's actual Byte app-config directory, resets it between scenarios, and restores any pre-existing state afterward.
 
 ### Fresh first run
 
