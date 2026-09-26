@@ -174,35 +174,84 @@ function Get-ByteProcess([string]$ExePath) {
   return $process
 }
 
-function Get-GpuPercentForPid([int]$Pid) {
+function Get-ProcessTreeIds([int]$RootPid) {
+  try {
+    $rows = @(Get-CimInstance Win32_Process -ErrorAction Stop |
+      Select-Object ProcessId, ParentProcessId)
+  } catch {
+    return @($RootPid)
+  }
+
+  $children = @{}
+  foreach ($row in $rows) {
+    $parent = [int]$row.ParentProcessId
+    if (-not $children.ContainsKey($parent)) {
+      $children[$parent] = [System.Collections.Generic.List[int]]::new()
+    }
+    $children[$parent].Add([int]$row.ProcessId)
+  }
+
+  $seen = [System.Collections.Generic.HashSet[int]]::new()
+  $queue = [System.Collections.Generic.Queue[int]]::new()
+  [void]$seen.Add($RootPid)
+  $queue.Enqueue($RootPid)
+
+  while ($queue.Count -gt 0) {
+    $current = $queue.Dequeue()
+    if (-not $children.ContainsKey($current)) { continue }
+    foreach ($child in $children[$current]) {
+      if ($seen.Add($child)) {
+        $queue.Enqueue($child)
+      }
+    }
+  }
+
+  return @($seen)
+}
+
+function Get-GpuPercentForPids([int[]]$Pids) {
   try {
     $counter = Get-Counter '\GPU Engine(*)\Utilization Percentage' -ErrorAction Stop
-    $samples = @($counter.CounterSamples | Where-Object {
-      $_.InstanceName -match ("pid_" + $Pid + "_")
-    })
-    if ($samples.Count -eq 0) {
-      return $null
+    $pidSet = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($pidValue in $Pids) { [void]$pidSet.Add([int]$pidValue) }
+
+    $total = 0.0
+    $found = $false
+    foreach ($sample in $counter.CounterSamples) {
+      if ($sample.InstanceName -match 'pid_(\d+)_') {
+        $samplePid = [int]$matches[1]
+        if ($pidSet.Contains($samplePid)) {
+          $total += [Math]::Max(0, [double]$sample.CookedValue)
+          $found = $true
+        }
+      }
     }
-    return [Math]::Max(0, [double](($samples | Measure-Object CookedValue -Sum).Sum))
+
+    if (-not $found) { return $null }
+    return $total
   } catch {
     return $null
   }
 }
 
-function Get-ProcessPerfData([int]$Pid) {
+function Get-ProcessPerfDataForPids([int[]]$Pids) {
   try {
-    return Get-CimInstance Win32_PerfFormattedData_PerfProc_Process -ErrorAction Stop |
-      Where-Object { [int]$_.IDProcess -eq $Pid } |
-      Select-Object -First 1
+    $pidSet = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($pidValue in $Pids) { [void]$pidSet.Add([int]$pidValue) }
+    return @(Get-CimInstance Win32_PerfFormattedData_PerfProc_Process -ErrorAction Stop |
+      Where-Object { $pidSet.Contains([int]$_.IDProcess) })
   } catch {
-    return $null
+    return @()
   }
 }
 
-function Get-RemoteTcpCount([int]$Pid) {
+function Get-RemoteTcpCountForPids([int[]]$Pids) {
   try {
-    $connections = @(Get-NetTCPConnection -OwningProcess $Pid -State Established -ErrorAction Stop |
+    $pidSet = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($pidValue in $Pids) { [void]$pidSet.Add([int]$pidValue) }
+    $connections = @(Get-NetTCPConnection -State Established -ErrorAction Stop |
       Where-Object {
+        $pidSet.Contains([int]$_.OwningProcess) -and
         $_.RemoteAddress -notin @("127.0.0.1", "::1", "0.0.0.0", "::")
       })
     return $connections.Count
@@ -237,9 +286,8 @@ function Measure-ByteState(
   $remoteTcp = [System.Collections.Generic.List[int]]::new()
   $handlePeak = 0
   $threadPeak = 0
-
-  $Process.Refresh()
-  $previousCpu = $Process.TotalProcessorTime.TotalSeconds
+  $processTreePeak = 0
+  $previousCpuByPid = @{}
   $previousAt = [DateTime]::UtcNow
   $startedAt = [DateTime]::UtcNow
 
@@ -249,31 +297,66 @@ function Measure-ByteState(
       throw "Byte exited during physical-device performance state $Name."
     }
 
-    $Process.Refresh()
+    $pids = @(Get-ProcessTreeIds $Process.Id)
+    $processTreePeak = [Math]::Max($processTreePeak, $pids.Count)
+    $processes = @()
+    foreach ($pidValue in $pids) {
+      try {
+        $processes += Get-Process -Id $pidValue -ErrorAction Stop
+      } catch {
+        # A short-lived WebView2 helper can disappear between tree discovery and sampling.
+      }
+    }
+
     $now = [DateTime]::UtcNow
     $elapsed = [Math]::Max(0.001, ($now - $previousAt).TotalSeconds)
-    $currentCpu = $Process.TotalProcessorTime.TotalSeconds
-    $cpuPercent = (($currentCpu - $previousCpu) / $elapsed / $logicalProcessors) * 100.0
-    $previousCpu = $currentCpu
     $previousAt = $now
+    $sampleCpuSeconds = 0.0
+    $sampleWorkingSet = 0.0
+    $samplePrivate = 0.0
+    $sampleHandles = 0
+    $sampleThreads = 0
+    $livePidSet = [System.Collections.Generic.HashSet[int]]::new()
 
-    $workingSet.Add([double]$Process.WorkingSet64 / 1MB)
-    $privateMemory.Add([double]$Process.PrivateMemorySize64 / 1MB)
+    foreach ($item in $processes) {
+      $item.Refresh()
+      $pidValue = [int]$item.Id
+      [void]$livePidSet.Add($pidValue)
+      $currentCpu = $item.TotalProcessorTime.TotalSeconds
+      if ($previousCpuByPid.ContainsKey($pidValue)) {
+        $sampleCpuSeconds += [Math]::Max(0, $currentCpu - [double]$previousCpuByPid[$pidValue])
+      }
+      $previousCpuByPid[$pidValue] = $currentCpu
+      $sampleWorkingSet += [double]$item.WorkingSet64 / 1MB
+      $samplePrivate += [double]$item.PrivateMemorySize64 / 1MB
+      $sampleHandles += [int]$item.HandleCount
+      $sampleThreads += [int]$item.Threads.Count
+    }
+
+    foreach ($pidKey in @($previousCpuByPid.Keys)) {
+      if (-not $livePidSet.Contains([int]$pidKey)) {
+        $previousCpuByPid.Remove($pidKey)
+      }
+    }
+
+    $cpuPercent = ($sampleCpuSeconds / $elapsed / $logicalProcessors) * 100.0
+    $workingSet.Add($sampleWorkingSet)
+    $privateMemory.Add($samplePrivate)
     $cpu.Add([Math]::Max(0, $cpuPercent))
-    $handlePeak = [Math]::Max($handlePeak, [int]$Process.HandleCount)
-    $threadPeak = [Math]::Max($threadPeak, [int]$Process.Threads.Count)
+    $handlePeak = [Math]::Max($handlePeak, $sampleHandles)
+    $threadPeak = [Math]::Max($threadPeak, $sampleThreads)
 
-    $perf = Get-ProcessPerfData $Process.Id
-    if ($null -ne $perf) {
-      $diskWrites.Add([double]$perf.IOWriteBytesPerSec)
+    $perfRows = @(Get-ProcessPerfDataForPids $pids)
+    if ($perfRows.Count -gt 0) {
+      $diskWrites.Add([double](($perfRows | Measure-Object IOWriteBytesPerSec -Sum).Sum))
     }
 
     if (($workingSet.Count % 5) -eq 0) {
-      $gpuPercent = Get-GpuPercentForPid $Process.Id
+      $gpuPercent = Get-GpuPercentForPids $pids
       if ($null -ne $gpuPercent) {
         $gpu.Add([double]$gpuPercent)
       }
-      $remoteCount = Get-RemoteTcpCount $Process.Id
+      $remoteCount = Get-RemoteTcpCountForPids $pids
       if ($null -ne $remoteCount) {
         $remoteTcp.Add([int]$remoteCount)
       }
@@ -331,6 +414,7 @@ function Measure-ByteState(
       private_memory_peak_mb = [Math]::Round($peakPrivate, 2)
       handle_peak = $handlePeak
       thread_peak = $threadPeak
+      process_tree_peak = $processTreePeak
       gpu_average_percent = if ($null -eq $avgGpu) { $null } else { [Math]::Round($avgGpu, 4) }
       disk_write_average_bytes_per_sec = if ($null -eq $avgDiskWrite) { $null } else { [Math]::Round($avgDiskWrite, 2) }
       max_non_loopback_established_tcp_connections = $maxRemoteTcp
@@ -468,7 +552,7 @@ Prepare to lock Windows or turn the display off. After pressing Enter, you have 
   )
   $manualPass = $true
   foreach ($name in $requiredManualGroups) {
-    if ($manual.$name.status -ne "PASS") {
+    if ($manual[$name].status -ne "PASS") {
       $manualPass = $false
     }
   }
