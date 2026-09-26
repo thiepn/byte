@@ -162,6 +162,10 @@ jobs:
         shell: pwsh
         run: ./scripts/verify-release-artifacts.ps1 -RequireCertification -RequireSigning
 
+      - name: Test physical device report verifier
+        shell: pwsh
+        run: ./scripts/test-physical-device-signoff-verifier.ps1 -CandidateDir release-artifacts -RequireSigning
+
       - name: Attest installer provenance
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
