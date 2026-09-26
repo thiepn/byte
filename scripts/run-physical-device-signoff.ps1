@@ -157,14 +157,25 @@ function Read-Result(
 
 function Get-ByteProcess([string]$ExePath) {
   $resolved = (Resolve-Path $ExePath).Path
-  $matching = @(Get-Process -Name "Byte" -ErrorAction SilentlyContinue | Where-Object {
-    try {
-      $_.Path -and ((Resolve-Path $_.Path).Path -eq $resolved)
-    } catch {
-      $false
-    }
-  })
+  $allByte = @(Get-Process -Name "Byte" -ErrorAction SilentlyContinue)
+  $matching = @()
+  $foreign = @()
 
+  foreach ($item in $allByte) {
+    try {
+      if ($item.Path -and ((Resolve-Path $item.Path).Path -eq $resolved)) {
+        $matching += $item
+      } else {
+        $foreign += $item
+      }
+    } catch {
+      $foreign += $item
+    }
+  }
+
+  if ($foreign.Count -gt 0) {
+    throw "A different Byte build is already running. Close every other Byte instance, or pass -Executable for the exact installed candidate you intend to measure."
+  }
   if ($matching.Count -gt 1) {
     throw "Multiple matching Byte processes are running."
   }
