@@ -44,6 +44,10 @@ jobs:
         shell: pwsh
         run: ./scripts/test-physical-device-signoff-tooling.ps1
 
+      - name: Verify release approval tooling
+        shell: pwsh
+        run: ./scripts/test-release-approval-tooling.ps1
+
       - name: Verify Windows signing policy harness
         shell: pwsh
         run: ./scripts/test-windows-signing-policy.ps1
@@ -95,6 +99,11 @@ jobs:
       - name: Test physical device report verifier
         shell: pwsh
         run: ./scripts/test-physical-device-signoff-verifier.ps1 -CandidateDir release-artifacts
+
+      - name: Test release approval verifier
+        shell: pwsh
+        run: ./scripts/test-release-approval-verifier.ps1 -CandidateDir release-artifacts
+
 
       - name: Upload certified release candidate
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
