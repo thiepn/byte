@@ -40,6 +40,10 @@ jobs:
       - name: Verify maintenance policy
         run: npm run maintenance:verify
 
+      - name: Verify Windows signing policy harness
+        shell: pwsh
+        run: ./scripts/test-windows-signing-policy.ps1
+
       - name: Verify current release notes extraction
         shell: pwsh
         run: |
