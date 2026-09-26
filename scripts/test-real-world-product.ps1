@@ -36,36 +36,41 @@ if (!(Test-Path $exe)) {
   throw "Portable archive does not contain Byte.exe."
 }
 
-$originalAppData = $env:APPDATA
+$roamingAppData = [Environment]::GetFolderPath([Environment+SpecialFolder]::ApplicationData)
+$appConfigRoot = Join-Path $roamingAppData $identifier
+$appConfigBackup = Join-Path $temp "preexisting-byte-app-config"
+$hadPreexistingAppConfig = Test-Path $appConfigRoot
+if ($hadPreexistingAppConfig) {
+  Copy-Item $appConfigRoot $appConfigBackup -Recurse -Force
+}
+
 $scenarioResults = [System.Collections.Generic.List[object]]::new()
 $activeProcess = $null
 
-function New-AppDataRoot([string]$Name) {
-  $safeName = $Name -replace '[^A-Za-z0-9._-]', '-'
-  $path = Join-Path $temp ("appdata-" + $safeName)
-  New-Item -ItemType Directory -Path $path -Force | Out-Null
-  return $path
+function Reset-AppConfigRoot {
+  if (Test-Path $appConfigRoot) {
+    Remove-Item $appConfigRoot -Recurse -Force
+  }
+  New-Item -ItemType Directory -Path $appConfigRoot -Force | Out-Null
 }
 
-function Get-ConfigPath([string]$AppDataRoot) {
-  return Join-Path (Join-Path $AppDataRoot $identifier) "config.json"
+function Get-ConfigPath {
+  return Join-Path $appConfigRoot "config.json"
 }
 
 function Copy-Config([object]$Value) {
   return ($Value | ConvertTo-Json -Depth 20 | ConvertFrom-Json)
 }
 
-function Write-Config([string]$AppDataRoot, [object]$Value) {
-  $path = Get-ConfigPath $AppDataRoot
-  $directory = Split-Path $path -Parent
-  New-Item -ItemType Directory -Path $directory -Force | Out-Null
+function Write-Config([object]$Value) {
+  $path = Get-ConfigPath
   $Value | ConvertTo-Json -Depth 20 | Set-Content $path -Encoding utf8
 }
 
-function Read-Config([string]$AppDataRoot) {
-  $path = Get-ConfigPath $AppDataRoot
+function Read-Config {
+  $path = Get-ConfigPath
   if (!(Test-Path $path)) {
-    throw "Byte did not create or preserve config.json for $AppDataRoot."
+    throw "Byte did not create or preserve config.json in its Windows app_config_dir: $appConfigRoot."
   }
   return Get-Content $path -Raw | ConvertFrom-Json
 }
@@ -105,11 +110,9 @@ function Stop-ByteProcess([System.Diagnostics.Process]$Process) {
 
 function Invoke-Scenario(
   [string]$Name,
-  [string]$AppDataRoot,
   [int]$ObservationSeconds,
   [switch]$RunawayGuardrail
 ) {
-  $env:APPDATA = $AppDataRoot
   $stdoutPath = Join-Path $temp ($Name + ".stdout.log")
   $stderrPath = Join-Path $temp ($Name + ".stderr.log")
   $activeProcess = Start-Process -FilePath $exe -PassThru `
@@ -181,9 +184,9 @@ function Invoke-Scenario(
 
 try {
   # 1. Fresh install / first-run boundary.
-  $freshRoot = New-AppDataRoot "fresh-first-run"
-  Invoke-Scenario "fresh-first-run" $freshRoot $ProfileObservationSeconds
-  $baseline = Read-Config $freshRoot
+  Reset-AppConfigRoot
+  Invoke-Scenario "fresh-first-run" $ProfileObservationSeconds
+  $baseline = Read-Config
 
   if ([int]$baseline.schema_version -ne $currentSchema) {
     throw "Fresh config schema mismatch: $($baseline.schema_version) != $currentSchema."
@@ -210,7 +213,7 @@ try {
   )
 
   foreach ($profile in $profiles) {
-    $root = New-AppDataRoot $profile.Name
+    Reset-AppConfigRoot
     $profileConfig = Copy-Config $baseline
     $profileConfig.app.onboarding_completed = $true
     $profileConfig.app.launch_at_startup = $false
@@ -222,10 +225,10 @@ try {
     $profileConfig.app.system_monitoring_enabled = [bool]$profile.Monitoring
     $profileConfig.companion.display_mode = [string]$profile.Mode
     $profileConfig.companion.size = [string]$profile.Size
-    Write-Config $root $profileConfig
+    Write-Config $profileConfig
 
-    Invoke-Scenario $profile.Name $root $ProfileObservationSeconds
-    $persisted = Read-Config $root
+    Invoke-Scenario $profile.Name $ProfileObservationSeconds
+    $persisted = Read-Config
 
     if (-not [bool]$persisted.app.onboarding_completed) {
       throw "Returning-user profile '$($profile.Name)' lost onboarding completion."
@@ -242,16 +245,16 @@ try {
   }
 
   # 3. Runtime migration from the immediately preceding schema.
-  $legacyRoot = New-AppDataRoot "schema-v8-runtime-migration"
+  Reset-AppConfigRoot
   $legacy = Copy-Config $baseline
   $legacy.schema_version = 8
   $legacy.app.onboarding_completed = $true
   $legacy.app.notifications_enabled = $false
   [void]$legacy.app.PSObject.Properties.Remove("update_channel")
-  Write-Config $legacyRoot $legacy
+  Write-Config $legacy
 
-  Invoke-Scenario "schema-v8-runtime-migration" $legacyRoot $ProfileObservationSeconds
-  $migrated = Read-Config $legacyRoot
+  Invoke-Scenario "schema-v8-runtime-migration" $ProfileObservationSeconds
+  $migrated = Read-Config
   if ([int]$migrated.schema_version -ne $currentSchema) {
     throw "Runtime config migration did not reach schema $currentSchema."
   }
@@ -260,13 +263,12 @@ try {
   }
 
   # 4. Corrupt persisted state must quarantine and recover during a real launch.
-  $corruptRoot = New-AppDataRoot "corrupt-config-recovery"
-  $corruptPath = Get-ConfigPath $corruptRoot
-  New-Item -ItemType Directory -Path (Split-Path $corruptPath -Parent) -Force | Out-Null
+  Reset-AppConfigRoot
+  $corruptPath = Get-ConfigPath
   Set-Content $corruptPath "{ definitely not valid Byte configuration" -Encoding utf8
 
-  Invoke-Scenario "corrupt-config-recovery" $corruptRoot $ProfileObservationSeconds
-  $recovered = Read-Config $corruptRoot
+  Invoke-Scenario "corrupt-config-recovery" $ProfileObservationSeconds
+  $recovered = Read-Config
   if ([int]$recovered.schema_version -ne $currentSchema) {
     throw "Corrupt config recovery did not restore the current schema."
   }
@@ -278,7 +280,7 @@ try {
   # 5. Sustained returning-user session. The limits here are intentionally
   # runaway guardrails for CI, not claims about the tighter representative-PC
   # performance targets documented in docs/PERFORMANCE.md.
-  $longRoot = New-AppDataRoot "sustained-session"
+  Reset-AppConfigRoot
   $longConfig = Copy-Config $baseline
   $longConfig.app.onboarding_completed = $true
   $longConfig.app.launch_at_startup = $false
@@ -287,8 +289,8 @@ try {
   $longConfig.app.text_scale_percent = 125
   $longConfig.app.system_monitoring_enabled = $true
   $longConfig.companion.display_mode = "HABITAT"
-  Write-Config $longRoot $longConfig
-  Invoke-Scenario "sustained-session" $longRoot $LongSessionSeconds -RunawayGuardrail
+  Write-Config $longConfig
+  Invoke-Scenario "sustained-session" $LongSessionSeconds -RunawayGuardrail
 
   $certification = [ordered]@{
     schema_version = 1
@@ -341,7 +343,14 @@ try {
   Write-Host "Automated real-world product certification passed for Byte v$version."
   Write-Host "Manual device signoff remains required before a public release is approved."
 } finally {
-  $env:APPDATA = $originalAppData
   Stop-ByteProcess $activeProcess
+
+  if (Test-Path $appConfigRoot) {
+    Remove-Item $appConfigRoot -Recurse -Force -ErrorAction SilentlyContinue
+  }
+  if ($hadPreexistingAppConfig -and (Test-Path $appConfigBackup)) {
+    Copy-Item $appConfigBackup $appConfigRoot -Recurse -Force
+  }
+
   Remove-Item $temp -Recurse -Force -ErrorAction SilentlyContinue
 }
