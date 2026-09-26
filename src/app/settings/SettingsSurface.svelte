@@ -7,6 +7,7 @@
     DesktopAwarenessSnapshot,
     NotificationPermissionState,
     ReleaseChannel,
+    TextScalePercent,
   } from "../../lib/types/domain";
   import {
     clearActivityHistory,
@@ -48,6 +49,8 @@
   let permissionBusy = false;
   let version = "0.1.0";
   let updateMessage = "";
+
+  const TEXT_SCALES: TextScalePercent[] = [100, 110, 125, 150, 175, 200];
 
   $: if (preferences !== source) {
     source = preferences;
@@ -391,7 +394,7 @@
       <div class="group-heading"><h2>Accessibility</h2><p>These settings apply across Byte's windows and companion.</p></div>
       <label class="setting-row"><span><strong>Reduce motion</strong><small>Forces reduced animation even when Windows itself does not request reduced motion.</small></span><input type="checkbox" checked={draft.reduce_motion} onchange={(event) => change((next) => (next.reduce_motion = event.currentTarget.checked))} /></label>
       <label class="setting-row"><span><strong>High contrast</strong><small>Strengthens UI contrast and borders without changing diagnostic meaning.</small></span><input type="checkbox" checked={draft.high_contrast} onchange={(event) => change((next) => (next.high_contrast = event.currentTarget.checked))} /></label>
-      <div class="setting-row"><span><strong>Text scale</strong><small>Scales Byte's application interface. Companion pixel art keeps its authored proportions.</small></span><div class="segmented" aria-label="Text scale">{#each [100,110,125] as scale}<button class:selected={draft.text_scale_percent === scale} aria-pressed={draft.text_scale_percent === scale} onclick={() => change((next) => (next.text_scale_percent = scale as 100 | 110 | 125))}>{scale}%</button>{/each}</div></div>
+      <div class="setting-row scale-row"><span><strong>Interface scale</strong><small>Scales Byte's application windows from 100–200%. At larger sizes the shell automatically compacts so controls stay reachable. Companion pixel art keeps its authored proportions.</small></span><div class="segmented scale-options" aria-label="Interface scale">{#each TEXT_SCALES as scale}<button class:selected={draft.text_scale_percent === scale} aria-pressed={draft.text_scale_percent === scale} onclick={() => change((next) => (next.text_scale_percent = scale))}>{scale}%</button>{/each}</div></div>
     </section>
 
     <section class="settings-group">
@@ -434,50 +437,66 @@
 </section>
 
 <style>
-  .settings-page { max-width:900px; margin:0 auto; }
-  .page-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; }
-  .eyebrow { margin:0 0 8px; color:var(--text-muted); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
-  h1,h2,p { margin-top:0; } h1 { margin-bottom:0; font-size:29px; } h2 { margin-bottom:4px; font-size:15px; }
-  .lede { max-width:690px; margin:11px 0 24px; color:var(--text-secondary); font-size:13px; line-height:1.55; }
-  .save-state { flex:0 0 auto; color:var(--text-muted); font-size:10px; }
-  .notice { margin-bottom:10px; padding:10px 12px; border:1px solid var(--status-critical); border-radius:10px; color:var(--status-critical); font-size:10px; }
-  .settings-sections { display:grid; gap:12px; }
-  .settings-group { overflow:hidden; border:1px solid var(--border-default); border-radius:14px; background:var(--surface-raised); }
-  .group-heading { padding:14px 16px 11px; border-bottom:1px solid var(--border-default); }
-  .group-heading p { margin-bottom:0; color:var(--text-muted); font-size:10px; }
-  .setting-row { min-height:62px; padding:11px 16px; display:flex; align-items:center; justify-content:space-between; gap:18px; border-top:1px solid var(--border-default); }
-  .group-heading + .setting-row { border-top:0; }
-  .setting-row > span:first-child { display:grid; gap:3px; }
-  .setting-row strong { font-size:11px; }
-  .setting-row small { max-width:630px; color:var(--text-muted); font-size:9px; line-height:1.45; }
-  input[type="checkbox"] { width:18px; height:18px; flex:0 0 auto; accent-color:var(--accent-primary); }
-  button { flex:0 0 auto; padding:7px 10px; border:1px solid var(--border-default); border-radius:8px; background:var(--surface-base); color:var(--text-secondary); font:inherit; font-size:10px; cursor:pointer; }
-  button:hover,button.selected { color:var(--text-primary); background:var(--surface-selected); } button.selected { border-color:var(--accent-primary); }
-  .segmented { display:flex; gap:5px; }
-  .status-badge { padding:4px 7px; border-radius:999px; background:var(--surface-selected); color:var(--text-muted); font-size:9px; font-weight:700; }
-  .danger-soft { color:var(--status-critical); }
-  .data-message { padding:8px 16px 12px; color:var(--text-muted); font-size:10px; }
-  .snooze-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:5px; }
-  .snooze-actions .resume { border-color:var(--accent-primary); color:var(--text-primary); }
-  .category-list { border-top:1px solid var(--border-default); }
-  .category-row { min-height:55px; padding:10px 16px; display:flex; align-items:center; justify-content:space-between; gap:18px; border-top:1px solid var(--border-default); }
-  .category-row:first-child { border-top:0; }
-  .category-row > span { display:grid; gap:3px; }
-  .category-row strong { font-size:10px; }
-  .category-row small { color:var(--text-muted); font-size:9px; line-height:1.4; }
-  .notification-policy { margin:10px 16px; padding:10px 11px; display:grid; gap:3px; border-radius:10px; background:var(--surface-selected); }
-  .notification-policy strong { font-size:9px; text-transform:uppercase; letter-spacing:.05em; }
-  .notification-policy span,.notification-policy small { color:var(--text-muted); font-size:9px; line-height:1.4; }
-  .active-awareness { border:1px solid var(--status-info); color:var(--text-primary); }
-  .excluded-apps { padding:13px 16px; border-top:1px solid var(--border-default); display:grid; gap:9px; }
-  .excluded-copy { display:grid; gap:3px; }
-  .excluded-copy strong { font-size:11px; }
-  .excluded-copy small,.empty-exclusions,.exclusion-message { color:var(--text-muted); font-size:9px; line-height:1.45; }
-  .exclusion-message { color:var(--status-warning); }
-  .excluded-entry { display:flex; gap:6px; }
-  .excluded-entry input { min-width:0; flex:1; padding:7px 9px; border:1px solid var(--border-default); border-radius:8px; background:var(--surface-base); color:var(--text-primary); font:inherit; font-size:10px; }
-  .excluded-chips { display:flex; flex-wrap:wrap; gap:5px; }
-  .app-chip { display:flex; align-items:center; gap:6px; padding:5px 7px; }
-  .app-chip b { color:var(--text-muted); font-size:12px; font-weight:400; }
-  .protected-row { background:color-mix(in srgb,var(--surface-selected) 40%,transparent); }
+  .settings-page { max-width: 960px; margin: 0 auto; padding-bottom: 36px; }
+  .page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 4px; }
+  .eyebrow { margin: 0 0 8px; color: var(--accent-text); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; }
+  h1,h2,p { margin-top: 0; }
+  h1 { margin-bottom: 0; font-size: clamp(28px, 3vw, 36px); letter-spacing: -.035em; }
+  h2 { margin-bottom: 4px; font-size: 16px; letter-spacing: -.01em; }
+  .lede { max-width: 720px; margin: 11px 0 26px; color: var(--text-secondary); font-size: 14px; line-height: 1.58; }
+  .save-state { flex: 0 0 auto; margin-top: 4px; padding: 5px 8px; border-radius: 999px; background: var(--surface-subtle); color: var(--text-muted); font-size: 10px; font-weight: 700; }
+  .notice { margin-bottom: 12px; padding: 11px 13px; border: 1px solid var(--status-critical); border-radius: 11px; background: color-mix(in srgb,var(--status-critical) 6%,var(--surface-raised)); color: var(--status-critical); font-size: 11px; }
+  .settings-sections { display: grid; gap: 14px; }
+  .settings-group { overflow: hidden; border: 1px solid var(--border-default); border-radius: var(--radius-panel); background: var(--surface-raised); box-shadow: var(--shadow-card); }
+  .group-heading { padding: 17px 18px 13px; border-bottom: 1px solid var(--border-default); background: linear-gradient(180deg,var(--surface-elevated),var(--surface-raised)); }
+  .group-heading p { margin-bottom: 0; color: var(--text-muted); font-size: 11px; line-height: 1.45; }
+  .setting-row { min-height: 68px; padding: 13px 18px; display: flex; align-items: center; justify-content: space-between; gap: 22px; border-top: 1px solid var(--border-default); }
+  .group-heading + .setting-row { border-top: 0; }
+  .setting-row > span:first-child { display: grid; gap: 4px; min-width: 0; }
+  .setting-row strong { font-size: 12px; line-height: 1.35; }
+  .setting-row small { max-width: 650px; color: var(--text-muted); font-size: 10px; line-height: 1.5; }
+  input[type="checkbox"] { width: 19px; height: 19px; flex: 0 0 auto; accent-color: var(--accent-primary); }
+  button { flex: 0 0 auto; min-height: 34px; padding: 7px 11px; border: 1px solid var(--border-default); border-radius: 9px; background: var(--surface-base); color: var(--text-secondary); font: inherit; font-size: 11px; font-weight: 650; cursor: pointer; transition: background var(--motion-fast), border-color var(--motion-fast), color var(--motion-fast), transform var(--motion-fast); }
+  button:hover:not(:disabled),button.selected { color: var(--text-primary); background: var(--surface-selected); border-color: var(--border-strong); }
+  button:active:not(:disabled) { transform: translateY(1px); }
+  button.selected { border-color: var(--accent-primary); box-shadow: 0 0 0 1px color-mix(in srgb,var(--accent-primary) 20%,transparent); }
+  .segmented { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+  .scale-options { max-width: 340px; }
+  .scale-options button { min-width: 48px; text-align: center; }
+  .status-badge { flex: 0 0 auto; padding: 5px 8px; border: 1px solid transparent; border-radius: 999px; background: var(--surface-selected); color: var(--text-muted); font-size: 9px; font-weight: 800; }
+  .danger-soft { color: var(--status-critical); }
+  .data-message { padding: 9px 18px 13px; color: var(--text-muted); font-size: 10px; }
+  .snooze-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+  .snooze-actions .resume { border-color: var(--accent-primary); color: var(--accent-text); }
+  .category-list { border-top: 1px solid var(--border-default); }
+  .category-row { min-height: 59px; padding: 11px 18px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-top: 1px solid var(--border-default); }
+  .category-row:first-child { border-top: 0; }
+  .category-row > span { display: grid; gap: 4px; }
+  .category-row strong { font-size: 11px; }
+  .category-row small { color: var(--text-muted); font-size: 10px; line-height: 1.45; }
+  .notification-policy { margin: 12px 18px; padding: 12px 13px; display: grid; gap: 4px; border: 1px solid var(--border-default); border-radius: 11px; background: var(--surface-subtle); }
+  .notification-policy strong { font-size: 9px; text-transform: uppercase; letter-spacing: .07em; }
+  .notification-policy span,.notification-policy small { color: var(--text-muted); font-size: 10px; line-height: 1.45; }
+  .active-awareness { border-color: var(--status-info); color: var(--text-primary); }
+  .excluded-apps { padding: 14px 18px; border-top: 1px solid var(--border-default); display: grid; gap: 10px; }
+  .excluded-copy { display: grid; gap: 4px; }
+  .excluded-copy strong { font-size: 12px; }
+  .excluded-copy small,.empty-exclusions,.exclusion-message { color: var(--text-muted); font-size: 10px; line-height: 1.5; }
+  .exclusion-message { color: var(--status-warning); }
+  .excluded-entry { display: flex; gap: 7px; }
+  .excluded-entry input { min-width: 0; flex: 1; min-height: 36px; padding: 8px 10px; border: 1px solid var(--border-default); border-radius: 9px; background: var(--surface-base); color: var(--text-primary); font: inherit; font-size: 11px; }
+  .excluded-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .app-chip { display: flex; align-items: center; gap: 6px; padding: 5px 8px; }
+  .app-chip b { color: var(--text-muted); font-size: 13px; font-weight: 400; }
+  .protected-row { background: color-mix(in srgb,var(--surface-subtle) 70%,transparent); }
+
+  @media (max-width: 720px) {
+    .page-heading { display: grid; gap: 6px; }
+    .save-state { width: fit-content; }
+    .setting-row,.category-row { align-items: flex-start; flex-direction: column; gap: 10px; }
+    .segmented,.snooze-actions { justify-content: flex-start; }
+    .scale-options { max-width: none; }
+    .excluded-entry { flex-wrap: wrap; }
+    .excluded-entry button { width: 100%; text-align: center; }
+  }
 </style>
