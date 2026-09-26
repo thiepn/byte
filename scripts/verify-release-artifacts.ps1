@@ -1,10 +1,12 @@
 param(
   [string]$OutputDir = "release-artifacts",
-  [switch]$RequireCertification
+  [switch]$RequireCertification,
+  [switch]$RequireSigning
 )
 
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.IO.Compression.FileSystem
+. (Join-Path $PSScriptRoot "lib\windows-signing.ps1")
 
 $root = (Resolve-Path $OutputDir).Path
 $config = Get-Content "src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json
@@ -36,9 +38,12 @@ if ((Get-Item $portable).Length -lt 100KB) {
 }
 
 $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
+if ($manifest.schema_version -ne 2) { throw "Release manifest schema mismatch." }
 if ($manifest.product -ne "Byte") { throw "Release manifest product mismatch." }
 if ([string]$manifest.version -ne $version) { throw "Release manifest version mismatch." }
 if ($manifest.identifier -ne "io.github.thiepn.byte") { throw "Release manifest identifier mismatch." }
+if ($manifest.publisher -ne [string]$config.bundle.publisher) { throw "Release manifest publisher mismatch." }
+if ($manifest.homepage -ne [string]$config.bundle.homepage) { throw "Release manifest homepage mismatch." }
 if ($manifest.target -ne "x86_64-pc-windows-msvc") { throw "Release manifest target mismatch." }
 if ($manifest.installer -ne $installerName) { throw "Release manifest installer filename mismatch." }
 if ($manifest.portable -ne $portableName) { throw "Release manifest portable filename mismatch." }
@@ -108,15 +113,49 @@ try {
     $stream.Dispose()
   }
 
-  $binarySignature = Get-AuthenticodeSignature $binary
-  $installerSignature = Get-AuthenticodeSignature $installer
-  $actuallySigned = $binarySignature.Status -eq "Valid" -and $installerSignature.Status -eq "Valid"
+  $binarySignature = Get-ByteSignatureDetails -Path $binary
+  $installerSignature = Get-ByteSignatureDetails -Path $installer
+  $actuallySigned = [bool]$binarySignature.valid -and [bool]$installerSignature.valid
+  $sameSigner = $actuallySigned -and ($binarySignature.signer_thumbprint -eq $installerSignature.signer_thumbprint)
+  $timestamped = $actuallySigned -and [bool]$binarySignature.timestamped -and [bool]$installerSignature.timestamped
+
   if ([bool]$manifest.signed -ne $actuallySigned) {
     throw "Release manifest signing state does not match the staged binaries."
+  }
+  if ([bool]$manifest.signing.same_signer -ne [bool]$sameSigner) {
+    throw "Release manifest same-signer state does not match the staged binaries."
+  }
+  if ([bool]$manifest.signing.timestamped -ne [bool]$timestamped) {
+    throw "Release manifest timestamp state does not match the staged binaries."
+  }
+
+  if ($actuallySigned) {
+    if (-not $sameSigner) { throw "Portable Byte.exe and installer have different Authenticode signers." }
+    if ([string]$manifest.signing.application.signer_thumbprint -ne $binarySignature.signer_thumbprint) {
+      throw "Release manifest application signer thumbprint mismatch."
+    }
+    if ([string]$manifest.signing.installer.signer_thumbprint -ne $installerSignature.signer_thumbprint) {
+      throw "Release manifest installer signer thumbprint mismatch."
+    }
+  }
+
+  if ($RequireSigning) {
+    if (-not [bool]$manifest.signing.required_for_this_build) {
+      throw "This verification requires signing, but the release manifest was not staged in required-signing mode."
+    }
+    if (-not $actuallySigned) {
+      throw "This public release requires valid Authenticode signatures."
+    }
+    if (-not $timestamped) {
+      throw "This public release requires timestamped Authenticode signatures."
+    }
   }
 
   if ($RequireCertification) {
     $certification = Get-Content $certificationPath -Raw | ConvertFrom-Json
+    if ($certification.schema_version -ne 2) {
+      throw "Release certification schema mismatch."
+    }
     if ($certification.product -ne "Byte" -or [string]$certification.version -ne $version) {
       throw "Release certification identity mismatch."
     }
@@ -126,9 +165,13 @@ try {
     if ($certification.distribution_ready -ne $true) {
       throw "Release certification does not mark the build distribution-ready."
     }
+    if ($RequireSigning -and $certification.public_distribution_ready -ne $true) {
+      throw "Release certification does not mark the signed build public-distribution-ready."
+    }
   }
 
   Write-Host "Release artifact verification passed for Byte v$version."
+  Write-Host "Authenticode: signed=$actuallySigned timestamped=$timestamped same_signer=$sameSigner"
 } finally {
   Remove-Item $temp -Recurse -Force -ErrorAction SilentlyContinue
 }
