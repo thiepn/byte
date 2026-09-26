@@ -76,14 +76,23 @@ function Write-LaunchFailureDiagnostics(
 
 $exe = (Resolve-Path $Executable).Path
 $temp = Join-Path $env:RUNNER_TEMP ("byte-maintenance-launch-" + [guid]::NewGuid().ToString("N"))
-$isolatedAppData = Join-Path $temp "appdata"
-New-Item -ItemType Directory -Path $isolatedAppData -Force | Out-Null
+New-Item -ItemType Directory -Path $temp -Force | Out-Null
 
-$oldAppData = $env:APPDATA
+$config = Get-Content "src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json
+$roamingAppData = [Environment]::GetFolderPath([Environment+SpecialFolder]::ApplicationData)
+$appConfigRoot = Join-Path $roamingAppData ([string]$config.identifier)
+$appConfigBackup = Join-Path $temp "preexisting-byte-app-config"
+$hadPreexistingAppConfig = Test-Path $appConfigRoot
+if ($hadPreexistingAppConfig) {
+  Copy-Item $appConfigRoot $appConfigBackup -Recurse -Force
+}
+if (Test-Path $appConfigRoot) {
+  Remove-Item $appConfigRoot -Recurse -Force
+}
+
 $process = $null
 $duplicateProcess = $null
 try {
-  $env:APPDATA = $isolatedAppData
 
   for ($attempt = 1; $attempt -le $LaunchAttempts; $attempt++) {
     $stdoutPath = Join-Path $temp ("byte.stdout." + $attempt + ".log")
@@ -164,7 +173,6 @@ try {
   $process = $null
   $duplicateProcess = $null
 } finally {
-  $env:APPDATA = $oldAppData
   if ($null -ne $duplicateProcess -and -not $duplicateProcess.HasExited) {
     Stop-Process -Id $duplicateProcess.Id -Force -ErrorAction SilentlyContinue
     try { $duplicateProcess.WaitForExit(5000) | Out-Null } catch {}
@@ -173,5 +181,13 @@ try {
     Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
     try { $process.WaitForExit(5000) | Out-Null } catch {}
   }
+
+  if (Test-Path $appConfigRoot) {
+    Remove-Item $appConfigRoot -Recurse -Force -ErrorAction SilentlyContinue
+  }
+  if ($hadPreexistingAppConfig -and (Test-Path $appConfigBackup)) {
+    Copy-Item $appConfigBackup $appConfigRoot -Recurse -Force
+  }
+
   Remove-Item $temp -Recurse -Force -ErrorAction SilentlyContinue
 }
