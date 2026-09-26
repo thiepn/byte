@@ -79,8 +79,8 @@
       "nsis"
     ],
     "category": "Utility",
-    "publisher": "thiepn",
-    "homepage": "https://github.com/thiepn/byte",
+    "publisher": "THIEPN",
+    "homepage": "https://thiepn.dev/byte/",
     "shortDescription": "A privacy-first Windows desktop companion for understandable system health.",
     "longDescription": "Byte is a privacy-first Windows desktop companion that turns local system health into calm, understandable status and character reactions.",
     "createUpdaterArtifacts": false,

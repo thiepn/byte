@@ -1,6 +1,7 @@
 param(
   [string]$OutputDir = "release-artifacts",
-  [switch]$PreviousReleaseTested
+  [switch]$PreviousReleaseTested,
+  [switch]$RequireSigning
 )
 
 $ErrorActionPreference = "Stop"
@@ -13,9 +14,17 @@ $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
 
 $installer = Join-Path $root ([string]$manifest.installer)
 $portable = Join-Path $root ([string]$manifest.portable)
+$publicDistributionReady =
+  [bool]$manifest.signed -and
+  [bool]$manifest.signing.same_signer -and
+  [bool]$manifest.signing.timestamped
+
+if ($RequireSigning -and -not $publicDistributionReady) {
+  throw "Public release certification requires signed, timestamped Byte artifacts from the same Authenticode signer."
+}
 
 $certification = [ordered]@{
-  schema_version = 1
+  schema_version = 2
   product = "Byte"
   version = $version
   target = "x86_64-pc-windows-msvc"
@@ -29,6 +38,8 @@ $certification = [ordered]@{
     ref = $env:GITHUB_REF
   }
   signed = [bool]$manifest.signed
+  signing = $manifest.signing
+  certification_profile = if ($RequireSigning) { "public-signed" } else { "release-candidate" }
   certification_level = if ($PreviousReleaseTested) { "upgrade-and-clean-install" } else { "clean-install" }
   checks = [ordered]@{
     release_metadata = $true
@@ -43,6 +54,10 @@ $certification = [ordered]@{
     app_data_preservation = $true
     previous_release_upgrade = [bool]$PreviousReleaseTested
     downgrade_policy_runtime = [bool]$PreviousReleaseTested
+    authenticode_application = [bool]$manifest.signing.application.valid
+    authenticode_installer = [bool]$manifest.signing.installer.valid
+    authenticode_same_signer = [bool]$manifest.signing.same_signer
+    authenticode_timestamped = [bool]$manifest.signing.timestamped
   }
   artifacts = [ordered]@{
     installer = [ordered]@{
@@ -55,10 +70,11 @@ $certification = [ordered]@{
     }
   }
   distribution_ready = $true
+  public_distribution_ready = [bool]$publicDistributionReady
 }
 
 $certificationPath = Join-Path $root "release-certification.json"
-$certification | ConvertTo-Json -Depth 8 | Set-Content $certificationPath -Encoding utf8
+$certification | ConvertTo-Json -Depth 10 | Set-Content $certificationPath -Encoding utf8
 
 $checksumTargets = @(
   $installer,
@@ -74,3 +90,4 @@ $checksumLines = foreach ($file in $checksumTargets) {
 $checksumLines | Set-Content (Join-Path $root "SHA256SUMS.txt") -Encoding ascii
 
 Write-Host "Final release certification written for Byte v$version."
+Write-Host "Public distribution ready: $publicDistributionReady"

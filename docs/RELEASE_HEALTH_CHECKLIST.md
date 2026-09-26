@@ -14,7 +14,9 @@ Use this checklist for every stable release and for high-risk Beta or hotfix rel
 - [ ] Recent Windows runner/WebView2 compatibility matrix is green.
 - [ ] Configuration migration tests cover any schema changes.
 - [ ] User-visible deprecations/migrations are in the changelog.
-- [ ] Signing secrets are either fully configured or intentionally absent.
+- [ ] Production Authenticode signing secrets are fully configured for any public Stable/Beta tag.
+- [ ] Signing certificate is valid for code signing and not expired.
+- [ ] Timestamp service is configured and reachable.
 
 ## Manual Windows check
 
@@ -42,7 +44,10 @@ On a currently supported Windows 11 desktop:
 - [ ] Release notes match the changelog section.
 - [ ] SHA-256 verification succeeds on a freshly downloaded installer.
 - [ ] GitHub attestation verification succeeds for installer and portable ZIP.
-- [ ] Authenticode state matches `release-manifest.json`.
+- [ ] Installer and portable `Byte.exe` both have valid, timestamped Authenticode signatures.
+- [ ] Installer and portable executable signer thumbprints match.
+- [ ] Authenticode state and signer metadata match `release-manifest.json`.
+- [ ] `release-certification.json` reports `public_distribution_ready: true`.
 - [ ] Installer can be downloaded and launched from the public release page.
 - [ ] Beta releases are marked prerelease; Stable releases are not.
 

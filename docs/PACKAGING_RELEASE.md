@@ -124,30 +124,35 @@ The workflow:
 2. audits npm dependencies
 3. audits Cargo dependencies through RustSec
 4. checks release ordering
-5. optionally prepares code signing
-6. builds the NSIS release from locked dependencies
+5. requires and validates Windows code signing
+6. builds the signed NSIS release from locked dependencies
 7. stages portable/installer/checksum artifacts
 8. runs upgrade/downgrade/uninstall certification
 9. retains the exact artifacts as a workflow artifact
 10. creates or updates the matching GitHub Release
+11. re-downloads the published assets and re-verifies Authenticode, checksums, certification, and provenance
 
 The release is created only after installer certification succeeds.
 
-## Optional Windows code signing
+## Windows code signing
 
-Unsigned builds remain supported for contributors and ordinary pull requests.
+Unsigned builds remain supported for contributors, pull requests, and ordinary `main` release-candidate certification.
 
-The tagged workflow becomes signed when all three repository secrets are configured:
+**Tagged public releases are no longer allowed to publish unsigned.** Stable and Beta tag workflows require all three repository secrets:
 
 - `WINDOWS_CERTIFICATE` — base64 PFX
 - `WINDOWS_CERTIFICATE_PASSWORD`
 - `WINDOWS_TIMESTAMP_URL`
 
-If none are present, the release is built unsigned.
+For tagged releases, missing signing configuration is a hard failure. For non-public candidate builds, none may be present and the candidate remains intentionally unsigned. Partial configuration always fails.
 
-If only part of the signing configuration is present, the workflow fails rather than silently publishing an unexpectedly unsigned build.
+The certificate is imported into the current-user certificate store only for the build. A temporary Tauri configuration supplies the certificate thumbprint, SHA-256 digest, and timestamp URL. After Tauri creates the NSIS bundle, Byte explicitly signs the restored `target/release/Byte.exe` that becomes the portable build.
 
-The certificate is imported into the current-user certificate store only for the build. A temporary Tauri configuration supplies the certificate thumbprint, SHA-256 digest, and timestamp URL. Signing material and the imported certificate are cleaned after the run.
+Staging records signer subject/issuer/thumbprint and timestamp state. Public release certification requires the installer and portable binary to be validly signed, timestamped, and signed by the same certificate. The installed executable is checked again during real NSIS lifecycle testing.
+
+After GitHub Release publication, the workflow freshly downloads the public assets and repeats checksum, Authenticode, certification, and provenance verification. Signing material and the imported certificate are cleaned after the run.
+
+See [WINDOWS_TRUST.md](WINDOWS_TRUST.md) for certificate setup, verification, and rotation.
 
 ## Reproducibility
 

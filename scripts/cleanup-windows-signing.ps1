@@ -2,6 +2,7 @@ $ErrorActionPreference = "Continue"
 
 $thumbprintPath = Join-Path $env:RUNNER_TEMP "byte-code-signing-thumbprint.txt"
 $pfxPath = Join-Path $env:RUNNER_TEMP "byte-code-signing.pfx"
+$metadataPath = Join-Path $env:RUNNER_TEMP "byte-code-signing-metadata.json"
 
 if (Test-Path $thumbprintPath) {
   $thumbprint = (Get-Content $thumbprintPath -Raw).Trim()
@@ -11,5 +12,6 @@ if (Test-Path $thumbprintPath) {
 }
 
 Remove-Item $thumbprintPath -Force -ErrorAction SilentlyContinue
+Remove-Item $metadataPath -Force -ErrorAction SilentlyContinue
 Remove-Item $pfxPath -Force -ErrorAction SilentlyContinue
 Remove-Item "src-tauri/tauri.signing.conf.json" -Force -ErrorAction SilentlyContinue

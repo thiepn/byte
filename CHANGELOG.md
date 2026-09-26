@@ -4,6 +4,22 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ## [Unreleased]
 
+### Added
+
+- Added a fail-closed Windows trust pipeline for future public releases: Authenticode signer metadata, timestamp verification, installed-binary signer checks, and fresh public-download verification.
+- Added a dedicated Windows trust/code-signing runbook with certificate setup, rotation, SmartScreen expectations, and user verification commands.
+
+### Changed
+
+- Future tagged Stable and Beta releases now require valid timestamped Authenticode signatures on both the NSIS installer and portable `Byte.exe`; unsigned PR/`main` candidates remain supported.
+- Windows package metadata now uses publisher `THIEPN` and the Byte product homepage at `https://thiepn.dev/byte/`.
+- Release manifest and certification formats advance to schema v2 and distinguish structurally certified candidates from signed public-distribution-ready builds.
+
+### Security
+
+- Portable `Byte.exe` is explicitly signed after Tauri bundling, preventing the restored standalone binary from bypassing the public signing policy.
+- Public release publication now requires the same Authenticode signer on installer and portable executable, timestamps on both, and a successful re-download verification after GitHub Release upload.
+
 ## [0.1.0]
 
 ### Added

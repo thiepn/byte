@@ -36,5 +36,15 @@
     "dependency_updates": "dependabot-weekly",
     "hotfix_strategy": "patch-forward",
     "forced_auto_update": false
+  },
+  "distribution": {
+    "public_release_requires_authenticode": true,
+    "installer_requires_authenticode": true,
+    "portable_binary_requires_authenticode": true,
+    "timestamp_required": true,
+    "same_signer_required": true,
+    "unsigned_release_candidates_allowed": true,
+    "publisher": "THIEPN",
+    "homepage": "https://thiepn.dev/byte/"
   }
 }
