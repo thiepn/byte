@@ -63,7 +63,8 @@ if (!physicalSignoff ||
     physicalSignoff.public_release_requires_dual_display_coverage !== true ||
     physicalSignoff.public_release_allows_capability_gaps !== false ||
     physicalSignoff.signed_candidate_workflow !== ".github/workflows/device-signoff-candidate.yml" ||
-    physicalSignoff.signed_candidate_retention_days !== 14) {
+    physicalSignoff.signed_candidate_retention_days !== 14 ||
+    physicalSignoff.signed_candidate_main_only !== true) {
   throw new Error("Physical Windows device signoff policy is incomplete or has been weakened.");
 }
 for (const script of [
@@ -84,6 +85,7 @@ if (!ciWorkflow.includes("test-physical-device-signoff-tooling.ps1") ||
 
 const requiredDeviceCandidateFragments = [
   "workflow_dispatch",
+  "if: github.ref == 'refs/heads/main'",
   "prepare-windows-signing.ps1 -RequireSigning",
   "build-windows-release.ps1 -RequireSigning",
   "stage-release.ps1 -RequireSigning",
