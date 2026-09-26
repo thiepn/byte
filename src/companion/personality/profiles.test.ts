@@ -149,6 +149,34 @@ describe("personality profiles", () => {
     expect(curiousAnimator.requests.at(-1)?.behavior).toBe("sleep");
   });
 
+  it("varies pointer reactions while rate-limiting repeated entry", () => {
+    const animator = new FakeAnimator();
+    const director = new PersonalityDirector("CURIOUS", "NORMAL");
+
+    director.onPointerEnter(animator as any, 1_000);
+    director.onPointerEnter(animator as any, 2_000);
+    director.onPointerEnter(animator as any, 4_500);
+
+    expect(animator.requests.map((request) => request.behavior)).toEqual([
+      "curious",
+      "look_left",
+    ]);
+  });
+
+  it("varies fast-typing follow-ups with a short cooldown", () => {
+    const animator = new FakeAnimator();
+    const director = new PersonalityDirector("ENERGETIC", "NORMAL");
+
+    director.onFastTypingStop(animator as any, 1_000);
+    director.onFastTypingStop(animator as any, 2_000);
+    director.onFastTypingStop(animator as any, 3_500);
+
+    expect(animator.requests.map((request) => request.behavior)).toEqual([
+      "happy",
+      "curious",
+    ]);
+  });
+
   it("reacts to a rapid click burst according to personality", () => {
     const animator = new FakeAnimator();
     const director = new PersonalityDirector("CURIOUS", "NORMAL");
