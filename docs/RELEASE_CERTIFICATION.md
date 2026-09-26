@@ -101,13 +101,34 @@ This protects the intended ownership boundary:
 - installer-owned binaries/registration → removable
 - user configuration/history → preserved
 
-### 6. Machine-readable release certification
+### 6. Real-world product runtime certification
+
+Before final release certification, the staged portable build must pass the P4 packaged-runtime matrix in `scripts/test-real-world-product.ps1`.
+
+That gate exercises:
+
+- fresh first-run state
+- returning-user state across all display modes
+- all supported 100–200% Byte interface scales
+- High Contrast and Reduce Motion profiles
+- monitoring-disabled behavior
+- runtime configuration migration
+- corrupt-config quarantine/recovery
+- sustained packaged runtime with runaway resource guardrails
+
+A passing run writes `product-certification.json`.
+
+This file is intentionally explicit that manual physical-device signoff is still required for fullscreen software, lock/sleep cycles, multi-monitor/DPI behavior, Windows notification UX, representative-device performance, visual review, and installer/trust UX.
+
+See [REAL_WORLD_PRODUCT_CERTIFICATION.md](REAL_WORLD_PRODUCT_CERTIFICATION.md).
+
+### 7. Machine-readable release certification
 
 After runtime and installer tests pass, `scripts/finalize-release-certification.ps1` writes:
 
 `release-certification.json`
 
-It records:
+Release certification schema v3 records:
 
 - Byte version
 - target architecture
@@ -116,6 +137,7 @@ It records:
 - signing state
 - certification level
 - all exercised release checks
+- P4 product-certification identity and SHA-256
 - installer SHA-256
 - portable ZIP SHA-256
 - whether previous-release upgrade/downgrade testing was available
@@ -127,9 +149,10 @@ The certification is marked `distribution_ready: true` only because the file is 
 - installer
 - portable ZIP
 - release manifest
+- product certification
 - release certification
 
-### 7. GitHub build provenance
+### 8. GitHub build provenance
 
 Tagged releases generate GitHub artifact attestations for:
 
@@ -170,6 +193,7 @@ The tagged workflow must pass:
 - portable launch smoke
 - installer lifecycle certification
 - previous-release upgrade/downgrade test when available
+- P4 automated real-world product runtime certification
 - final certification-file verification
 - installer provenance attestation
 - portable provenance attestation
@@ -224,6 +248,7 @@ A complete official release contains:
 - `Byte-vX.Y.Z-windows-x64-setup.exe`
 - `Byte-vX.Y.Z-windows-x64-portable.zip`
 - `release-manifest.json`
+- `product-certification.json`
 - `release-certification.json`
 - `SHA256SUMS.txt`
 
