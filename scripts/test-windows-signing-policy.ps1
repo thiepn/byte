@@ -21,7 +21,7 @@ foreach ($file in $scriptFiles) {
   )
   if ($errors.Count -gt 0) {
     $messages = $errors | ForEach-Object { $_.Message }
-    throw "PowerShell parse errors in $file: $($messages -join '; ')"
+    throw "PowerShell parse errors in ${file}: $($messages -join '; ')"
   }
 }
 
