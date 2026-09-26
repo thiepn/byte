@@ -81,7 +81,7 @@ New-Item -ItemType Directory -Path $temp | Out-Null
 
 try {
   [System.IO.Compression.ZipFile]::ExtractToDirectory($portable, $temp)
-  $entries = Get-ChildItem $temp -File -Recurse
+  $entries = @(Get-ChildItem $temp -File -Recurse)
   if ($entries.Count -ne 1 -or $entries[0].Name -ne "Byte.exe") {
     throw "Portable ZIP must contain exactly one Byte.exe."
   }
