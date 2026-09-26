@@ -36,6 +36,8 @@ $requiredRunnerFragments = @(
   "working_set_average_mb_max = 60",
   "gpu_average_percent_max = 1.0",
   "remote_tcp_connections_max = 0",
+  "process_tree_peak",
+  "Get-ProcessTreeIds",
   "public_release_ready"
 )
 foreach ($fragment in $requiredRunnerFragments) {
@@ -49,6 +51,7 @@ $requiredVerifierFragments = @(
   "cpu_average_percent -gt 0.25",
   "working_set_average_mb -gt 60",
   "RequirePublicReleaseReady",
+  "display_count -lt 2",
   "capability gaps",
   "portable executable hash mismatch"
 )
