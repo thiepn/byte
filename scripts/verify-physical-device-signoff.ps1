@@ -107,6 +107,9 @@ if ($multiStatus -notin @("PASS", "NA")) {
 if ($multiStatus -eq "NA" -and [int]$report.device.display_count -ge 2) {
   throw "Multi-monitor/DPI cannot be marked NA when two or more displays were detected."
 }
+if ($multiStatus -eq "PASS" -and [int]$report.device.display_count -lt 2) {
+  throw "Multi-monitor/DPI cannot be marked PASS when fewer than two displays were detected."
+}
 
 $trustStatus = [string]$report.manual_checks.installer_trust.status
 if ($trustStatus -notin @("PASS", "NA")) {
@@ -114,6 +117,9 @@ if ($trustStatus -notin @("PASS", "NA")) {
 }
 if ($trustStatus -eq "NA" -and [bool]$manifest.signed) {
   throw "Installer/trust cannot be marked NA for a signed candidate."
+}
+if ($trustStatus -eq "PASS" -and -not [bool]$manifest.signed) {
+  throw "Installer/trust cannot be marked PASS for an unsigned candidate."
 }
 
 $requiredStates = @("ACTIVE_CALM", "FULLSCREEN_REDUCED", "LOCKED_DISPLAY_OFF")
@@ -155,6 +161,18 @@ if ($report.device_ready -ne $true) {
 }
 
 $gaps = @($report.capability_gaps)
+if ($report.public_release_ready -eq $true) {
+  if (-not [bool]$manifest.signed -or
+      -not [bool]$manifest.signing.timestamped -or
+      -not [bool]$manifest.signing.same_signer -or
+      $trustStatus -ne "PASS" -or
+      $multiStatus -ne "PASS" -or
+      [int]$report.device.display_count -lt 2 -or
+      $gaps.Count -ne 0) {
+    throw "Device report claims public-release readiness without complete signed, dual-display, capability-complete evidence."
+  }
+}
+
 if ($RequirePublicReleaseReady) {
   if ($report.public_release_ready -ne $true) {
     throw "Physical device report does not mark the candidate public-release ready."
