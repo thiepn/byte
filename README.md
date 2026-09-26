@@ -49,19 +49,29 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 
 ## Download
 
-Official Windows builds are published from the [GitHub Releases](https://github.com/thiepn/byte/releases) page.
+Official Windows builds are published from the [GitHub Releases](https://github.com/thiepn/byte/releases) page and linked from [thiepn.dev/byte](https://thiepn.dev/byte/).
 
 - **Installer:** `Byte-vX.Y.Z-windows-x64-setup.exe` — recommended for normal use.
 - **Portable:** `Byte-vX.Y.Z-windows-x64-portable.zip` — contains the standalone `Byte.exe`.
 - Every certified release also includes `SHA256SUMS.txt`, `release-manifest.json`, and `release-certification.json`.
 - Installer and portable artifacts from tagged releases receive GitHub build-provenance attestations.
+- **Future public releases after v0.1.0 are required to be Authenticode-signed and timestamped.** The tagged release workflow refuses publication if the installer and portable executable are unsigned, use different signers, or lack timestamps.
+- Byte v0.1.0 predates that fail-closed policy and is intentionally recorded as unsigned, so Windows SmartScreen can show an unknown-publisher warning for that release.
 
-To verify a downloaded installer:
+To inspect Authenticode on a signed release:
+
+```powershell
+Get-AuthenticodeSignature .\Byte-vX.Y.Z-windows-x64-setup.exe | Format-List Status,StatusMessage,SignerCertificate,TimeStamperCertificate
+```
+
+To verify a downloaded installer cryptographically:
 
 ```powershell
 Get-FileHash .\Byte-vX.Y.Z-windows-x64-setup.exe -Algorithm SHA256
 gh attestation verify .\Byte-vX.Y.Z-windows-x64-setup.exe --repo thiepn/byte
 ```
+
+See [Windows trust and code signing](docs/WINDOWS_TRUST.md) for the full release trust model.
 
 ## Development
 

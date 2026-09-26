@@ -1,10 +1,12 @@
 param(
   [Parameter(Mandatory = $true)]
   [string]$Installer,
-  [string]$PreviousInstaller = ""
+  [string]$PreviousInstaller = "",
+  [switch]$RequireSigning
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "lib\windows-signing.ps1")
 
 $config = Get-Content "src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json
 $expectedVersion = [string]$config.version
@@ -102,7 +104,20 @@ function Assert-CurrentVersion([string]$ExePath) {
   }
 }
 
+function Assert-InstalledAuthenticode([string]$ExePath, [string]$ExpectedThumbprint) {
+  if (-not $RequireSigning) {
+    return
+  }
+  Assert-ByteAuthenticodeSignature -Path $ExePath -ExpectedThumbprint $ExpectedThumbprint -RequireTimestamp | Out-Null
+}
+
 $installerPath = (Resolve-Path $Installer).Path
+$expectedSignerThumbprint = ""
+if ($RequireSigning) {
+  $installerSignature = Assert-ByteAuthenticodeSignature -Path $installerPath -RequireTimestamp
+  $expectedSignerThumbprint = [string]$installerSignature.signer_thumbprint
+}
+
 $previousPath = if ([string]::IsNullOrWhiteSpace($PreviousInstaller)) {
   ""
 } else {
@@ -143,6 +158,7 @@ try {
   $entry = Wait-ForByteInstall
   $exePath = Find-InstalledByte $entry
   Assert-CurrentVersion $exePath
+  Assert-InstalledAuthenticode $exePath $expectedSignerThumbprint
 
   if ($previousPath) {
     Write-Host "Attempting older installer to certify downgrade protection."
@@ -151,6 +167,7 @@ try {
     $entry = Wait-ForByteInstall
     $exePath = Find-InstalledByte $entry
     Assert-CurrentVersion $exePath
+    Assert-InstalledAuthenticode $exePath $expectedSignerThumbprint
 
     if (!(Test-Path $sentinelPath) -or (Get-Content $sentinelPath -Raw).Trim() -ne $sentinelValue) {
       throw "Byte app-data sentinel did not survive downgrade-policy certification."

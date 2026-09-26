@@ -4,6 +4,9 @@ const policy = JSON.parse(fs.readFileSync("maintenance/release-policy.json", "ut
 const tauri = JSON.parse(fs.readFileSync("src-tauri/tauri.conf.json", "utf8"));
 const changelog = fs.readFileSync("CHANGELOG.md", "utf8");
 const configSource = fs.readFileSync("src-tauri/src/core/config.rs", "utf8");
+const releaseWorkflow = fs.readFileSync(".github/workflows/release.yml", "utf8");
+const packageWorkflow = fs.readFileSync(".github/workflows/package.yml", "utf8");
+
 
 if (policy.schema_version !== 1 || policy.product !== "Byte" || policy.repository !== "thiepn/byte") {
   throw new Error("Maintenance policy identity is invalid.");
@@ -16,6 +19,43 @@ if (policy.maintenance.hotfix_strategy !== "patch-forward") {
 }
 if (policy.maintenance.forced_auto_update !== false) {
   throw new Error("Byte must not enable forced automatic updating.");
+}
+
+const distribution = policy.distribution;
+if (!distribution ||
+    distribution.public_release_requires_authenticode !== true ||
+    distribution.installer_requires_authenticode !== true ||
+    distribution.portable_binary_requires_authenticode !== true ||
+    distribution.timestamp_required !== true ||
+    distribution.same_signer_required !== true ||
+    distribution.unsigned_release_candidates_allowed !== true) {
+  throw new Error("Windows distribution trust policy is incomplete or has been weakened.");
+}
+if (tauri.bundle?.publisher !== distribution.publisher) {
+  throw new Error("Tauri publisher metadata does not match the release trust policy.");
+}
+if (tauri.bundle?.homepage !== distribution.homepage) {
+  throw new Error("Tauri homepage metadata does not match the release trust policy.");
+}
+
+const requiredReleaseTrustFragments = [
+  "prepare-windows-signing.ps1 -RequireSigning",
+  "build-windows-release.ps1 -RequireSigning",
+  "stage-release.ps1 -RequireSigning",
+  "verify-release-artifacts.ps1 -RequireCertification -RequireSigning",
+  "test-windows-installer.ps1 -Installer $installer -RequireSigning",
+  "Verify published release trust",
+];
+for (const fragment of requiredReleaseTrustFragments) {
+  if (!releaseWorkflow.includes(fragment)) {
+    throw new Error("Tagged release workflow is missing required trust gate: " + fragment);
+  }
+}
+if (releaseWorkflow.includes("Prepare optional Windows code signing")) {
+  throw new Error("Tagged public releases must not treat Authenticode signing as optional.");
+}
+if (packageWorkflow.includes("WINDOWS_CERTIFICATE")) {
+  throw new Error("Ordinary PR/main packaging must not consume production code-signing secrets.");
 }
 if (!changelog.includes("## [Unreleased]")) {
   throw new Error("CHANGELOG.md must retain an [Unreleased] section.");
@@ -52,5 +92,6 @@ if (!stable.test(tag) && !beta.test(tag)) {
 console.log(
   "Maintenance policy verified: schema " + schemaMatch[1] +
     ", migration floor " + minMatch[1] +
-    ", version " + tauri.version + ".",
+    ", version " + tauri.version +
+    ", signed public Windows releases required.",
 );
