@@ -117,6 +117,64 @@ if (deviceCandidateWorkflow.includes("gh release create") ||
   throw new Error("Signed device candidate workflow must never publish a GitHub Release.");
 }
 
+const releaseApproval = productCertification.release_approval;
+if (!releaseApproval ||
+    releaseApproval.tooling_required !== true ||
+    releaseApproval.orchestrator_script !== "scripts/run-release-approval.ps1" ||
+    releaseApproval.verifier_script !== "scripts/verify-release-approval.ps1" ||
+    releaseApproval.verifier_harness !== "scripts/test-release-approval-verifier.ps1" ||
+    releaseApproval.receipt_schema_version !== 1 ||
+    releaseApproval.source_branch !== "main" ||
+    releaseApproval.exact_remote_main_required !== true ||
+    releaseApproval.clean_working_tree_required !== true ||
+    releaseApproval.signed_candidate_required_for_tagging !== true ||
+    releaseApproval.public_device_report_required_for_tagging !== true ||
+    releaseApproval.automatic_tagging !== false ||
+    releaseApproval.automatic_release_publish !== false) {
+  throw new Error("Release approval policy is incomplete or has been weakened.");
+}
+for (const script of [
+  releaseApproval.orchestrator_script,
+  releaseApproval.verifier_script,
+  releaseApproval.verifier_harness,
+  "scripts/test-release-approval-tooling.ps1",
+]) {
+  if (!fs.existsSync(script)) {
+    throw new Error("Release approval tooling is missing: " + script);
+  }
+}
+for (const [name, workflow] of [
+  ["CI", ciWorkflow],
+  ["package", packageWorkflow],
+  ["release", releaseWorkflow],
+  ["signed-device-candidate", deviceCandidateWorkflow],
+]) {
+  if (!workflow.includes("test-release-approval-tooling.ps1")) {
+    throw new Error(name + " workflow is missing the P5 release approval tooling harness.");
+  }
+}
+for (const [name, workflow] of [
+  ["package", packageWorkflow],
+  ["release", releaseWorkflow],
+  ["signed-device-candidate", deviceCandidateWorkflow],
+]) {
+  if (!workflow.includes("test-release-approval-verifier.ps1")) {
+    throw new Error(name + " workflow is missing the candidate-bound release approval verifier harness.");
+  }
+}
+const approvalRunner = fs.readFileSync(releaseApproval.orchestrator_script, "utf8");
+for (const forbidden of [
+  "git tag",
+  "git push --tags",
+  "gh release create",
+  "gh release upload",
+  "Publish GitHub Release",
+]) {
+  if (approvalRunner.includes(forbidden)) {
+    throw new Error("Release approval orchestrator must not auto-tag or auto-publish: " + forbidden);
+  }
+}
+
 const distribution = policy.distribution;
 if (!distribution ||
     distribution.public_release_requires_authenticode !== true ||
@@ -198,5 +256,5 @@ console.log(
   "Maintenance policy verified: schema " + schemaMatch[1] +
     ", migration floor " + minMatch[1] +
     ", version " + tauri.version +
-    ", signed public Windows releases required, real-world product gate enabled, physical-device signoff tooling locked.",
+    ", signed public Windows releases required, real-world product gate enabled, physical-device signoff tooling locked, release approval receipt policy locked.",
 );
