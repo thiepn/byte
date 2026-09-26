@@ -88,21 +88,21 @@ jobs:
         shell: pwsh
         run: node scripts/check-release-order.mjs --current $env:GITHUB_REF_NAME --previous "${{ steps.previous.outputs.tag }}"
 
-      - name: Prepare optional Windows code signing
+      - name: Prepare required Windows code signing
         shell: pwsh
-        run: ./scripts/prepare-windows-signing.ps1
+        run: ./scripts/prepare-windows-signing.ps1 -RequireSigning
 
-      - name: Build release installer
+      - name: Build signed release installer
         shell: pwsh
-        run: ./scripts/build-windows-release.ps1
+        run: ./scripts/build-windows-release.ps1 -RequireSigning
 
-      - name: Stage release artifacts
+      - name: Stage signed release artifacts
         shell: pwsh
-        run: ./scripts/stage-release.ps1
+        run: ./scripts/stage-release.ps1 -RequireSigning
 
-      - name: Verify staged release artifacts
+      - name: Verify staged signed release artifacts
         shell: pwsh
-        run: ./scripts/verify-release-artifacts.ps1
+        run: ./scripts/verify-release-artifacts.ps1 -RequireSigning
 
       - name: Portable launch smoke test
         shell: pwsh
@@ -133,9 +133,9 @@ jobs:
           $installer = (Get-ChildItem "release-artifacts\*-setup.exe" -File | Select-Object -First 1).FullName
           $previous = "${{ steps.previous_installer.outputs.path }}"
           if ([string]::IsNullOrWhiteSpace($previous)) {
-            ./scripts/test-windows-installer.ps1 -Installer $installer
+            ./scripts/test-windows-installer.ps1 -Installer $installer -RequireSigning
           } else {
-            ./scripts/test-windows-installer.ps1 -Installer $installer -PreviousInstaller $previous
+            ./scripts/test-windows-installer.ps1 -Installer $installer -PreviousInstaller $previous -RequireSigning
           }
 
       - name: Finalize release certification
@@ -143,14 +143,14 @@ jobs:
         run: |
           $previous = "${{ steps.previous_installer.outputs.path }}"
           if ([string]::IsNullOrWhiteSpace($previous)) {
-            ./scripts/finalize-release-certification.ps1
+            ./scripts/finalize-release-certification.ps1 -RequireSigning
           } else {
-            ./scripts/finalize-release-certification.ps1 -PreviousReleaseTested
+            ./scripts/finalize-release-certification.ps1 -PreviousReleaseTested -RequireSigning
           }
 
-      - name: Verify certified release artifacts
+      - name: Verify certified signed release artifacts
         shell: pwsh
-        run: ./scripts/verify-release-artifacts.ps1 -RequireCertification
+        run: ./scripts/verify-release-artifacts.ps1 -RequireCertification -RequireSigning
 
       - name: Attest installer provenance
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
@@ -207,6 +207,30 @@ jobs:
             & gh @arguments
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
+
+      - name: Verify published release trust
+        shell: pwsh
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $published = Join-Path $env:RUNNER_TEMP "byte-published-release"
+          if (Test-Path $published) {
+            Remove-Item $published -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $published | Out-Null
+
+          gh release download $tag --dir $published
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          ./scripts/verify-release-artifacts.ps1 -OutputDir $published -RequireCertification -RequireSigning
+
+          $installer = (Get-ChildItem $published -Filter "*-setup.exe" -File | Select-Object -First 1).FullName
+          $portable = (Get-ChildItem $published -Filter "*-portable.zip" -File | Select-Object -First 1).FullName
+          gh attestation verify $installer --repo $env:GITHUB_REPOSITORY
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          gh attestation verify $portable --repo $env:GITHUB_REPOSITORY
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          Write-Host "Fresh public-download trust verification passed for $tag."
 
       - name: Clean signing material
         if: always()
