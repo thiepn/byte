@@ -12,6 +12,9 @@ Use this checklist for every stable release and for high-risk Beta or hotfix rel
 - [ ] P4 automated real-world product certification is green for the exact source commit.
 - [ ] `product-certification.json` covers fresh first-run, all display modes, 100–200% interface scales, runtime migration, corrupt-config recovery, and sustained runtime.
 - [ ] The exact `main` commit has a certified release-candidate artifact.
+- [ ] A signed `Byte Device Signoff Candidate` has been generated from `main` for final physical trust/device testing.
+- [ ] P4-M physical Windows signoff is complete on the signed candidate.
+- [ ] The resulting device report verifies with `scripts/verify-physical-device-signoff.ps1 -RequireSigning -RequirePublicReleaseReady`.
 - [ ] Recent scheduled security audit is green.
 - [ ] Recent Windows runner/WebView2 compatibility matrix is green.
 - [ ] Configuration migration tests cover any schema changes.
@@ -22,7 +25,7 @@ Use this checklist for every stable release and for high-risk Beta or hotfix rel
 
 ## Manual Windows check
 
-On a currently supported physical Windows 11 desktop, complete the full matrix in [REAL_WORLD_PRODUCT_CERTIFICATION.md](REAL_WORLD_PRODUCT_CERTIFICATION.md). At minimum:
+On a currently supported physical Windows 11 desktop, use [PHYSICAL_DEVICE_SIGNOFF.md](PHYSICAL_DEVICE_SIGNOFF.md) and complete the full matrix in [REAL_WORLD_PRODUCT_CERTIFICATION.md](REAL_WORLD_PRODUCT_CERTIFICATION.md). At minimum:
 
 - [ ] Install the current-user NSIS package.
 - [ ] First launch completes without elevation.
