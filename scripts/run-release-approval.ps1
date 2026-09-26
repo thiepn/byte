@@ -58,6 +58,14 @@ function Get-LocalHeadSha {
   return $sha
 }
 
+function Get-LocalOrigin {
+  $output = & git remote get-url origin
+  if ($LASTEXITCODE -ne 0) {
+    throw "Could not determine the local origin remote."
+  }
+  return ($output | Out-String).Trim()
+}
+
 function Get-LocalBranch {
   $output = & git branch --show-current
   if ($LASTEXITCODE -ne 0) {
@@ -129,7 +137,10 @@ function Wait-ForDispatchedRun(
       $KnownRunIds -notcontains [long]$_.databaseId
     } | Sort-Object createdAt -Descending)
 
-    if ($runs.Count -gt 0) {
+    if ($runs.Count -gt 1) {
+      throw "More than one new workflow_dispatch run appeared for exact main; refusing to guess which signed candidate belongs to this approval session."
+    }
+    if ($runs.Count -eq 1) {
       return $runs[0]
     }
 
@@ -250,8 +261,197 @@ Invoke-Gh @("auth", "status")
 $remoteMain = Get-RemoteMainSha
 $localHead = Get-LocalHeadSha
 $localBranch = Get-LocalBranch
+$localOrigin = Get-LocalOrigin
 Assert-CleanWorkingTree
 
+if ($localOrigin -notmatch '(^|[:/])thiepn/byte(?:\.git)?  throw "Release approval must run from the local main branch. Current branch: '$localBranch'."
+}
+if ($localHead -ne $remoteMain) {
+  throw "Local main ($localHead) does not match remote main ($remoteMain). Pull the exact current main commit first."
+}
+
+$config = Get-Content "src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json
+$version = [string]$config.version
+
+if ([string]::IsNullOrWhiteSpace($DownloadRoot)) {
+  $DownloadRoot = Get-DefaultDownloadRoot
+}
+$DownloadRoot = [IO.Path]::GetFullPath($DownloadRoot)
+
+if ($VerifyOnly -and [string]::IsNullOrWhiteSpace($CandidateDir) -and -not $ReuseExistingCandidate) {
+  throw "VerifyOnly is side-effect-free: provide -CandidateDir or add -ReuseExistingCandidate."
+}
+
+$run = $null
+if ([string]::IsNullOrWhiteSpace($CandidateDir)) {
+  $candidatePath = Join-Path $DownloadRoot ("candidate-" + $CandidateType + "-" + $remoteMain)
+  $run = Resolve-OrCreateCandidateRun $CandidateType $remoteMain
+  Download-Candidate $run $CandidateType $remoteMain $candidatePath
+} else {
+  $candidatePath = (Resolve-Path $CandidateDir).Path
+}
+
+$artifactVerifyArgs = @{
+  OutputDir = $candidatePath
+  RequireCertification = $true
+}
+if ($CandidateType -eq "signed") {
+  $artifactVerifyArgs.RequireSigning = $true
+}
+& (Join-Path $PSScriptRoot "verify-release-artifacts.ps1") @artifactVerifyArgs
+
+$manifestPath = Join-Path $candidatePath "release-manifest.json"
+$productCertificationPath = Join-Path $candidatePath "product-certification.json"
+$releaseCertificationPath = Join-Path $candidatePath "release-certification.json"
+$manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
+
+if ([string]$manifest.commit -ne $remoteMain) {
+  throw "Candidate source commit '$($manifest.commit)' does not match exact current main '$remoteMain'."
+}
+if ($CandidateType -eq "signed" -and -not [bool]$manifest.signed) {
+  throw "Signed release approval requires a signed candidate."
+}
+
+$reportPath = Resolve-ReportPath $version
+
+if (-not $VerifyOnly) {
+  Write-Host ""
+  Write-Host "Starting P4-M physical Windows signoff." -ForegroundColor Green
+
+  $signoffArgs = @{
+    CandidateDir = $candidatePath
+    PerformanceMinutes = $PerformanceMinutes
+    Output = $reportPath
+  }
+  if ($CandidateType -eq "signed") {
+    $signoffArgs.RequireSigning = $true
+  }
+
+  & (Join-Path $PSScriptRoot "run-physical-device-signoff.ps1") @signoffArgs
+}
+
+if (!(Test-Path $reportPath)) {
+  throw "Physical device report is missing: $reportPath"
+}
+
+$deviceVerifyArgs = @{
+  CandidateDir = $candidatePath
+  Report = $reportPath
+}
+if ($CandidateType -eq "signed") {
+  $deviceVerifyArgs.RequireSigning = $true
+  $deviceVerifyArgs.RequirePublicReleaseReady = $true
+}
+& (Join-Path $PSScriptRoot "verify-physical-device-signoff.ps1") @deviceVerifyArgs
+
+$deviceReport = Get-Content $reportPath -Raw | ConvertFrom-Json
+if ($deviceReport.device_ready -ne $true) {
+  throw "Release approval requires a device-ready physical signoff report."
+}
+if ($CandidateType -eq "signed" -and $deviceReport.public_release_ready -ne $true) {
+  throw "Signed release approval requires a public-release-ready physical device report."
+}
+
+$finalRemoteMain = Get-RemoteMainSha
+$finalLocalHead = Get-LocalHeadSha
+$finalLocalBranch = Get-LocalBranch
+Assert-CleanWorkingTree
+
+if ($finalRemoteMain -ne $remoteMain) {
+  throw "Remote main moved during physical signoff ($remoteMain -> $finalRemoteMain). This evidence remains candidate-bound, but a fresh approval run is required before tagging."
+}
+if ($finalLocalHead -ne $localHead -or $finalLocalHead -ne $remoteMain) {
+  throw "Local HEAD changed during physical signoff. A fresh exact-main approval run is required."
+}
+if ($finalLocalBranch -ne "main") {
+  throw "Local branch changed during physical signoff. A fresh exact-main approval run is required."
+}
+
+$approvalPath = Resolve-ApprovalPath $version
+$approvalParent = Split-Path $approvalPath -Parent
+if (-not [string]::IsNullOrWhiteSpace($approvalParent)) {
+  New-Item -ItemType Directory -Path $approvalParent -Force | Out-Null
+}
+
+$approval = [ordered]@{
+  schema_version = 1
+  product = "Byte"
+  version = $version
+  generated_at_utc = [DateTime]::UtcNow.ToString("o")
+  approval_scope = if ($CandidateType -eq "signed") { "public-release-pretag" } else { "device-qa" }
+  source = [ordered]@{
+    repository = $repository
+    branch = "main"
+    commit = $remoteMain
+    local_head = $localHead
+  }
+  candidate = [ordered]@{
+    type = $CandidateType
+    workflow_run_id = if ($null -eq $run) { $null } else { [long]$run.databaseId }
+    workflow_url = if ($null -eq $run) { $null } else { [string]$run.url }
+    signed = [bool]$manifest.signed
+    timestamped = [bool]$manifest.signing.timestamped
+    same_signer = [bool]$manifest.signing.same_signer
+    installer = [ordered]@{
+      file = [string]$manifest.installer
+      sha256 = FileHash (Join-Path $candidatePath ([string]$manifest.installer))
+    }
+    portable = [ordered]@{
+      file = [string]$manifest.portable
+      sha256 = FileHash (Join-Path $candidatePath ([string]$manifest.portable))
+    }
+    release_manifest_sha256 = FileHash $manifestPath
+    product_certification_sha256 = FileHash $productCertificationPath
+    release_certification_sha256 = FileHash $releaseCertificationPath
+  }
+  physical_device_report = [ordered]@{
+    file = [IO.Path]::GetFileName($reportPath)
+    sha256 = FileHash $reportPath
+    device_ready = [bool]$deviceReport.device_ready
+    public_release_ready = [bool]$deviceReport.public_release_ready
+    generated_at_utc = [string]$deviceReport.generated_at_utc
+  }
+  approved_for_tagging = (
+    $CandidateType -eq "signed" -and
+    [bool]$manifest.signed -and
+    [bool]$manifest.signing.timestamped -and
+    [bool]$manifest.signing.same_signer -and
+    [bool]$deviceReport.public_release_ready
+  )
+  automatic_tag_created = $false
+  automatic_release_published = $false
+}
+
+$approval | ConvertTo-Json -Depth 12 | Set-Content $approvalPath -Encoding utf8
+
+$approvalVerifyArgs = @{
+  CandidateDir = $candidatePath
+  DeviceReport = $reportPath
+  Approval = $approvalPath
+}
+if ($CandidateType -eq "signed") {
+  $approvalVerifyArgs.RequireTaggingApproval = $true
+}
+& (Join-Path $PSScriptRoot "verify-release-approval.ps1") @approvalVerifyArgs
+
+Write-Host ""
+Write-Host "Release approval receipt written to:" -ForegroundColor Green
+Write-Host "  $approvalPath"
+Write-Host "Candidate directory:"
+Write-Host "  $candidatePath"
+Write-Host "Device report:"
+Write-Host "  $reportPath"
+Write-Host ""
+
+if ($approval.approved_for_tagging) {
+  Write-Host "APPROVED FOR TAGGING." -ForegroundColor Green
+  Write-Host "No tag or GitHub Release was created automatically."
+} else {
+  Write-Host "Device QA evidence verified, but this receipt is not a public tagging approval." -ForegroundColor Yellow
+}
+) {
+  throw "Release approval must run from the thiepn/byte repository. origin is '$localOrigin'."
+}
 if ($localBranch -ne "main") {
   throw "Release approval must run from the local main branch. Current branch: '$localBranch'."
 }
