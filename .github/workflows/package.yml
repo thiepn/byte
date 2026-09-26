@@ -40,6 +40,10 @@ jobs:
       - name: Verify maintenance policy
         run: npm run maintenance:verify
 
+      - name: Verify physical device signoff tooling
+        shell: pwsh
+        run: ./scripts/test-physical-device-signoff-tooling.ps1
+
       - name: Verify Windows signing policy harness
         shell: pwsh
         run: ./scripts/test-windows-signing-policy.ps1
