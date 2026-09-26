@@ -76,6 +76,7 @@ function manifest(): CharacterManifest {
     behaviors: {
       idle: "idle",
       happy: "happy",
+      curious: "happy",
       needs_attention: "alert",
     },
     transitions: {
@@ -152,6 +153,35 @@ describe("CharacterAnimator", () => {
     expect(animator.releaseSource("input")).toBe(true);
     expect(animator.currentBehavior()).toBe("idle");
     expect(animator.releaseSource("input")).toBe(false);
+  });
+
+  it("avoids repeating the same incidental idle when alternatives exist", () => {
+    const source = manifest();
+    source.idleProfile = {
+      minDelayMs: 500,
+      maxDelayMs: 500,
+      choices: [
+        { behavior: "happy", weight: 20 },
+        { behavior: "curious", weight: 1 },
+      ],
+    };
+    source.clips.happy.frames[0].durationMs = 300;
+    const animator = new CharacterAnimator(source, 4);
+    const chosen: string[] = [];
+    let previousBehavior = "idle";
+
+    for (let step = 0; step < 80 && chosen.length < 4; step += 1) {
+      const frame = animator.tick(125);
+      if (frame.behavior !== "idle" && previousBehavior === "idle") {
+        chosen.push(frame.behavior);
+      }
+      previousBehavior = frame.behavior;
+    }
+
+    expect(chosen.length).toBeGreaterThanOrEqual(3);
+    for (let index = 1; index < chosen.length; index += 1) {
+      expect(chosen[index]).not.toBe(chosen[index - 1]);
+    }
   });
 
   it("uses reduced-motion frames while preserving completion semantics", () => {

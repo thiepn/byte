@@ -44,9 +44,13 @@ export class HabitatParticleEngine {
             (reaction) => reaction.id === profile.reaction,
           )?.maxIntensity ?? 1
         : 1;
+      const ambientIntensity = Math.min(
+        1,
+        Math.max(0, state.ambientIntensity + state.interactionIntensity * 0.35),
+      );
       const intensity = profile.reaction
         ? Math.min(state.reactions[profile.reaction], reactionLimit)
-        : Math.min(1, Math.max(0, state.ambientIntensity));
+        : ambientIntensity;
       const desired = state.reducedMotion
         ? 0
         : Math.min(

@@ -72,6 +72,7 @@
     reducedMotion: false,
     displayMode,
     ambientIntensity: 0.8,
+    interactionIntensity: 0,
   };
 
   let pressed = false;
@@ -88,6 +89,17 @@
     return "__TAURI_INTERNALS__" in window;
   }
 
+  function nudgeHabitat(intensity = 0.5): void {
+    if (habitatState.reducedMotion) return;
+    habitatState = {
+      ...habitatState,
+      interactionIntensity: Math.min(
+        1,
+        Math.max(habitatState.interactionIntensity, intensity),
+      ),
+    };
+  }
+
   async function openPanel(): Promise<void> {
     if (moveMode || dragging || Date.now() < suppressClickUntil) return;
 
@@ -95,6 +107,7 @@
       behavior: "mouse_click",
       source: "interaction",
     });
+    nudgeHabitat(0.9);
 
     pressed = true;
     try {
@@ -119,10 +132,9 @@
       const shell = await dragCompanion();
       moveMode = shell.move_mode;
       if (animator) {
-        personalityDirector?.onDragComplete(
-          performance.now() - dragStartedAt,
-          animator,
-        );
+        const dragDuration = performance.now() - dragStartedAt;
+        personalityDirector?.onDragComplete(dragDuration, animator);
+        nudgeHabitat(dragDuration < 800 ? 0.9 : 0.65);
       }
     } catch {
       // Keep Move Mode active so the user can retry or press Done.
@@ -171,6 +183,14 @@
 
   function renderFrame(deltaMs: number): void {
     if (lifecycleSuspended || !animator || !characterRenderer) return;
+
+    if (habitatState.interactionIntensity > 0) {
+      habitatState.interactionIntensity = Math.max(
+        0,
+        habitatState.interactionIntensity -
+          Math.min(Math.max(deltaMs, 0), 125) / 1_800,
+      );
+    }
 
     personalityDirector?.tick(deltaMs, animator);
     const frame = animator.tick(deltaMs);
@@ -335,6 +355,7 @@
         displayMode,
         timeOfDay: currentTimeOfDay(),
         ambientIntensity: nextPersonalityDirector.ambientIntensity(),
+        interactionIntensity: habitatState.interactionIntensity,
       };
 
       if (animator && characterRenderer) {
@@ -361,7 +382,11 @@
         const onMotionChange = (event: MediaQueryListEvent): void => {
           const reduced = forceReducedMotion || event.matches;
           animator?.setReducedMotion(reduced);
-          habitatState = { ...habitatState, reducedMotion: reduced };
+          habitatState = {
+            ...habitatState,
+            reducedMotion: reduced,
+            interactionIntensity: reduced ? 0 : habitatState.interactionIntensity,
+          };
         };
         mediaQuery.addEventListener("change", onMotionChange);
         cleanups.push(() =>
@@ -459,7 +484,11 @@
         forceReducedMotion = payload.reduce_motion;
         const reduced = forceReducedMotion || (mediaQuery?.matches ?? false);
         animator?.setReducedMotion(reduced);
-        habitatState = { ...habitatState, reducedMotion: reduced };
+        habitatState = {
+          ...habitatState,
+          reducedMotion: reduced,
+          interactionIntensity: reduced ? 0 : habitatState.interactionIntensity,
+        };
       });
 
       register<CompanionPreferences>(
@@ -520,6 +549,7 @@
   onpointerdown={(event) => void startMove(event)}
   onpointerenter={() => {
     if (animator) personalityDirector?.onPointerEnter(animator);
+    nudgeHabitat(0.35);
   }}
 >
   <canvas

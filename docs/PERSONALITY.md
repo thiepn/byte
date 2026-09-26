@@ -106,6 +106,19 @@ Phase 14 does not add:
 
 The cursor-following idea from early brainstorming is intentionally implemented only as local pointer-entry awareness. Byte does not poll or store global pointer position.
 
+## P3 polish — variation without maintenance
+
+Post-v0.1 P3 deepens expression without adding needs, meters, streaks, or pet maintenance.
+
+- incidental idle behaviors do not repeat back-to-back when another authored idle is available
+- pointer-entry reactions rotate through personality-appropriate authored behaviors instead of replaying one response every time
+- fast-typing follow-ups also rotate through a small personality-specific set
+- pointer, drag, and typing follow-ups use short local cooldowns so repeated input does not make the character feel twitchy
+- direct click, pointer-entry, and drag interaction can briefly lift non-semantic habitat ambience
+- that habitat lift decays automatically, stays inside the existing global particle cap, and is disabled under reduced motion
+
+These changes do not affect diagnostic priority, telemetry thresholds, persistence, or privacy boundaries.
+
 ## Priority and safety
 
 Personality is low priority.

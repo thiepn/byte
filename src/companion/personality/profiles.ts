@@ -46,10 +46,10 @@ interface PersonalityProfile {
   ambientIntensity: number;
   idleEntryBehavior: BehaviorId;
   sleepDelayMs: number;
-  pointerBehavior: BehaviorId;
+  pointerBehaviors: BehaviorId[];
   normalDragBehavior: BehaviorId;
   rapidDragBehavior: BehaviorId;
-  typingDoneBehavior: BehaviorId;
+  typingDoneBehaviors: BehaviorId[];
   clickBurstBehavior: BehaviorId;
   bonusChoices: Array<{ behavior: BehaviorId; weight: number }>;
 }
@@ -60,10 +60,10 @@ const PROFILES: Record<Personality, PersonalityProfile> = {
     ambientIntensity: 0.55,
     idleEntryBehavior: "sleep",
     sleepDelayMs: 0,
-    pointerBehavior: "blink",
+    pointerBehaviors: ["blink", "curious"],
     normalDragBehavior: "curious",
     rapidDragBehavior: "annoyed",
-    typingDoneBehavior: "blink",
+    typingDoneBehaviors: ["blink", "look_left"],
     clickBurstBehavior: "annoyed",
     bonusChoices: [
       { behavior: "look_left", weight: 0.4 },
@@ -75,10 +75,10 @@ const PROFILES: Record<Personality, PersonalityProfile> = {
     ambientIntensity: 0.8,
     idleEntryBehavior: "curious",
     sleepDelayMs: 15_000,
-    pointerBehavior: "curious",
+    pointerBehaviors: ["curious", "look_left", "look_right"],
     normalDragBehavior: "curious",
     rapidDragBehavior: "surprised",
-    typingDoneBehavior: "curious",
+    typingDoneBehaviors: ["curious", "blink"],
     clickBurstBehavior: "surprised",
     bonusChoices: [
       { behavior: "curious", weight: 3 },
@@ -91,10 +91,10 @@ const PROFILES: Record<Personality, PersonalityProfile> = {
     ambientIntensity: 1,
     idleEntryBehavior: "happy",
     sleepDelayMs: 35_000,
-    pointerBehavior: "happy",
+    pointerBehaviors: ["happy", "surprised", "curious"],
     normalDragBehavior: "happy",
     rapidDragBehavior: "surprised",
-    typingDoneBehavior: "happy",
+    typingDoneBehaviors: ["happy", "curious"],
     clickBurstBehavior: "happy",
     bonusChoices: [
       { behavior: "happy", weight: 3 },
@@ -219,6 +219,11 @@ export class PersonalityDirector {
   private previousCharging: boolean | null = null;
   private recentClicks: number[] = [];
   private lastClickBurstAt = -Infinity;
+  private lastPointerReactionAt = -Infinity;
+  private lastDragReactionAt = -Infinity;
+  private lastTypingDoneAt = -Infinity;
+  private pointerCursor = 0;
+  private typingCursor = 0;
 
   constructor(
     private readonly personality: Personality,
@@ -304,15 +309,31 @@ export class PersonalityDirector {
     this.previousCharging = charging;
   }
 
-  onPointerEnter(animator: CharacterAnimator): void {
+  onPointerEnter(
+    animator: CharacterAnimator,
+    timestampEpochMs = Date.now(),
+  ): void {
+    if (timestampEpochMs - this.lastPointerReactionAt < 3_000) return;
+
+    const choices = PROFILES[this.personality].pointerBehaviors;
+    const behavior = choices[this.pointerCursor % choices.length];
+    this.pointerCursor += 1;
+    this.lastPointerReactionAt = timestampEpochMs;
     animator.requestBehavior({
-      behavior: PROFILES[this.personality].pointerBehavior,
+      behavior,
       source: "interaction",
     });
   }
 
-  onDragComplete(durationMs: number, animator: CharacterAnimator): void {
+  onDragComplete(
+    durationMs: number,
+    animator: CharacterAnimator,
+    timestampEpochMs = Date.now(),
+  ): void {
+    if (timestampEpochMs - this.lastDragReactionAt < 1_200) return;
+
     const profile = PROFILES[this.personality];
+    this.lastDragReactionAt = timestampEpochMs;
     animator.requestBehavior({
       behavior:
         durationMs < 800
@@ -322,9 +343,18 @@ export class PersonalityDirector {
     });
   }
 
-  onFastTypingStop(animator: CharacterAnimator): void {
+  onFastTypingStop(
+    animator: CharacterAnimator,
+    timestampEpochMs = Date.now(),
+  ): void {
+    if (timestampEpochMs - this.lastTypingDoneAt < 2_200) return;
+
+    const choices = PROFILES[this.personality].typingDoneBehaviors;
+    const behavior = choices[this.typingCursor % choices.length];
+    this.typingCursor += 1;
+    this.lastTypingDoneAt = timestampEpochMs;
     animator.requestBehavior({
-      behavior: PROFILES[this.personality].typingDoneBehavior,
+      behavior,
       source: "personality",
     });
   }

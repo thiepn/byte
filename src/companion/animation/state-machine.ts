@@ -29,6 +29,7 @@ export class CharacterAnimator {
   private readonly random: SeededRandom;
   private idleProfile: IdleProfile;
   private idleCountdownMs = 0;
+  private lastIdleBehavior: BehaviorId | null = null;
 
   constructor(
     private readonly manifest: CharacterManifest,
@@ -261,15 +262,26 @@ export class CharacterAnimator {
 
   private chooseIdleBehavior(): BehaviorId | null {
     const choices = this.idleProfile.choices;
-    const totalWeight = choices.reduce((sum, choice) => sum + choice.weight, 0);
+    const alternatives =
+      choices.length > 1 && this.lastIdleBehavior
+        ? choices.filter((choice) => choice.behavior !== this.lastIdleBehavior)
+        : choices;
+    const pool = alternatives.length > 0 ? alternatives : choices;
+    const totalWeight = pool.reduce((sum, choice) => sum + choice.weight, 0);
     if (totalWeight <= 0) return null;
 
     let value = this.random.next() * totalWeight;
-    for (const choice of choices) {
+    let selected = pool.at(-1)?.behavior ?? null;
+    for (const choice of pool) {
       value -= choice.weight;
-      if (value <= 0) return choice.behavior;
+      if (value <= 0) {
+        selected = choice.behavior;
+        break;
+      }
     }
-    return choices.at(-1)?.behavior ?? null;
+
+    this.lastIdleBehavior = selected;
+    return selected;
   }
 
   private resetIdleCountdown(): void {

@@ -152,4 +152,5 @@ export interface HabitatRenderState {
   reducedMotion: boolean;
   displayMode: DisplayMode;
   ambientIntensity: number;
+  interactionIntensity: number;
 }
