@@ -1,5 +1,3 @@
-Set-StrictMode -Version Latest
-
 function Get-ByteSigningMetadataPath {
   if ([string]::IsNullOrWhiteSpace($env:RUNNER_TEMP)) {
     throw "RUNNER_TEMP is required for Byte signing metadata."
