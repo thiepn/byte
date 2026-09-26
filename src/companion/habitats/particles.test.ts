@@ -52,6 +52,7 @@ const state: HabitatRenderState = {
   reducedMotion: false,
   displayMode: "HABITAT",
   ambientIntensity: 1,
+  interactionIntensity: 0,
   reactions: {
     BUSY: 0,
     MEMORY_PRESSURE: 0,
@@ -77,6 +78,28 @@ describe("HabitatParticleEngine", () => {
 
     expect(ambient).toHaveLength(6);
     expect(network.length).toBeGreaterThan(0);
+  });
+
+  it("adds only a bounded ambient lift for direct companion interaction", () => {
+    const quiet = new HabitatParticleEngine(manifest(), 3).update(16, {
+      ...state,
+      ambientIntensity: 0.25,
+      interactionIntensity: 0,
+      reactions: { ...state.reactions, NETWORK: 0 },
+    });
+    const interactive = new HabitatParticleEngine(manifest(), 3).update(16, {
+      ...state,
+      ambientIntensity: 0.25,
+      interactionIntensity: 1,
+      reactions: { ...state.reactions, NETWORK: 0 },
+    });
+
+    expect(
+      interactive.filter((particle) => particle.profileId === "ambient").length,
+    ).toBeGreaterThan(
+      quiet.filter((particle) => particle.profileId === "ambient").length,
+    );
+    expect(interactive.length).toBeLessThanOrEqual(particleCap());
   });
 
   it("removes animated particles in reduced-motion mode", () => {
