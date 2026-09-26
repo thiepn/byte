@@ -64,13 +64,15 @@ if (!physicalSignoff ||
     physicalSignoff.public_release_allows_capability_gaps !== false ||
     physicalSignoff.signed_candidate_workflow !== ".github/workflows/device-signoff-candidate.yml" ||
     physicalSignoff.signed_candidate_retention_days !== 14 ||
-    physicalSignoff.signed_candidate_main_only !== true) {
+    physicalSignoff.signed_candidate_main_only !== true ||
+    physicalSignoff.candidate_bound_verifier_harness !== "scripts/test-physical-device-signoff-verifier.ps1") {
   throw new Error("Physical Windows device signoff policy is incomplete or has been weakened.");
 }
 for (const script of [
   physicalSignoff.runner_script,
   physicalSignoff.verifier_script,
   "scripts/test-physical-device-signoff-tooling.ps1",
+  physicalSignoff.candidate_bound_verifier_harness,
 ]) {
   if (!fs.existsSync(script)) {
     throw new Error("Physical Windows device signoff tooling is missing: " + script);
@@ -81,6 +83,15 @@ if (!ciWorkflow.includes("test-physical-device-signoff-tooling.ps1") ||
     !releaseWorkflow.includes("test-physical-device-signoff-tooling.ps1") ||
     !deviceCandidateWorkflow.includes("test-physical-device-signoff-tooling.ps1")) {
   throw new Error("CI, packaging, tagged release, and signed-device-candidate workflows must validate the physical-device signoff tooling.");
+}
+for (const [name, workflow] of [
+  ["package", packageWorkflow],
+  ["release", releaseWorkflow],
+  ["signed-device-candidate", deviceCandidateWorkflow],
+]) {
+  if (!workflow.includes("test-physical-device-signoff-verifier.ps1")) {
+    throw new Error(name + " workflow is missing the candidate-bound physical device verifier harness.");
+  }
 }
 
 const requiredDeviceCandidateFragments = [
