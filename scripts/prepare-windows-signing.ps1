@@ -10,7 +10,7 @@ $password = $env:WINDOWS_CERTIFICATE_PASSWORD
 $timestampUrl = $env:WINDOWS_TIMESTAMP_URL
 
 $values = @($certificate, $password, $timestampUrl)
-$provided = ($values | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }).Count
+$provided = @($values | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }).Count
 
 if ($provided -eq 0) {
   if ($RequireSigning) {
