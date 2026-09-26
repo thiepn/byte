@@ -4,7 +4,8 @@ $ErrorActionPreference = "Stop"
 
 $files = @(
   "scripts/run-physical-device-signoff.ps1",
-  "scripts/verify-physical-device-signoff.ps1"
+  "scripts/verify-physical-device-signoff.ps1",
+  "scripts/test-physical-device-signoff-verifier.ps1"
 )
 
 foreach ($file in $files) {
