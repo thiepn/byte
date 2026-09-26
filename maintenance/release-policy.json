@@ -99,7 +99,9 @@
       },
       "public_release_requires_signed_candidate": true,
       "public_release_requires_dual_display_coverage": true,
-      "public_release_allows_capability_gaps": false
+      "public_release_allows_capability_gaps": false,
+      "signed_candidate_workflow": ".github/workflows/device-signoff-candidate.yml",
+      "signed_candidate_retention_days": 14
     }
   }
 }
