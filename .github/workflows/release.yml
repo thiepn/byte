@@ -138,6 +138,12 @@ jobs:
             ./scripts/test-windows-installer.ps1 -Installer $installer -PreviousInstaller $previous -RequireSigning
           }
 
+      - name: Real-world product runtime certification
+        shell: pwsh
+        run: |
+          $portable = (Get-ChildItem "release-artifacts\*-portable.zip" -File | Select-Object -First 1).FullName
+          ./scripts/test-real-world-product.ps1 -Portable $portable
+
       - name: Finalize release certification
         shell: pwsh
         run: |

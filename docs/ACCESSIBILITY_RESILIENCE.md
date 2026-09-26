@@ -45,7 +45,7 @@ CSS transitions/animations collapse to effectively instant behavior, while the c
 
 ### Text scale
 
-Byte supports 100%, 110%, and 125% interface scaling.
+Byte supports 100%, 110%, 125%, 150%, 175%, and 200% interface scaling.
 
 - Main application and Quick Panel scale.
 - Companion pixel art does **not** scale with the text preference.
@@ -112,7 +112,7 @@ Manual release certification should additionally cover:
 - Tab/Shift+Tab across onboarding, main navigation, Settings, Apps, Studio, and Quick Panel
 - Escape-close from Quick Panel
 - Windows High Contrast / forced-colors
-- 125% Byte text scale at the minimum main-window size
+- 100–200% Byte interface scale, including 200% at the minimum practical main-window size
 - Windows reduced motion + Byte Reduce motion
 - monitoring disabled
 - denied notification permission

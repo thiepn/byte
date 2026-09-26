@@ -46,5 +46,39 @@
     "unsigned_release_candidates_allowed": true,
     "publisher": "THIEPN",
     "homepage": "https://thiepn.dev/byte/"
+  },
+  "product_certification": {
+    "automated_runtime_gate": true,
+    "fresh_first_run": true,
+    "onboarding_boundary": true,
+    "display_modes": [
+      "HABITAT",
+      "PERCH",
+      "MINI",
+      "EDGE",
+      "TRAY"
+    ],
+    "interface_scales": [
+      100,
+      110,
+      125,
+      150,
+      175,
+      200
+    ],
+    "runtime_schema_migration": true,
+    "corrupt_config_recovery": true,
+    "sustained_runtime_seconds": 30,
+    "manual_device_signoff_required": true,
+    "manual_device_areas": [
+      "first-run-onboarding-ux",
+      "fullscreen-presentation-restore",
+      "lock-display-sleep-wake",
+      "multi-monitor-mixed-dpi",
+      "notification-permission-quality",
+      "representative-device-performance",
+      "visual-accessibility-qa",
+      "installer-update-trust-ux"
+    ]
   }
 }
