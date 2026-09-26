@@ -6,6 +6,7 @@ const changelog = fs.readFileSync("CHANGELOG.md", "utf8");
 const configSource = fs.readFileSync("src-tauri/src/core/config.rs", "utf8");
 const releaseWorkflow = fs.readFileSync(".github/workflows/release.yml", "utf8");
 const packageWorkflow = fs.readFileSync(".github/workflows/package.yml", "utf8");
+const ciWorkflow = fs.readFileSync(".github/workflows/ci.yml", "utf8");
 
 
 if (policy.schema_version !== 1 || policy.product !== "Byte" || policy.repository !== "thiepn/byte") {
@@ -39,6 +40,42 @@ if (!productCertification ||
 if (!Array.isArray(productCertification.manual_device_areas) ||
     productCertification.manual_device_areas.length < 8) {
   throw new Error("Real-world product certification must retain the manual device signoff matrix.");
+}
+
+const physicalSignoff = productCertification.physical_device_signoff;
+const expectedPhysicalStates = ["ACTIVE_CALM", "FULLSCREEN_REDUCED", "LOCKED_DISPLAY_OFF"];
+const expectedPhysicalThresholds = {
+  cpu_average_percent_max: 0.25,
+  working_set_average_mb_max: 60,
+  gpu_average_percent_max: 1.0,
+  disk_write_average_bytes_per_sec_max: 4096,
+  remote_tcp_connections_max: 0,
+};
+if (!physicalSignoff ||
+    physicalSignoff.tooling_required !== true ||
+    physicalSignoff.runner_script !== "scripts/run-physical-device-signoff.ps1" ||
+    physicalSignoff.verifier_script !== "scripts/verify-physical-device-signoff.ps1" ||
+    physicalSignoff.minimum_performance_minutes_per_state < 10 ||
+    JSON.stringify(physicalSignoff.performance_states) !== JSON.stringify(expectedPhysicalStates) ||
+    JSON.stringify(physicalSignoff.thresholds) !== JSON.stringify(expectedPhysicalThresholds) ||
+    physicalSignoff.public_release_requires_signed_candidate !== true ||
+    physicalSignoff.public_release_requires_dual_display_coverage !== true ||
+    physicalSignoff.public_release_allows_capability_gaps !== false) {
+  throw new Error("Physical Windows device signoff policy is incomplete or has been weakened.");
+}
+for (const script of [
+  physicalSignoff.runner_script,
+  physicalSignoff.verifier_script,
+  "scripts/test-physical-device-signoff-tooling.ps1",
+]) {
+  if (!fs.existsSync(script)) {
+    throw new Error("Physical Windows device signoff tooling is missing: " + script);
+  }
+}
+if (!ciWorkflow.includes("test-physical-device-signoff-tooling.ps1") ||
+    !packageWorkflow.includes("test-physical-device-signoff-tooling.ps1") ||
+    !releaseWorkflow.includes("test-physical-device-signoff-tooling.ps1")) {
+  throw new Error("CI, packaging, and tagged release workflows must validate the physical-device signoff tooling.");
 }
 
 const distribution = policy.distribution;
@@ -122,5 +159,5 @@ console.log(
   "Maintenance policy verified: schema " + schemaMatch[1] +
     ", migration floor " + minMatch[1] +
     ", version " + tauri.version +
-    ", signed public Windows releases required, real-world product gate enabled.",
+    ", signed public Windows releases required, real-world product gate enabled, physical-device signoff tooling locked.",
 );
