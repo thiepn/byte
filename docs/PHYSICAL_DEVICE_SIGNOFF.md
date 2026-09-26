@@ -104,6 +104,8 @@ pwsh -NoProfile -File .\scripts\run-physical-device-signoff.ps1 `
 
 The harness uses the certified portable `Byte.exe` for performance measurement by default.
 
+Close any other Byte build before the performance portion. If the exact candidate is already installed and running, pass that installed executable with `-Executable`; P4-M rejects concurrent Byte processes from a different path so single-instance handoff cannot silently invalidate the measurement.
+
 If the exact candidate is installed and you want the performance test to use that installed executable instead:
 
 ```powershell
