@@ -1,0 +1,126 @@
+name: Byte Device Signoff Candidate
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: byte-device-signoff-candidate-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  attestations: write
+  id-token: write
+
+jobs:
+  signed-device-candidate:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+      WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+      WINDOWS_TIMESTAMP_URL: ${{ secrets.WINDOWS_TIMESTAMP_URL }}
+
+    steps:
+      - name: Checkout selected source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+
+      - name: Rust
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Verify release metadata
+        run: npm run release:verify
+
+      - name: Verify maintenance policy
+        run: npm run maintenance:verify
+
+      - name: Verify physical device signoff tooling
+        shell: pwsh
+        run: ./scripts/test-physical-device-signoff-tooling.ps1
+
+      - name: Frontend dependency audit
+        run: npm audit --audit-level=high
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked --version 0.22.2
+
+      - name: Rust dependency audit
+        working-directory: src-tauri
+        run: cargo audit
+
+      - name: Prepare required Windows code signing
+        shell: pwsh
+        run: ./scripts/prepare-windows-signing.ps1 -RequireSigning
+
+      - name: Build signed device candidate
+        shell: pwsh
+        run: ./scripts/build-windows-release.ps1 -RequireSigning
+
+      - name: Stage signed device candidate
+        shell: pwsh
+        run: ./scripts/stage-release.ps1 -RequireSigning
+
+      - name: Verify staged signed artifacts
+        shell: pwsh
+        run: ./scripts/verify-release-artifacts.ps1 -RequireSigning
+
+      - name: Portable launch smoke test
+        shell: pwsh
+        run: |
+          $portable = (Get-ChildItem "release-artifacts\*-portable.zip" -File | Select-Object -First 1).FullName
+          ./scripts/test-portable-launch.ps1 -Portable $portable
+
+      - name: Signed installer lifecycle certification
+        shell: pwsh
+        run: |
+          $installer = (Get-ChildItem "release-artifacts\*-setup.exe" -File | Select-Object -First 1).FullName
+          ./scripts/test-windows-installer.ps1 -Installer $installer -RequireSigning
+
+      - name: Real-world product runtime certification
+        shell: pwsh
+        run: |
+          $portable = (Get-ChildItem "release-artifacts\*-portable.zip" -File | Select-Object -First 1).FullName
+          ./scripts/test-real-world-product.ps1 -Portable $portable
+
+      - name: Finalize signed candidate certification
+        shell: pwsh
+        run: ./scripts/finalize-release-certification.ps1 -RequireSigning
+
+      - name: Verify fully certified signed candidate
+        shell: pwsh
+        run: ./scripts/verify-release-artifacts.ps1 -RequireCertification -RequireSigning
+
+      - name: Attest installer provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-path: "release-artifacts/*-setup.exe"
+
+      - name: Attest portable provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-path: "release-artifacts/*-portable.zip"
+
+      - name: Upload physical-signoff candidate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: byte-device-signoff-candidate-${{ github.sha }}
+          path: release-artifacts/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Clean signing material
+        if: always()
+        shell: pwsh
+        run: ./scripts/cleanup-windows-signing.ps1
