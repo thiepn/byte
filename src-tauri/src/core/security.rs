@@ -65,9 +65,12 @@ pub fn normalize_and_validate_config(config: &mut ByteConfig) -> Result<(), Byte
 pub fn normalize_and_validate_app_preferences(
     preferences: &mut AppPreferences,
 ) -> Result<(), ByteError> {
-    if !matches!(preferences.text_scale_percent, 100 | 110 | 125) {
+    if !matches!(
+        preferences.text_scale_percent,
+        100 | 110 | 125 | 150 | 175 | 200
+    ) {
         return Err(ByteError::Config(
-            "Text scale must be 100, 110, or 125 percent".into(),
+            "Text scale must be 100, 110, 125, 150, 175, or 200 percent".into(),
         ));
     }
 
@@ -235,6 +238,23 @@ mod tests {
     fn valid_defaults_pass() {
         let mut config = ByteConfig::default();
         assert!(normalize_and_validate_config(&mut config).is_ok());
+    }
+
+    #[test]
+    fn extended_interface_scale_choices_are_validated() {
+        for scale in [100, 110, 125, 150, 175, 200] {
+            let mut app = AppPreferences {
+                text_scale_percent: scale,
+                ..AppPreferences::default()
+            };
+            assert!(normalize_and_validate_app_preferences(&mut app).is_ok());
+        }
+
+        let mut app = AppPreferences {
+            text_scale_percent: 140,
+            ..AppPreferences::default()
+        };
+        assert!(normalize_and_validate_app_preferences(&mut app).is_err());
     }
 
     #[test]
