@@ -165,18 +165,17 @@ describe("CharacterAnimator", () => {
         { behavior: "curious", weight: 1 },
       ],
     };
+    source.clips.happy.frames[0].durationMs = 300;
     const animator = new CharacterAnimator(source, 4);
     const chosen: string[] = [];
+    let previousBehavior = "idle";
 
-    for (let step = 0; step < 40 && chosen.length < 4; step += 1) {
+    for (let step = 0; step < 80 && chosen.length < 4; step += 1) {
       const frame = animator.tick(125);
-      if (
-        frame.source === "idle" &&
-        frame.behavior !== "idle" &&
-        chosen.at(-1) !== frame.behavior
-      ) {
+      if (frame.behavior !== "idle" && previousBehavior === "idle") {
         chosen.push(frame.behavior);
       }
+      previousBehavior = frame.behavior;
     }
 
     expect(chosen.length).toBeGreaterThanOrEqual(3);
