@@ -92,16 +92,16 @@ try {
       same_signer = [bool]$manifest.signing.same_signer
       installer = [ordered]@{
         file = [string]$manifest.installer
-        sha256 = Hash $installerPath
+        sha256 = (Hash $installerPath)
       }
       portable = [ordered]@{
         file = [string]$manifest.portable
-        sha256 = Hash $portablePath
-        executable_sha256 = Hash $exePath
+        sha256 = (Hash $portablePath)
+        executable_sha256 = (Hash $exePath)
       }
-      release_manifest_sha256 = Hash $manifestPath
-      product_certification_sha256 = Hash $productPath
-      release_certification_sha256 = Hash $releasePath
+      release_manifest_sha256 = (Hash $manifestPath)
+      product_certification_sha256 = (Hash $productPath)
+      release_certification_sha256 = (Hash $releasePath)
     }
     device = [ordered]@{
       os = [ordered]@{
@@ -119,6 +119,10 @@ try {
 
   $valid = Join-Path $temp "valid-device-report.json"
   $report | ConvertTo-Json -Depth 20 | Set-Content $valid -Encoding utf8
+  $serialized = Get-Content -LiteralPath $valid -Raw | ConvertFrom-Json
+  if ($serialized.schema_version -ne 1 -or $serialized.product -ne "Byte") {
+    throw "Synthetic physical-device report serialization lost required top-level identity fields."
+  }
 
   $verifyArgs = @{
     CandidateDir = $root
