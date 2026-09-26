@@ -206,7 +206,7 @@ function Get-ProcessTreeIds([int]$RootPid) {
     }
   }
 
-  return @($seen)
+  return @($seen | ForEach-Object { [int]$_ })
 }
 
 function Get-GpuPercentForPids([int[]]$Pids) {
@@ -481,7 +481,10 @@ try {
     "Quick Panel remains visible near work-area edges.",
     "Main app remains usable at minimum size."
   ) $allowMonitorNa
-  if ($manual.multimonitor_dpi.status -eq "NA") {
+  if ($allowMonitorNa) {
+    if ($manual.multimonitor_dpi.status -ne "NA") {
+      throw "Multi-monitor/DPI cannot be marked PASS when fewer than two active displays are available."
+    }
     $capabilityGaps.Add("multi-monitor-mixed-dpi: fewer than two active displays were available on this device")
   }
 
@@ -516,7 +519,10 @@ try {
     "Stable/Beta channel persists and Check for updates opens the fixed destination.",
     "Freshly downloaded assets pass checksum/signature/provenance verification."
   ) $trustNa
-  if ($manual.installer_trust.status -eq "NA") {
+  if ($trustNa) {
+    if ($manual.installer_trust.status -ne "NA") {
+      throw "Installer/trust cannot be marked PASS for an unsigned candidate."
+    }
     $capabilityGaps.Add("signed-installer-trust: candidate is unsigned and cannot certify public trust UX")
   }
 
@@ -533,6 +539,18 @@ Open a real fullscreen game, fullscreen video, or presentation that should suppr
   $performance += Measure-ByteState "LOCKED_DISPLAY_OFF" $process $PerformanceMinutes @"
 Prepare to lock Windows or turn the display off. After pressing Enter, you have 15 seconds to lock/blank the session. Leave the machine untouched for the measurement duration, then unlock it.
 "@
+
+  foreach ($sample in $performance) {
+    if ($null -eq $sample.metrics.gpu_average_percent) {
+      $capabilityGaps.Add("gpu-counter-unavailable:" + $sample.state)
+    }
+    if ($null -eq $sample.metrics.disk_write_average_bytes_per_sec) {
+      $capabilityGaps.Add("disk-write-counter-unavailable:" + $sample.state)
+    }
+    if ($null -eq $sample.metrics.max_non_loopback_established_tcp_connections) {
+      $capabilityGaps.Add("tcp-ownership-counter-unavailable:" + $sample.state)
+    }
+  }
 
   $manual.performance_observation = Read-Result "8. Performance observation" @(
     "No visible animation/render loop remains active while Byte should be suppressed.",
@@ -572,6 +590,7 @@ Prepare to lock Windows or turn the display off. After pressing Enter, you have 
     [bool]$manifest.signing.timestamped -and
     [bool]$manifest.signing.same_signer -and
     $manual.installer_trust.status -eq "PASS" -and
+    [int]$device.display_count -ge 2 -and
     $capabilityGaps.Count -eq 0
 
   $report = [ordered]@{
