@@ -6,12 +6,18 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ### Added
 
+- Added P4 Real-World Product Certification: packaged first-run and returning-user runtime profiles, all display modes, 100–200% interface-scale coverage, runtime migration, corrupt-state recovery, sustained-session runaway guardrails, and machine-readable `product-certification.json` evidence.
+- Added a mandatory physical-Windows signoff matrix for fullscreen/presentation, lock/sleep, multi-monitor/DPI, notifications, representative-device performance, accessibility/visual QA, and installer/update/trust UX.
+
 - Added P3 companion polish: bounded interaction-driven habitat ambience in the live companion and Customization Studio preview, with reduced-motion suppression and the existing global particle cap preserved.
 - Added Application UI/UX V2: icon-led navigation, clearer Overview/Activity/Apps hierarchy, companion presence in the application shell, richer empty/error/privacy states, and interface-scale choices through 200%.
 - Added a fail-closed Windows trust pipeline for future public releases: Authenticode signer metadata, timestamp verification, installed-binary signer checks, and fresh public-download verification.
 - Added a dedicated Windows trust/code-signing runbook with certificate setup, rotation, SmartScreen expectations, and user verification commands.
 
 ### Changed
+
+- Release certification schema advances to v3 and now binds the P4 product-certification hash; certified release checksums include the product-certification artifact.
+- PR/main packaging and public tagged releases now fail closed if the P4 automated real-world runtime gate does not pass.
 
 - Refined companion behavior so incidental idles avoid immediate repetition and pointer/typing personality reactions rotate through authored alternatives with short anti-spam cooldowns.
 - Polished the Customization Studio around a larger live-preview focus, clearer section navigation, richer choice cards, and a more useful current-look summary.
