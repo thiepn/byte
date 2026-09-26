@@ -10,7 +10,25 @@ $root = (Resolve-Path $OutputDir).Path
 $config = Get-Content "src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json
 $version = [string]$config.version
 $manifestPath = Join-Path $root "release-manifest.json"
+$productCertificationPath = Join-Path $root "product-certification.json"
 $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
+
+if (!(Test-Path $productCertificationPath)) {
+  throw "Final release certification requires product-certification.json from the P4 runtime gate."
+}
+$productCertification = Get-Content $productCertificationPath -Raw | ConvertFrom-Json
+if ($productCertification.schema_version -ne 1 -or
+    $productCertification.product -ne "Byte" -or
+    [string]$productCertification.version -ne $version -or
+    $productCertification.target -ne "x86_64-pc-windows-msvc" -or
+    $productCertification.automated_ready -ne $true -or
+    $productCertification.manual_device_signoff_required -ne $true) {
+  throw "P4 product certification is missing required identity/readiness fields."
+}
+if ($manifest.commit -and $productCertification.commit -and
+    [string]$manifest.commit -ne [string]$productCertification.commit) {
+  throw "P4 product certification commit does not match the staged release manifest."
+}
 
 $installer = Join-Path $root ([string]$manifest.installer)
 $portable = Join-Path $root ([string]$manifest.portable)
@@ -24,7 +42,7 @@ if ($RequireSigning -and -not $publicDistributionReady) {
 }
 
 $certification = [ordered]@{
-  schema_version = 2
+  schema_version = 3
   product = "Byte"
   version = $version
   target = "x86_64-pc-windows-msvc"
@@ -52,12 +70,30 @@ $certification = [ordered]@{
     uninstall = $true
     startup_cleanup = $true
     app_data_preservation = $true
+    real_world_product_runtime = $true
+    fresh_first_run = [bool]$productCertification.automated_checks.fresh_first_run
+    onboarding_boundary = [bool]$productCertification.automated_checks.onboarding_boundary
+    display_mode_matrix = [bool]$productCertification.automated_checks.all_display_modes
+    interface_scale_matrix = [bool]$productCertification.automated_checks.interface_scales_100_through_200
+    runtime_schema_migration = [bool]$productCertification.automated_checks.runtime_schema_migration
+    corrupt_config_recovery = [bool]$productCertification.automated_checks.corrupt_config_quarantine_and_recovery
+    sustained_runtime = [bool]$productCertification.automated_checks.sustained_runtime
+    runaway_resource_guardrails = [bool]$productCertification.automated_checks.runaway_resource_guardrails
+    manual_device_signoff_gate_declared = [bool]$productCertification.manual_device_signoff_required
     previous_release_upgrade = [bool]$PreviousReleaseTested
     downgrade_policy_runtime = [bool]$PreviousReleaseTested
     authenticode_application = [bool]$manifest.signing.application.valid
     authenticode_installer = [bool]$manifest.signing.installer.valid
     authenticode_same_signer = [bool]$manifest.signing.same_signer
     authenticode_timestamped = [bool]$manifest.signing.timestamped
+  }
+  product_certification = [ordered]@{
+    file = "product-certification.json"
+    sha256 = (Get-FileHash $productCertificationPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    scope = [string]$productCertification.certification_scope
+    automated_ready = [bool]$productCertification.automated_ready
+    manual_device_signoff_required = [bool]$productCertification.manual_device_signoff_required
+    sustained_runtime_seconds = [int]$productCertification.sustained_runtime_seconds
   }
   artifacts = [ordered]@{
     installer = [ordered]@{
@@ -80,6 +116,7 @@ $checksumTargets = @(
   $installer,
   $portable,
   $manifestPath,
+  $productCertificationPath,
   $certificationPath
 )
 
