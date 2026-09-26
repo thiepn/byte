@@ -73,6 +73,8 @@ Assert-Equal ([string]$approval.candidate.release_certification_sha256) (Digest 
 Assert-Equal ([bool]$approval.candidate.signed) ([bool]$manifest.signed) "Release approval signing-state mismatch."
 Assert-Equal ([bool]$approval.candidate.timestamped) ([bool]$manifest.signing.timestamped) "Release approval timestamp-state mismatch."
 Assert-Equal ([bool]$approval.candidate.same_signer) ([bool]$manifest.signing.same_signer) "Release approval same-signer mismatch."
+$expectedCandidateType = if ([bool]$manifest.signed) { "signed" } else { "unsigned" }
+Assert-Equal ([string]$approval.candidate.type) $expectedCandidateType "Release approval candidate-type mismatch."
 
 Assert-Equal ([string]$approval.physical_device_report.file) ([IO.Path]::GetFileName($reportPath)) "Release approval device-report filename mismatch."
 Assert-Equal ([string]$approval.physical_device_report.sha256) (Digest $reportPath) "Release approval device-report hash mismatch."
