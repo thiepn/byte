@@ -164,7 +164,7 @@ The tagged workflow must pass:
 - npm audit
 - RustSec audit
 - release-order check
-- optional signing configuration validation
+- required public-release signing configuration validation
 - production package build
 - artifact-integrity verification
 - portable launch smoke
@@ -175,7 +175,7 @@ The tagged workflow must pass:
 - portable provenance attestation
 - immediate attestation verification
 
-Only then are the exact staged files uploaded to the GitHub Release.
+Only then are the exact staged files uploaded to the GitHub Release. After publication, the workflow downloads those public assets again and repeats artifact/signing/provenance verification before the run can succeed.
 
 ## User verification
 
@@ -201,9 +201,21 @@ The same command can be used for the portable ZIP.
 
 ### Signing
 
-`release-manifest.json` records whether both the executable and installer had valid Authenticode signatures during release staging.
+Manifest/certification schema v2 records the full public trust state for the installer and portable executable: validity, signer subject/issuer/thumbprint, certificate validity window, timestamp presence, and timestamp signer metadata.
 
-Unsigned builds are still structurally certified, but Windows may present stronger SmartScreen warnings. A partially configured signing environment is treated as a release failure.
+Unsigned pull-request/`main` builds may still be structurally certified as release candidates. They receive `public_distribution_ready: false`.
+
+Tagged Stable and Beta releases require:
+
+- valid Authenticode on the installer
+- valid Authenticode on portable `Byte.exe`
+- the same signer certificate on both
+- trusted timestamps on both
+- the installed executable to retain the same signer during NSIS lifecycle testing
+
+A public release cannot be published if those checks fail.
+
+Byte v0.1.0 predates this fail-closed public-signing policy and is recorded as unsigned. See [WINDOWS_TRUST.md](WINDOWS_TRUST.md).
 
 ## Release contents
 
