@@ -79,6 +79,31 @@
       "representative-device-performance",
       "visual-accessibility-qa",
       "installer-update-trust-ux"
-    ]
+    ],
+    "physical_device_signoff": {
+      "tooling_required": true,
+      "runner_script": "scripts/run-physical-device-signoff.ps1",
+      "verifier_script": "scripts/verify-physical-device-signoff.ps1",
+      "minimum_performance_minutes_per_state": 10,
+      "performance_states": [
+        "ACTIVE_CALM",
+        "FULLSCREEN_REDUCED",
+        "LOCKED_DISPLAY_OFF"
+      ],
+      "thresholds": {
+        "cpu_average_percent_max": 0.25,
+        "working_set_average_mb_max": 60,
+        "gpu_average_percent_max": 1,
+        "disk_write_average_bytes_per_sec_max": 4096,
+        "remote_tcp_connections_max": 0
+      },
+      "public_release_requires_signed_candidate": true,
+      "public_release_requires_dual_display_coverage": true,
+      "public_release_allows_capability_gaps": false,
+      "signed_candidate_workflow": ".github/workflows/device-signoff-candidate.yml",
+      "signed_candidate_retention_days": 14,
+      "signed_candidate_main_only": true,
+      "candidate_bound_verifier_harness": "scripts/test-physical-device-signoff-verifier.ps1"
+    }
   }
 }

@@ -22,7 +22,10 @@
     "bundle:windows": "tauri build --bundles nsis",
     "release:prepare": "node scripts/prepare-release.mjs",
     "release:notes": "node scripts/extract-release-notes.mjs",
-    "maintenance:verify": "node scripts/verify-maintenance-policy.mjs"
+    "maintenance:verify": "node scripts/verify-maintenance-policy.mjs",
+    "device:signoff": "pwsh -NoProfile -File scripts/run-physical-device-signoff.ps1",
+    "device:signoff:verify": "pwsh -NoProfile -File scripts/verify-physical-device-signoff.ps1",
+    "device:signoff:tooling": "pwsh -NoProfile -File scripts/test-physical-device-signoff-tooling.ps1"
   },
   "dependencies": {
     "@tauri-apps/api": "2.11.1",

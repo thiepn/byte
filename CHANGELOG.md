@@ -6,6 +6,9 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ### Added
 
+- Added P4-M physical Windows device signoff tooling: guided PASS/FAIL/NA evidence capture, exact-candidate hash binding, three 10-minute representative performance states, full Byte + WebView2 process-tree measurement, strict report verification, and capability-gap tracking.
+- Added a main-only, manually dispatched signed `Byte Device Signoff Candidate` workflow so Authenticode/SmartScreen/trust UX can be tested before a public tag without publishing a GitHub Release.
+
 - Added P4 Real-World Product Certification: packaged first-run and returning-user runtime profiles, all display modes, 100–200% interface-scale coverage, runtime migration, corrupt-state recovery, sustained-session runaway guardrails, and machine-readable `product-certification.json` evidence.
 - Added a mandatory physical-Windows signoff matrix for fullscreen/presentation, lock/sleep, multi-monitor/DPI, notifications, representative-device performance, accessibility/visual QA, and installer/update/trust UX.
 
@@ -15,6 +18,9 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 - Added a dedicated Windows trust/code-signing runbook with certificate setup, rotation, SmartScreen expectations, and user verification commands.
 
 ### Changed
+
+- Public-release physical signoff now distinguishes ordinary `device_ready` evidence from `public_release_ready`: the latter requires a signed/timestamped same-signer candidate, dual-display coverage, trust PASS, and zero capability gaps.
+- CI, packaging, public release, and signed-device-candidate workflows now syntax/policy-check the P4-M PowerShell tooling.
 
 - Release certification schema advances to v3 and now binds the P4 product-certification hash; certified release checksums include the product-certification artifact.
 - PR/main packaging and public tagged releases now fail closed if the P4 automated real-world runtime gate does not pass.

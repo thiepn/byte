@@ -46,6 +46,10 @@ jobs:
       - name: Verify maintenance policy
         run: npm run maintenance:verify
 
+      - name: Verify physical device signoff tooling
+        shell: pwsh
+        run: ./scripts/test-physical-device-signoff-tooling.ps1
+
       - name: Extract curated release notes
         shell: pwsh
         run: |
@@ -157,6 +161,10 @@ jobs:
       - name: Verify certified signed release artifacts
         shell: pwsh
         run: ./scripts/verify-release-artifacts.ps1 -RequireCertification -RequireSigning
+
+      - name: Test physical device report verifier
+        shell: pwsh
+        run: ./scripts/test-physical-device-signoff-verifier.ps1 -CandidateDir release-artifacts -RequireSigning
 
       - name: Attest installer provenance
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4

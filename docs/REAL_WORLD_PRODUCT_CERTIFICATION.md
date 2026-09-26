@@ -121,7 +121,9 @@ Release certification schema v3 binds the product-certification SHA-256 into `re
 
 ## Manual real-device signoff
 
-Before approving a public Stable release, test the exact certified candidate on a currently supported physical Windows 11 machine.
+P4-M provides a guided local runner, strict verifier, and a non-publishing signed candidate workflow for this layer. See [PHYSICAL_DEVICE_SIGNOFF.md](PHYSICAL_DEVICE_SIGNOFF.md).
+
+Before approving a public Stable release, test the exact certified candidate on a currently supported physical Windows 11 machine. For final public-release approval, use the signed `Byte Device Signoff Candidate` artifact and require a `public_release_ready` P4-M report.
 
 ### 1. First-run and everyday flow
 
@@ -239,7 +241,8 @@ A public Stable release should be approved only when:
 1. normal CI is green,
 2. Packaging Certification is green,
 3. P4 automated product certification is green,
-4. the exact candidate has passed the manual real-device signoff above,
-5. public signing/trust/provenance gates are green.
+4. the exact candidate has passed P4-M physical-device signoff,
+5. the P4-M report verifies with `-RequireSigning -RequirePublicReleaseReady`,
+6. public signing/trust/provenance gates are green.
 
 This distinction is intentional and prevents Byte from claiming evidence it does not have.

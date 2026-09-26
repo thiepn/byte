@@ -13,3 +13,6 @@ src-tauri/gen/
 release-artifacts/
 previous-release/
 src-tauri/tauri.signing.conf.json
+
+# Local physical-device certification evidence
+device-certification*.json
