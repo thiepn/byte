@@ -18,6 +18,7 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 - Release certification schema advances to v3 and now binds the P4 product-certification hash; certified release checksums include the product-certification artifact.
 - PR/main packaging and public tagged releases now fail closed if the P4 automated real-world runtime gate does not pass.
+- Windows launch smokes now isolate the actual Tauri app-config directory via backup/reset/restore instead of assuming an `APPDATA` environment override redirects the Windows known-folder path.
 
 - Refined companion behavior so incidental idles avoid immediate repetition and pointer/typing personality reactions rotate through authored alternatives with short anti-spam cooldowns.
 - Polished the Customization Studio around a larger live-preview focus, clearer section navigation, richer choice cards, and a more useful current-look summary.
