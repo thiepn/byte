@@ -63,7 +63,7 @@ The portable ZIP must contain exactly one `Byte.exe`.
 
 ### 4. Portable runtime smoke test
 
-The portable executable is extracted and started from an isolated roaming-app-data environment.
+The portable executable is extracted and started after Byte's actual Windows roaming app-config directory is backed up and reset. Tauri resolves that directory through the Windows known-folder API, so certification does not rely on overriding `APPDATA`. Any pre-existing Byte state is restored after the smoke.
 
 Certification requires **three consecutive launches** from that isolated environment. Each launch must remain alive for the observation window before the process is terminated and the next launch begins. A failure reports the signed/decimal exit status, captured process output, and matching Windows Application Error / Windows Error Reporting events when available.
 
