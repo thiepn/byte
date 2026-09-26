@@ -174,6 +174,17 @@ Reset look restores:
 
 It preserves shell-specific presentation and placement state.
 
+## P3 presentation polish
+
+The post-v0.1 P3 pass keeps the same finite customization model while making the Studio read more like a companion space than a settings form.
+
+- the production preview is the visual focal point, with stronger framing and hierarchy
+- the current look now surfaces personality alongside character, color, habitat, and extras
+- section navigation is larger and more legible
+- preset, character, habitat, personality, display, palette, cosmetic, and decoration choices use a more consistent selected/hover hierarchy
+- reaction previews also show the same bounded habitat-energy response used by direct companion interaction
+- save state, history controls, and responsive layouts remain visible without adding an Apply step
+
 ## Phase boundary
 
 Phase 18 uses the complete finite local catalogs already shipped by Byte.
