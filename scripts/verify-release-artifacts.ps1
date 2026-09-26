@@ -16,12 +16,14 @@ $installerName = "Byte-v$version-windows-x64-setup.exe"
 $portableName = "Byte-v$version-windows-x64-portable.zip"
 $manifestName = "release-manifest.json"
 $certificationName = "release-certification.json"
+$productCertificationName = "product-certification.json"
 $checksumName = "SHA256SUMS.txt"
 
 $installer = Join-Path $root $installerName
 $portable = Join-Path $root $portableName
 $manifestPath = Join-Path $root $manifestName
 $certificationPath = Join-Path $root $certificationName
+$productCertificationPath = Join-Path $root $productCertificationName
 $checksumPath = Join-Path $root $checksumName
 
 foreach ($required in @($installer, $portable, $manifestPath, $checksumPath)) {
@@ -60,6 +62,12 @@ foreach ($line in Get-Content $checksumPath) {
 }
 
 $hashTargets = @($installerName, $portableName, $manifestName)
+if (Test-Path $productCertificationPath) {
+  $hashTargets += $productCertificationName
+} elseif ($RequireCertification) {
+  throw "Certified release artifacts require $productCertificationName."
+}
+
 if (Test-Path $certificationPath) {
   $hashTargets += $certificationName
 } elseif ($RequireCertification) {
@@ -152,8 +160,52 @@ try {
   }
 
   if ($RequireCertification) {
+    $productCertification = Get-Content $productCertificationPath -Raw | ConvertFrom-Json
+    if ($productCertification.schema_version -ne 1) {
+      throw "Product certification schema mismatch."
+    }
+    if ($productCertification.product -ne "Byte" -or [string]$productCertification.version -ne $version) {
+      throw "Product certification identity mismatch."
+    }
+    if ($productCertification.target -ne "x86_64-pc-windows-msvc") {
+      throw "Product certification target mismatch."
+    }
+    if ($productCertification.automated_ready -ne $true) {
+      throw "Product certification does not mark the automated runtime gate ready."
+    }
+    if ($productCertification.manual_device_signoff_required -ne $true) {
+      throw "Product certification must preserve the manual device signoff requirement."
+    }
+    $requiredProductChecks = @(
+      "fresh_first_run",
+      "onboarding_boundary",
+      "all_display_modes",
+      "interface_scales_100_through_200",
+      "high_contrast_profile",
+      "reduced_motion_profile",
+      "monitoring_disabled_profile",
+      "runtime_schema_migration",
+      "corrupt_config_quarantine_and_recovery",
+      "sustained_runtime",
+      "runaway_resource_guardrails"
+    )
+    foreach ($check in $requiredProductChecks) {
+      if ($productCertification.automated_checks.$check -ne $true) {
+        throw "Product certification check '$check' is not green."
+      }
+    }
+    if (($productCertification.supported_interface_scales -join ",") -ne "100,110,125,150,175,200") {
+      throw "Product certification interface-scale coverage mismatch."
+    }
+    if (($productCertification.exercised_display_modes -join ",") -ne "HABITAT,PERCH,MINI,EDGE,TRAY") {
+      throw "Product certification display-mode coverage mismatch."
+    }
+    if ([int]$productCertification.sustained_runtime_seconds -lt 30) {
+      throw "Product certification sustained runtime is below policy."
+    }
+
     $certification = Get-Content $certificationPath -Raw | ConvertFrom-Json
-    if ($certification.schema_version -ne 2) {
+    if ($certification.schema_version -ne 3) {
       throw "Release certification schema mismatch."
     }
     if ($certification.product -ne "Byte" -or [string]$certification.version -ne $version) {
@@ -164,6 +216,22 @@ try {
     }
     if ($certification.distribution_ready -ne $true) {
       throw "Release certification does not mark the build distribution-ready."
+    }
+    if ($certification.checks.real_world_product_runtime -ne $true -or
+        $certification.checks.fresh_first_run -ne $true -or
+        $certification.checks.onboarding_boundary -ne $true -or
+        $certification.checks.display_mode_matrix -ne $true -or
+        $certification.checks.interface_scale_matrix -ne $true -or
+        $certification.checks.runtime_schema_migration -ne $true -or
+        $certification.checks.corrupt_config_recovery -ne $true -or
+        $certification.checks.sustained_runtime -ne $true -or
+        $certification.checks.runaway_resource_guardrails -ne $true -or
+        $certification.checks.manual_device_signoff_gate_declared -ne $true) {
+      throw "Release certification is missing P4 product-quality gates."
+    }
+    $productHash = (Get-FileHash $productCertificationPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ([string]$certification.product_certification.sha256 -ne $productHash) {
+      throw "Release certification product-certification hash mismatch."
     }
     if ($RequireSigning -and $certification.public_distribution_ready -ne $true) {
       throw "Release certification does not mark the signed build public-distribution-ready."
