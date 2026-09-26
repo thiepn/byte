@@ -54,6 +54,7 @@
   let revision = 0;
   let previewCharacterOnly = false;
   let reducedMotion = false;
+  let previewInteractionIntensity = 0;
   let status = "Loading preview…";
 
   $: if (mounted && preferences) {
@@ -62,6 +63,14 @@
 
   function render(deltaMs: number): void {
     if (!animator || !characterRenderer || !characterManifest) return;
+
+    if (previewInteractionIntensity > 0) {
+      previewInteractionIntensity = Math.max(
+        0,
+        previewInteractionIntensity -
+          Math.min(Math.max(deltaMs, 0), 125) / 1_600,
+      );
+    }
 
     const frame = animator.tick(deltaMs);
     characterRenderer.render(frame);
@@ -83,6 +92,7 @@
         preferences.personality,
         preferences.interaction_level,
       ),
+      interactionIntensity: reducedMotion ? 0 : previewInteractionIntensity,
     };
   }
 
@@ -188,6 +198,9 @@
       source: "interaction",
       force: true,
     });
+    if (!reducedMotion) {
+      previewInteractionIntensity = Math.max(previewInteractionIntensity, 0.8);
+    }
   }
 
   function togglePreviewMode(): void {
@@ -201,7 +214,8 @@
     reducedMotion = forceReducedMotion || media.matches;
     const onMotion = (event: MediaQueryListEvent) => {
       reducedMotion = forceReducedMotion || event.matches;
-      animator?.setReducedMotion(event.matches);
+      if (reducedMotion) previewInteractionIntensity = 0;
+      animator?.setReducedMotion(reducedMotion);
       render(0);
     };
     media.addEventListener("change", onMotion);
