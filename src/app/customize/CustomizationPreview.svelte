@@ -236,10 +236,13 @@
 
 <div class="preview-shell">
   <div class="preview-toolbar">
-    <span>{status}</span>
-    <button type="button" onclick={togglePreviewMode}>
-      {previewCharacterOnly ? "Show habitat" : "Character focus"}
-    </button>
+    <span class="live-status"><i aria-hidden="true"></i>{status}</span>
+    <div class="preview-mode">
+      <small>{preferences.personality.toLowerCase()} · {preferences.interaction_level.toLowerCase()}</small>
+      <button type="button" onclick={togglePreviewMode}>
+        {previewCharacterOnly ? "Show habitat" : "Character focus"}
+      </button>
+    </div>
   </div>
 
   <div class="stage" class:character-only={previewCharacterOnly}>
@@ -249,7 +252,10 @@
   </div>
 
   <div class="reaction-strip" aria-label="Preview reactions">
-    <span>Try a reaction</span>
+    <div class="reaction-copy">
+      <span>Try a reaction</span>
+      <small>Preview expression and a subtle habitat response.</small>
+    </div>
     <div>
       <button type="button" onclick={() => previewBehavior("happy")}>Happy</button>
       <button type="button" onclick={() => previewBehavior("curious")}>Curious</button>
@@ -353,4 +359,142 @@
       display: none;
     }
   }
+  /* P3 — make the live preview feel like the center of the Studio. */
+  .preview-shell {
+    padding: 13px;
+    gap: 12px;
+    border: 1px solid var(--border-default);
+    border-radius: 20px;
+    background:
+      radial-gradient(circle at 70% 0%, color-mix(in srgb,var(--accent-primary) 12%,transparent), transparent 34%),
+      linear-gradient(145deg,var(--surface-elevated),var(--surface-raised));
+    box-shadow: var(--shadow-card);
+  }
+
+  .preview-toolbar {
+    min-height: 34px;
+  }
+
+  .live-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .live-status i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--status-normal);
+    box-shadow: 0 0 0 4px color-mix(in srgb,var(--status-normal) 10%,transparent);
+  }
+
+  .preview-mode {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .preview-mode small {
+    color: var(--text-muted);
+    font-size: 9px;
+    text-transform: capitalize;
+  }
+
+  .preview-toolbar button {
+    min-height: 32px;
+    padding: 6px 10px;
+    border-radius: 9px;
+    font-weight: 700;
+  }
+
+  .stage {
+    border-color: var(--border-strong);
+    border-radius: 20px;
+    background:
+      radial-gradient(circle at 50% 44%, color-mix(in srgb,var(--accent-primary) 7%,transparent), transparent 46%),
+      var(--surface-base);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb,var(--surface-elevated) 55%,transparent),
+      0 16px 34px rgba(17,24,39,.08);
+  }
+
+  .stage::after {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    z-index: 4;
+    pointer-events: none;
+    border: 1px solid color-mix(in srgb,var(--text-primary) 6%,transparent);
+    border-radius: 14px;
+  }
+
+  .character {
+    width: 41%;
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,.13));
+  }
+
+  .character-only .character {
+    width: 61%;
+  }
+
+  .reaction-strip {
+    align-items: flex-start;
+    padding: 10px;
+    border: 1px solid var(--border-default);
+    border-radius: 13px;
+    background: var(--surface-subtle);
+  }
+
+  .reaction-copy {
+    display: grid;
+    gap: 3px;
+    min-width: 120px;
+  }
+
+  .reaction-copy > span {
+    color: var(--text-primary);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .055em;
+  }
+
+  .reaction-copy small {
+    max-width: 180px;
+    color: var(--text-muted);
+    font-size: 9px;
+    line-height: 1.35;
+  }
+
+  .reaction-strip button {
+    min-height: 30px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: var(--surface-raised);
+    font-weight: 650;
+  }
+
+  .reaction-strip button:hover {
+    border-color: color-mix(in srgb,var(--accent-primary) 50%,var(--border-default));
+    background: var(--accent-soft);
+    color: var(--accent-text);
+  }
+
+  @media (max-width: 560px) {
+    .preview-toolbar,
+    .reaction-strip {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .preview-mode {
+      justify-content: space-between;
+    }
+
+    .reaction-strip > div:last-child {
+      justify-content: flex-start;
+    }
+  }
+
 </style>
