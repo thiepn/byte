@@ -2,6 +2,8 @@
 
 P4-M turns Byte's remaining real-device release checks into a repeatable local certification process.
 
+For the complete pre-tag orchestration that creates/downloads the candidate, runs P4-M, verifies it, and emits a candidate-bound approval receipt, see [P5 — One-Command Release Approval](RELEASE_APPROVAL.md).
+
 It does **not** replace P4 automated CI certification. It adds the evidence that GitHub-hosted runners cannot provide:
 
 - first-run usability
@@ -266,7 +268,9 @@ For a Stable public release, use P4-M as follows:
 3. create the signed **Byte Device Signoff Candidate**
 4. perform P4-M on a physical Windows 11 machine
 5. verify with `-RequireSigning -RequirePublicReleaseReady`
-6. only then create the public release tag
-7. tagged release workflow independently rebuilds and re-runs signing, packaging, runtime, provenance, and public-download verification
+6. run P5 release approval and independently verify the resulting receipt
+7. require `approved_for_tagging: true`
+8. only then create the public release tag
+9. tagged release workflow independently rebuilds and re-runs signing, packaging, runtime, provenance, and public-download verification
 
 P4-M is therefore a pre-tag human/device approval layer, while the tagged workflow remains the final reproducible release-engineering gate.
