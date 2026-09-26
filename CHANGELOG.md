@@ -6,6 +6,9 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ### Added
 
+- Added P5 one-command release approval orchestration: exact-main preflight, signed device-candidate dispatch/reuse, workflow watching, exact-artifact download, P4-M execution, independent evidence verification, and candidate-bound `release-approval-vX.Y.Z.json` receipts.
+- Added a strict release-approval verifier and synthetic tamper harness covering device-report hash changes, source-commit changes, and false automatic-tag claims.
+
 - Added P4-M physical Windows device signoff tooling: guided PASS/FAIL/NA evidence capture, exact-candidate hash binding, three 10-minute representative performance states, full Byte + WebView2 process-tree measurement, strict report verification, and capability-gap tracking.
 - Added a main-only, manually dispatched signed `Byte Device Signoff Candidate` workflow so Authenticode/SmartScreen/trust UX can be tested before a public tag without publishing a GitHub Release.
 
@@ -18,6 +21,9 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 - Added a dedicated Windows trust/code-signing runbook with certificate setup, rotation, SmartScreen expectations, and user verification commands.
 
 ### Changed
+
+- Stable pre-tag readiness now ends at a verified `approved_for_tagging: true` receipt; P5 deliberately never creates/pushes tags or publishes GitHub Releases.
+- CI, packaging, tagged releases, and signed device-candidate workflows now syntax/policy-check P5 tooling, while artifact-producing workflows also exercise the candidate-bound approval verifier.
 
 - Public-release physical signoff now distinguishes ordinary `device_ready` evidence from `public_release_ready`: the latter requires a signed/timestamped same-signer candidate, dual-display coverage, trust PASS, and zero capability gaps.
 - CI, packaging, public release, and signed-device-candidate workflows now syntax/policy-check the P4-M PowerShell tooling.
