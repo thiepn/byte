@@ -2,7 +2,7 @@ param(
   [Parameter(Mandatory = $true)]
   [string]$CandidateDir,
   [string]$Executable = "",
-  [string]$Output = "device-certification.json",
+  [string]$Output = "",
   [int]$PerformanceMinutes = 10,
   [switch]$RequireSigning,
   [switch]$DevelopmentDryRun
@@ -20,6 +20,13 @@ if ($PerformanceMinutes -lt 1) {
 $root = (Resolve-Path $CandidateDir).Path
 $config = Get-Content "src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json
 $version = [string]$config.version
+
+if ([string]::IsNullOrWhiteSpace($Output)) {
+  $documents = [Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)
+  $reportDirectory = Join-Path $documents "Byte"
+  New-Item -ItemType Directory -Path $reportDirectory -Force | Out-Null
+  $Output = Join-Path $reportDirectory ("device-certification-v" + $version + ".json")
+}
 
 $verifyArgs = @{
   OutputDir = $root
@@ -627,6 +634,10 @@ Prepare to lock Windows or turn the display off. After pressing Enter, you have 
   }
 
   $outputPath = [IO.Path]::GetFullPath($Output)
+  $outputParent = Split-Path $outputPath -Parent
+  if (-not [string]::IsNullOrWhiteSpace($outputParent)) {
+    New-Item -ItemType Directory -Path $outputParent -Force | Out-Null
+  }
   $report | ConvertTo-Json -Depth 20 | Set-Content $outputPath -Encoding utf8
 
   Write-Host ""
