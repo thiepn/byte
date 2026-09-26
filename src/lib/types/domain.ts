@@ -130,6 +130,7 @@ export interface WindowShellState {
 }
 
 export type ReleaseChannel = "STABLE" | "BETA";
+export type TextScalePercent = 100 | 110 | 125 | 150 | 175 | 200;
 
 export type VisibilitySuppressionReason =
   | "FULLSCREEN"
@@ -164,7 +165,7 @@ export interface AppPreferences {
   notification_snoozed_until_epoch_ms: number | null;
   reduce_motion: boolean;
   high_contrast: boolean;
-  text_scale_percent: 100 | 110 | 125;
+  text_scale_percent: TextScalePercent;
   update_channel: ReleaseChannel;
   onboarding_completed: boolean;
 }

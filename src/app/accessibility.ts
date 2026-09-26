@@ -1,8 +1,11 @@
-import type { AppPreferences } from "../lib/types/domain";
+import type { AppPreferences, TextScalePercent } from "../lib/types/domain";
 
 export type ByteSurface = "main" | "quick-panel" | "companion";
 
-export function normalizeTextScale(value: number): 100 | 110 | 125 {
+export function normalizeTextScale(value: number): TextScalePercent {
+  if (value >= 188) return 200;
+  if (value >= 163) return 175;
+  if (value >= 138) return 150;
   if (value >= 118) return 125;
   if (value >= 105) return 110;
   return 100;
@@ -19,12 +22,13 @@ export function applyAccessibilityPreferences(
   root: HTMLElement,
   body: HTMLElement,
 ): void {
+  const scale = normalizeTextScale(preferences.text_scale_percent);
+
   root.dataset.reduceMotion = String(preferences.reduce_motion);
   root.dataset.highContrast = String(preferences.high_contrast);
   root.dataset.surface = surface;
-  root.style.setProperty(
-    "--byte-text-scale",
-    String(normalizeTextScale(preferences.text_scale_percent) / 100),
-  );
-  body.style.zoom = String(interfaceZoom(surface, preferences.text_scale_percent));
+  root.dataset.interfaceScale =
+    scale >= 175 ? "extra-large" : scale >= 150 ? "large" : "standard";
+  root.style.setProperty("--byte-text-scale", String(scale / 100));
+  body.style.zoom = String(interfaceZoom(surface, scale));
 }

@@ -30,6 +30,24 @@ textarea {
   box-sizing: border-box;
 }
 
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  color: var(--text-primary);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent-primary) 28%, transparent);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
 button,
 a {
   -webkit-tap-highlight-color: transparent;
@@ -154,4 +172,54 @@ html[data-reduce-motion="true"] *::after {
   animation-duration: 1ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 1ms !important;
+}
+
+
+/* Large interface scales keep navigation and settings usable without
+   scaling the authored companion pixel art. */
+html[data-interface-scale="large"][data-surface="main"] .app-shell {
+  grid-template-columns: 174px minmax(0, 1fr);
+}
+
+html[data-interface-scale="extra-large"][data-surface="main"] .app-shell {
+  grid-template-columns: 64px minmax(0, 1fr);
+}
+
+html[data-interface-scale="extra-large"][data-surface="main"] .sidebar {
+  padding-inline: 9px;
+  align-items: stretch;
+}
+
+html[data-interface-scale="extra-large"][data-surface="main"] .brand {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+html[data-interface-scale="extra-large"][data-surface="main"] .brand-copy,
+html[data-interface-scale="extra-large"][data-surface="main"] .companion-mini,
+html[data-interface-scale="extra-large"][data-surface="main"] .nav-label {
+  display: none;
+}
+
+html[data-interface-scale="extra-large"][data-surface="main"] .sidebar nav button,
+html[data-interface-scale="extra-large"][data-surface="main"] .settings-link {
+  justify-content: center;
+  padding-inline: 7px;
+}
+
+html[data-interface-scale="extra-large"][data-surface="main"] .overview-hero-grid,
+html[data-interface-scale="extra-large"][data-surface="main"] .overview-grid,
+html[data-interface-scale="extra-large"][data-surface="main"] .signal-grid {
+  grid-template-columns: 1fr;
+}
+
+html[data-interface-scale="extra-large"][data-surface="main"] .setting-row,
+html[data-interface-scale="extra-large"][data-surface="main"] .category-row {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+html[data-interface-scale="extra-large"][data-surface="main"] .segmented,
+html[data-interface-scale="extra-large"][data-surface="main"] .snooze-actions {
+  justify-content: flex-start;
 }
