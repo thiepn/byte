@@ -21,6 +21,26 @@ if (policy.maintenance.forced_auto_update !== false) {
   throw new Error("Byte must not enable forced automatic updating.");
 }
 
+const productCertification = policy.product_certification;
+const expectedModes = ["HABITAT", "PERCH", "MINI", "EDGE", "TRAY"];
+const expectedScales = [100, 110, 125, 150, 175, 200];
+if (!productCertification ||
+    productCertification.automated_runtime_gate !== true ||
+    productCertification.fresh_first_run !== true ||
+    productCertification.onboarding_boundary !== true ||
+    productCertification.runtime_schema_migration !== true ||
+    productCertification.corrupt_config_recovery !== true ||
+    productCertification.manual_device_signoff_required !== true ||
+    productCertification.sustained_runtime_seconds < 30 ||
+    JSON.stringify(productCertification.display_modes) !== JSON.stringify(expectedModes) ||
+    JSON.stringify(productCertification.interface_scales) !== JSON.stringify(expectedScales)) {
+  throw new Error("Real-world product certification policy is incomplete or has been weakened.");
+}
+if (!Array.isArray(productCertification.manual_device_areas) ||
+    productCertification.manual_device_areas.length < 8) {
+  throw new Error("Real-world product certification must retain the manual device signoff matrix.");
+}
+
 const distribution = policy.distribution;
 if (!distribution ||
     distribution.public_release_requires_authenticode !== true ||
@@ -56,6 +76,15 @@ if (releaseWorkflow.includes("Prepare optional Windows code signing")) {
 }
 if (packageWorkflow.includes("WINDOWS_CERTIFICATE")) {
   throw new Error("Ordinary PR/main packaging must not consume production code-signing secrets.");
+}
+
+for (const [name, workflow] of [
+  ["release", releaseWorkflow],
+  ["package", packageWorkflow],
+]) {
+  if (!workflow.includes("test-real-world-product.ps1")) {
+    throw new Error(name + " workflow is missing the P4 real-world product runtime gate.");
+  }
 }
 if (!changelog.includes("## [Unreleased]")) {
   throw new Error("CHANGELOG.md must retain an [Unreleased] section.");
@@ -93,5 +122,5 @@ console.log(
   "Maintenance policy verified: schema " + schemaMatch[1] +
     ", migration floor " + minMatch[1] +
     ", version " + tauri.version +
-    ", signed public Windows releases required.",
+    ", signed public Windows releases required, real-world product gate enabled.",
 );
