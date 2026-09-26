@@ -51,6 +51,10 @@ jobs:
         shell: pwsh
         run: ./scripts/test-physical-device-signoff-tooling.ps1
 
+      - name: Verify release approval tooling
+        shell: pwsh
+        run: ./scripts/test-release-approval-tooling.ps1
+
       - name: Frontend dependency audit
         run: npm audit --audit-level=high
 
@@ -106,6 +110,11 @@ jobs:
       - name: Test physical device report verifier
         shell: pwsh
         run: ./scripts/test-physical-device-signoff-verifier.ps1 -CandidateDir release-artifacts -RequireSigning
+
+      - name: Test release approval verifier
+        shell: pwsh
+        run: ./scripts/test-release-approval-verifier.ps1 -CandidateDir release-artifacts -RequireSigning
+
 
       - name: Attest installer provenance
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
