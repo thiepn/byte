@@ -183,23 +183,28 @@ if ($RequireRemoteState -or $RequireWorkflowSuccess) {
   }
 
   $release = Invoke-GhJson @(
-    "release", "view", $expectedTag,
-    "--repo", $repository,
-    "--json", "databaseId,tagName,name,isDraft,isPrerelease,isLatest,publishedAt,url,targetCommitish,body,assets"
+    "api",
+    "repos/$repository/releases/tags/$expectedTag"
   )
 
-  Assert-Equal ([long]$release.databaseId) ([long]$certData.release.database_id) "Remote release database ID mismatch."
-  Assert-Equal ([string]$release.tagName) $expectedTag "Remote release tag mismatch."
+  Assert-Equal ([long]$release.id) ([long]$certData.release.database_id) "Remote release database ID mismatch."
+  Assert-Equal ([string]$release.tag_name) $expectedTag "Remote release tag mismatch."
   Assert-Equal ([string]$release.name) ("Byte " + $version) "Remote release title mismatch."
-  Assert-Equal ([string]$release.url) ([string]$certData.release.url) "Remote release URL mismatch."
-  if ($release.isDraft -ne $false) {
+  Assert-Equal ([string]$release.html_url) ([string]$certData.release.url) "Remote release URL mismatch."
+  if ($release.draft -ne $false) {
     throw "Remote release unexpectedly became a draft."
   }
-  Assert-Equal ([bool]$release.isPrerelease) ([bool]$isBeta) "Remote release prerelease/channel mismatch."
-  if (-not $isBeta -and $release.isLatest -ne $true) {
-    throw "Stable completed release is not marked latest."
+  Assert-Equal ([bool]$release.prerelease) ([bool]$isBeta) "Remote release prerelease/channel mismatch."
+  if (-not $isBeta) {
+    $latestRelease = Invoke-GhJson @(
+      "api",
+      "repos/$repository/releases/latest"
+    )
+    if ([string]$latestRelease.tag_name -ne $expectedTag) {
+      throw "Stable completed release is not the repository's latest release."
+    }
   }
-  Assert-Equal ([string]$release.publishedAt) ([string]$certData.release.published_at) "Remote release publication timestamp mismatch."
+  Assert-Equal ([string]$release.published_at) ([string]$certData.release.published_at) "Remote release publication timestamp mismatch."
   Assert-Equal (TextDigest ([string]$release.body)) ([string]$certData.release.body_sha256) "Remote release notes changed after certification."
 
   $remoteNames = @($release.assets | ForEach-Object { [string]$_.name } | Sort-Object)
@@ -240,20 +245,19 @@ if ($RequireRemoteState -or $RequireWorkflowSuccess) {
 
   $runId = [long]$certData.workflow.run_id
   $workflow = Invoke-GhJson @(
-    "run", "view", ([string]$runId),
-    "--repo", $repository,
-    "--json", "databaseId,workflowName,event,headSha,headBranch,status,conclusion,url"
+    "api",
+    "repos/$repository/actions/runs/$runId"
   )
 
-  Assert-Equal ([long]$workflow.databaseId) $runId "Remote release workflow run ID mismatch."
-  Assert-Equal ([string]$workflow.workflowName) "Byte Release" "Remote release workflow name mismatch."
+  Assert-Equal ([long]$workflow.id) $runId "Remote release workflow run ID mismatch."
+  Assert-Equal ([string]$workflow.name) "Byte Release" "Remote release workflow name mismatch."
   Assert-Equal ([string]$workflow.event) "push" "Remote release workflow event mismatch."
-  Assert-Equal ([string]$workflow.headSha) ([string]$manifest.commit) "Remote release workflow source SHA mismatch."
-  if (-not [string]::IsNullOrWhiteSpace([string]$workflow.headBranch) -and
-      [string]$workflow.headBranch -ne $expectedTag) {
-    throw "Remote release workflow belongs to '$($workflow.headBranch)', not '$expectedTag'."
+  Assert-Equal ([string]$workflow.head_sha) ([string]$manifest.commit) "Remote release workflow source SHA mismatch."
+  if (-not [string]::IsNullOrWhiteSpace([string]$workflow.head_branch) -and
+      [string]$workflow.head_branch -ne $expectedTag) {
+    throw "Remote release workflow belongs to '$($workflow.head_branch)', not '$expectedTag'."
   }
-  Assert-Equal ([string]$workflow.url) ([string]$certData.workflow.url) "Remote release workflow URL mismatch."
+  Assert-Equal ([string]$workflow.html_url) ([string]$certData.workflow.url) "Remote release workflow URL mismatch."
 
   if ($RequireWorkflowSuccess) {
     if ($workflow.status -ne "completed" -or $workflow.conclusion -ne "success") {
