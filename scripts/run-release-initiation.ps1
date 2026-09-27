@@ -249,6 +249,29 @@ function FileHash([string]$Path) {
   return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
+function Verify-CandidateProvenance([string]$CandidatePath) {
+  $manifestPath = Join-Path $CandidatePath "release-manifest.json"
+  if (!(Test-Path $manifestPath)) {
+    throw "Candidate release-manifest.json is missing for P6 provenance verification."
+  }
+
+  $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
+  foreach ($name in @([string]$manifest.installer, [string]$manifest.portable)) {
+    $artifact = Join-Path $CandidatePath $name
+    if (!(Test-Path $artifact)) {
+      throw "Candidate artifact is missing for provenance verification: $artifact"
+    }
+
+    & gh attestation verify $artifact --repo $repository
+    if ($LASTEXITCODE -ne 0) {
+      throw "GitHub provenance verification failed for $artifact."
+    }
+  }
+
+  Write-Host "GitHub provenance re-verified for the signed P6 candidate." -ForegroundColor Cyan
+  return $true
+}
+
 function Resolve-DefaultCandidate([string]$Commit) {
   $documents = [Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)
   return Join-Path $documents ("Byte\ReleaseApproval\candidate-signed-" + $Commit)
@@ -360,6 +383,8 @@ $approvalVerifyArgs = @{
 }
 & (Join-Path $PSScriptRoot "verify-release-approval.ps1") @approvalVerifyArgs
 
+$candidateProvenanceReverified = Verify-CandidateProvenance $candidatePath
+
 $ciRun = Get-SuccessfulWorkflowRun "ci.yml" $remoteMain
 $packageRun = Get-SuccessfulWorkflowRun "package.yml" $remoteMain
 
@@ -461,6 +486,7 @@ $receipt = [ordered]@{
   candidate = [ordered]@{
     release_manifest_sha256 = FileHash (Join-Path $candidatePath "release-manifest.json")
     release_certification_sha256 = FileHash (Join-Path $candidatePath "release-certification.json")
+    github_attestation_reverified = [bool]$candidateProvenanceReverified
   }
   preflight = [ordered]@{
     exact_remote_main = $true
