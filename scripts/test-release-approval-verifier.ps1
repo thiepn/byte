@@ -97,6 +97,7 @@ try {
       signed = $signed
       timestamped = [bool]$manifest.signing.timestamped
       same_signer = [bool]$manifest.signing.same_signer
+      github_attestation_verified = $signed
       installer = [ordered]@{
         file = [string]$manifest.installer
         sha256 = Hash $installerPath
