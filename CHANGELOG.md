@@ -6,7 +6,7 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ### Added
 
-- Added P6 Controlled Tagging & Release Initiation: P5 receipt re-verification, exact-main CI/Packaging gates, monotonic release-order checks, duplicate tag/release rejection, explicit exact-tag confirmation, lightweight exact-commit tag creation, safe exact-commit resume, Byte Release workflow detection, and machine-readable `release-initiation-vX.Y.Z.json` receipts.
+- Added P6 Controlled Tagging & Release Initiation: P5 receipt re-verification, fresh GitHub provenance re-verification, exact-main CI/Packaging gates, monotonic release-order checks, duplicate tag/release rejection, explicit exact-tag confirmation, lightweight exact-commit tag creation, safe exact-commit resume, Byte Release workflow detection, and machine-readable `release-initiation-vX.Y.Z.json` receipts.
 - Added an independent P6 initiation verifier and a no-force/no-delete/no-direct-publish tooling policy harness.
 
 - Added P5 one-command release approval orchestration: exact-main preflight, signed device-candidate dispatch/reuse, workflow watching, exact-artifact download, local GitHub provenance verification, P4-M execution, independent evidence verification, and candidate-bound `release-approval-vX.Y.Z.json` receipts.
