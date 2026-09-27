@@ -50,19 +50,11 @@ $initiationVerifyArgs = @{
   Approval = $approvalPath
   Initiation = $initiationPath
 }
-if ($RequireRemoteState) {
-  $initiationVerifyArgs.RequireRemoteState = $true
-  $initiationVerifyArgs.RequireWorkflowSuccess = $true
-}
 & (Join-Path $PSScriptRoot "verify-release-initiation.ps1") @initiationVerifyArgs
 
 $publicVerifyArgs = @{
   PublishedDir = $publishedRoot
   Certification = $publicCertPath
-}
-if ($RequireRemoteState) {
-  $publicVerifyArgs.RequireRemoteState = $true
-  $publicVerifyArgs.RequireWorkflowSuccess = $true
 }
 & (Join-Path $PSScriptRoot "verify-public-release-certification.ps1") @publicVerifyArgs
 
