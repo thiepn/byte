@@ -47,7 +47,9 @@ $requiredRunner = @(
   'release.yml',
   'direct_release_publish_performed = $false',
   'direct_asset_upload_performed = $false',
-  'P6 does not retry with force'
+  'P6 does not retry with force',
+  'Remote main moved after P6 preflight',
+  'pre_tag_main_reverified'
 )
 foreach ($fragment in $requiredRunner) {
   if (-not $runner.Contains($fragment)) {
