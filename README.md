@@ -4,7 +4,7 @@ Byte is a Windows-first, privacy-first desktop companion that makes system healt
 
 ## Current foundation
 
-Phases 1–28 are implemented, followed by the post-v0.1 P1–P4 hardening track.
+Phases 1–28 are implemented, followed by the post-v0.1 P1–P7 hardening, approval, release-initiation, and post-publish certification track.
 
 Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Windows telemetry pipeline.
 
@@ -54,10 +54,10 @@ Official Windows builds are published from the [GitHub Releases](https://github.
 
 - **Installer:** `Byte-vX.Y.Z-windows-x64-setup.exe` — recommended for normal use.
 - **Portable:** `Byte-vX.Y.Z-windows-x64-portable.zip` — contains the standalone `Byte.exe`.
-- Every certified release also includes `SHA256SUMS.txt`, `release-manifest.json`, `product-certification.json`, and `release-certification.json`.
+- Releases produced by the current P7 pipeline contain exactly seven public assets: the installer, portable ZIP, `release-manifest.json`, `product-certification.json`, `release-certification.json`, `SHA256SUMS.txt`, and `public-release-certification.json`.
 - Installer and portable artifacts from tagged releases receive GitHub build-provenance attestations.
 - **Future public releases after v0.1.0 are required to be Authenticode-signed and timestamped.** The tagged release workflow refuses publication if the installer and portable executable are unsigned, use different signers, or lack timestamps.
-- Byte v0.1.0 predates that fail-closed policy and is intentionally recorded as unsigned, so Windows SmartScreen can show an unknown-publisher warning for that release.
+- Byte v0.1.0 is a historical pre-P4/P7 release: it predates the current seven-asset completion model and the fail-closed signing policy, and is intentionally recorded as unsigned. Windows SmartScreen can therefore show an unknown-publisher warning for v0.1.0; it should not be republished or mutated merely to retrofit the newer certification model.
 
 To inspect Authenticode on a signed release:
 
