@@ -172,7 +172,8 @@
       "p6_initiation_binding_required": true,
       "local_completion_tag_mutation_allowed": false,
       "local_completion_release_mutation_allowed": false,
-      "local_completion_asset_upload_allowed": false
+      "local_completion_asset_upload_allowed": false,
+      "candidate_bound_public_verifier_harness": "scripts/test-public-release-certification-verifier.ps1"
     }
   }
 }
