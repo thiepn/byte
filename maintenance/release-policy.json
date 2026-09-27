@@ -143,7 +143,8 @@
       "direct_asset_upload_allowed": false,
       "release_workflow_file": ".github/workflows/release.yml",
       "release_workflow_name": "Byte Release",
-      "release_workflow_detection_required": true
+      "release_workflow_detection_required": true,
+      "github_attestation_reverification_required": true
     }
   }
 }
