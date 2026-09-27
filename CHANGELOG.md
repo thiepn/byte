@@ -6,7 +6,7 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ### Added
 
-- Added P5 one-command release approval orchestration: exact-main preflight, signed device-candidate dispatch/reuse, workflow watching, exact-artifact download, P4-M execution, independent evidence verification, and candidate-bound `release-approval-vX.Y.Z.json` receipts.
+- Added P5 one-command release approval orchestration: exact-main preflight, signed device-candidate dispatch/reuse, workflow watching, exact-artifact download, local GitHub provenance verification, P4-M execution, independent evidence verification, and candidate-bound `release-approval-vX.Y.Z.json` receipts.
 - Added a strict release-approval verifier and synthetic tamper harness covering device-report hash changes, source-commit changes, and false automatic-tag claims.
 
 - Added P4-M physical Windows device signoff tooling: guided PASS/FAIL/NA evidence capture, exact-candidate hash binding, three 10-minute representative performance states, full Byte + WebView2 process-tree measurement, strict report verification, and capability-gap tracking.
