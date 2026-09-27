@@ -273,6 +273,101 @@ if (!releaseWorkflow.includes('tags:') || !releaseWorkflow.includes('- "v*"')) {
   throw new Error("Byte Release must remain tag-driven for P6 release initiation.");
 }
 
+const releaseCompletion = productCertification.release_completion;
+if (!releaseCompletion ||
+    releaseCompletion.tooling_required !== true ||
+    releaseCompletion.public_certification_generator !== "scripts/finalize-public-release-certification.ps1" ||
+    releaseCompletion.public_certification_verifier !== "scripts/verify-public-release-certification.ps1" ||
+    releaseCompletion.completion_orchestrator !== "scripts/run-release-completion.ps1" ||
+    releaseCompletion.completion_verifier !== "scripts/verify-release-completion.ps1" ||
+    releaseCompletion.tooling_harness !== "scripts/test-release-completion-tooling.ps1" ||
+    releaseCompletion.public_certification_schema_version !== 1 ||
+    releaseCompletion.completion_receipt_schema_version !== 1 ||
+    releaseCompletion.public_certification_asset !== "public-release-certification.json" ||
+    releaseCompletion.final_public_asset_count !== 7 ||
+    releaseCompletion.fresh_public_download_required !== true ||
+    releaseCompletion.public_authenticode_required !== true ||
+    releaseCompletion.public_timestamp_required !== true ||
+    releaseCompletion.public_same_signer_required !== true ||
+    releaseCompletion.public_github_provenance_required !== true ||
+    releaseCompletion.public_portable_launch_required !== true ||
+    releaseCompletion.public_installer_lifecycle_required !== true ||
+    releaseCompletion.release_notes_match_required !== true ||
+    releaseCompletion.stable_beta_metadata_required !== true ||
+    releaseCompletion.exact_lightweight_tag_required !== true ||
+    releaseCompletion.release_workflow_success_required_for_completion !== true ||
+    releaseCompletion.p6_initiation_binding_required !== true ||
+    releaseCompletion.local_completion_tag_mutation_allowed !== false ||
+    releaseCompletion.local_completion_release_mutation_allowed !== false ||
+    releaseCompletion.local_completion_asset_upload_allowed !== false) {
+  throw new Error("P7 release completion policy is incomplete or has been weakened.");
+}
+
+for (const script of [
+  releaseCompletion.public_certification_generator,
+  releaseCompletion.public_certification_verifier,
+  releaseCompletion.completion_orchestrator,
+  releaseCompletion.completion_verifier,
+  releaseCompletion.tooling_harness,
+]) {
+  if (!fs.existsSync(script)) {
+    throw new Error("P7 release completion tooling is missing: " + script);
+  }
+}
+
+for (const [name, workflow] of [
+  ["CI", ciWorkflow],
+  ["package", packageWorkflow],
+  ["release", releaseWorkflow],
+  ["signed-device-candidate", deviceCandidateWorkflow],
+]) {
+  if (!workflow.includes("test-release-completion-tooling.ps1")) {
+    throw new Error(name + " workflow is missing the P7 release-completion tooling harness.");
+  }
+}
+
+const requiredP7ReleaseFragments = [
+  "Certify freshly published public release",
+  "finalize-public-release-certification.ps1",
+  "Publish public release certification",
+  "public-release-certification.json",
+  "Verify completed public release",
+  "verify-public-release-certification.ps1",
+  "Retain public release certification",
+];
+for (const fragment of requiredP7ReleaseFragments) {
+  if (!releaseWorkflow.includes(fragment)) {
+    throw new Error("Byte Release workflow is missing required P7 post-publish gate: " + fragment);
+  }
+}
+
+const publishIndex = releaseWorkflow.indexOf("Publish GitHub Release");
+const certifyIndex = releaseWorkflow.indexOf("Certify freshly published public release");
+const publicCertUploadIndex = releaseWorkflow.indexOf("Publish public release certification");
+const finalVerifyIndex = releaseWorkflow.indexOf("Verify completed public release");
+const retainPublicCertIndex = releaseWorkflow.indexOf("Retain public release certification");
+if (publishIndex < 0 ||
+    certifyIndex <= publishIndex ||
+    publicCertUploadIndex <= certifyIndex ||
+    finalVerifyIndex <= publicCertUploadIndex ||
+    retainPublicCertIndex <= finalVerifyIndex) {
+  throw new Error("P7 post-publish certification gates are missing or out of order.");
+}
+
+const completionRunner = fs.readFileSync(releaseCompletion.completion_orchestrator, "utf8");
+for (const forbidden of [
+  "gh release create",
+  "gh release upload",
+  "gh release edit",
+  "gh release delete",
+  "git push",
+  "git tag",
+]) {
+  if (completionRunner.includes(forbidden)) {
+    throw new Error("P7 local completion runner contains forbidden remote mutation: " + forbidden);
+  }
+}
+
 const distribution = policy.distribution;
 if (!distribution ||
     distribution.public_release_requires_authenticode !== true ||
@@ -296,7 +391,8 @@ const requiredReleaseTrustFragments = [
   "stage-release.ps1 -RequireSigning",
   "verify-release-artifacts.ps1 -RequireCertification -RequireSigning",
   "test-windows-installer.ps1 -Installer $installer -RequireSigning",
-  "Verify published release trust",
+  "Certify freshly published public release",
+  "Verify completed public release",
 ];
 for (const fragment of requiredReleaseTrustFragments) {
   if (!releaseWorkflow.includes(fragment)) {
