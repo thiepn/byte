@@ -86,6 +86,7 @@ Assert-Equal ([string]$receipt.physical_device_report.file) ([IO.Path]::GetFileN
 Assert-Equal ([string]$receipt.physical_device_report.sha256) (Digest $deviceReportPath) "Release initiation device-report hash mismatch."
 Assert-Equal ([string]$receipt.candidate.release_manifest_sha256) (Digest $manifestPath) "Release initiation release-manifest hash mismatch."
 Assert-Equal ([string]$receipt.candidate.release_certification_sha256) (Digest $releaseCertificationPath) "Release initiation release-certification hash mismatch."
+Assert-Equal ([bool]$receipt.candidate.github_attestation_reverified) $true "Release initiation must record fresh GitHub provenance verification."
 
 if ($receipt.preflight.exact_remote_main -ne $true) {
   throw "Release initiation receipt does not record exact-main preflight success."
@@ -157,6 +158,14 @@ if ($RequireRemoteState -or $RequireWorkflowSuccess) {
   Assert-Equal ([string]$tagRef.ref) ("refs/tags/" + $expectedTag) "Remote tag ref mismatch."
   Assert-Equal ([string]$tagRef.object.type) "commit" "P6 remote tag must be lightweight."
   Assert-Equal ([string]$tagRef.object.sha) ([string]$manifest.commit) "Remote tag target mismatch."
+
+  foreach ($name in @([string]$manifest.installer, [string]$manifest.portable)) {
+    $artifact = Join-Path $root $name
+    & gh attestation verify $artifact --repo $repository
+    if ($LASTEXITCODE -ne 0) {
+      throw "Remote P6 verification could not validate GitHub provenance for $artifact."
+    }
+  }
 
   $runId = [long]$receipt.release_workflow.run_id
   $run = Invoke-GhJson @(
