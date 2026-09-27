@@ -146,6 +146,33 @@
       "release_workflow_detection_required": true,
       "github_attestation_reverification_required": true,
       "pre_tag_main_reverification_required": true
+    },
+    "release_completion": {
+      "tooling_required": true,
+      "public_certification_generator": "scripts/finalize-public-release-certification.ps1",
+      "public_certification_verifier": "scripts/verify-public-release-certification.ps1",
+      "completion_orchestrator": "scripts/run-release-completion.ps1",
+      "completion_verifier": "scripts/verify-release-completion.ps1",
+      "tooling_harness": "scripts/test-release-completion-tooling.ps1",
+      "public_certification_schema_version": 1,
+      "completion_receipt_schema_version": 1,
+      "public_certification_asset": "public-release-certification.json",
+      "final_public_asset_count": 7,
+      "fresh_public_download_required": true,
+      "public_authenticode_required": true,
+      "public_timestamp_required": true,
+      "public_same_signer_required": true,
+      "public_github_provenance_required": true,
+      "public_portable_launch_required": true,
+      "public_installer_lifecycle_required": true,
+      "release_notes_match_required": true,
+      "stable_beta_metadata_required": true,
+      "exact_lightweight_tag_required": true,
+      "release_workflow_success_required_for_completion": true,
+      "p6_initiation_binding_required": true,
+      "local_completion_tag_mutation_allowed": false,
+      "local_completion_release_mutation_allowed": false,
+      "local_completion_asset_upload_allowed": false
     }
   }
 }
