@@ -31,6 +31,8 @@ $requiredRunner = @(
   'RequireTaggingApproval',
   'approved_for_tagging',
   'github_attestation_verified',
+  'gh attestation verify',
+  'github_attestation_reverified',
   'Get-SuccessfulWorkflowRun "ci.yml"',
   'Get-SuccessfulWorkflowRun "package.yml"',
   'check-release-order.mjs',
@@ -81,7 +83,9 @@ $requiredVerifier = @(
   "RequireRemoteState",
   "RequireWorkflowSuccess",
   "object.type",
-  "workflowName"
+  "workflowName",
+  "gh attestation verify",
+  "github_attestation_reverified"
 )
 foreach ($fragment in $requiredVerifier) {
   if (-not $verifier.Contains($fragment)) {
