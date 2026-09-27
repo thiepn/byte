@@ -43,7 +43,9 @@ $requiredRunnerFragments = @(
   'VerifyOnly is side-effect-free',
   'Remote main moved during physical signoff',
   'More than one new workflow_dispatch run appeared',
-  'thiepn/byte repository'
+  'thiepn/byte repository',
+  'attestation verify',
+  'github_attestation_verified'
 )
 foreach ($fragment in $requiredRunnerFragments) {
   if (-not $runner.Contains($fragment)) {
@@ -72,7 +74,9 @@ $requiredVerifierFragments = @(
   "device-report hash mismatch",
   "signed, timestamped artifacts from the same signer",
   "public-release-ready physical device report",
-  "candidate-type mismatch"
+  "candidate-type mismatch",
+  "provenance-verification state mismatch",
+  "successful GitHub provenance verification"
 )
 foreach ($fragment in $requiredVerifierFragments) {
   if (-not $verifier.Contains($fragment)) {
