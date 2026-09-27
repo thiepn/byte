@@ -174,7 +174,7 @@ foreach ($entry in @($certData.assets)) {
   Assert-Equal ([string]$entry.sha256) (Digest $path) "Public asset hash mismatch for $name."
 }
 
-$finalAssets = @($baseAssets + "public-release-certification.json" | Sort-Object)
+$finalAssets = @($baseAssets + "public-release-certification.json") | Sort-Object
 $localNames = @(Get-ChildItem -LiteralPath $root -File | Select-Object -ExpandProperty Name | Sort-Object)
 if (($localNames -join [Environment]::NewLine) -ne ($finalAssets -join [Environment]::NewLine)) {
   throw "Completed public release download does not contain exactly the seven expected P7 assets."
