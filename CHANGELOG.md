@@ -6,6 +6,9 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ### Added
 
+- Added P7 Release Completion & Post-Publish Certification: fresh public-release re-downloads, signed artifact/checksum verification, public portable and installer lifecycle execution, GitHub provenance checks, release-page/channel/tag validation, the seventh `public-release-certification.json` release asset, and final `release-completion-vX.Y.Z.json` closure receipts.
+- Added P7 candidate-level verifier coverage: ordinary unsigned packaging must be rejected as public-release evidence, while signed candidate/release paths exercise the positive verifier and hash-tamper rejection.
+
 - Added P6 Controlled Tagging & Release Initiation: P5 receipt re-verification, fresh GitHub provenance re-verification, exact-main CI/Packaging gates, monotonic release-order checks, duplicate tag/release rejection, explicit exact-tag confirmation, lightweight exact-commit tag creation, safe exact-commit resume, Byte Release workflow detection, and machine-readable `release-initiation-vX.Y.Z.json` receipts.
 - Added an independent P6 initiation verifier and a no-force/no-delete/no-direct-publish tooling policy harness.
 
@@ -24,6 +27,9 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 - Added a dedicated Windows trust/code-signing runbook with certificate setup, rotation, SmartScreen expectations, and user verification commands.
 
 ### Changed
+
+- Tagged Byte Release workflows now remain incomplete until the freshly published public assets are certified and the final seven-asset release is re-downloaded and verified.
+- Release closure is now a separate read-only local step after workflow success; P7 binds P6/P5/P4-M evidence to the final public release without moving tags or mutating the completed release.
 
 - Release tags now have a documented controlled path: P6 creates only lightweight exact-commit tags and never force-updates, deletes, moves, directly publishes, or directly uploads release assets.
 - Release health now treats tag creation and release workflow initiation as a separate evidence-gated boundary after P5 approval.
