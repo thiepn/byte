@@ -427,6 +427,22 @@ if ($DryRun) {
 $createdByThisRun = $false
 $initiationStartedUtc = [DateTime]::UtcNow
 
+$preTagRemoteMain = Get-RemoteMainSha
+$preTagLocalHead = Get-LocalHeadSha
+$preTagLocalBranch = Get-LocalBranch
+Assert-CleanWorkingTree
+
+if ($preTagRemoteMain -ne $remoteMain) {
+  throw "Remote main moved after P6 preflight ($remoteMain -> $preTagRemoteMain). A fresh P5/P6 approval cycle is required."
+}
+if ($preTagLocalHead -ne $localHead -or $preTagLocalHead -ne $remoteMain) {
+  throw "Local HEAD changed after P6 preflight. Nothing will be tagged."
+}
+if ($preTagLocalBranch -ne "main") {
+  throw "Local branch changed after P6 preflight. Nothing will be tagged."
+}
+$preTagMainReverified = $true
+
 if (-not $ResumeExistingTag) {
   $confirmation = $ConfirmTag
   if ([string]::IsNullOrWhiteSpace($confirmation)) {
@@ -491,6 +507,7 @@ $receipt = [ordered]@{
   preflight = [ordered]@{
     exact_remote_main = $true
     clean_working_tree = $true
+    pre_tag_main_reverified = [bool]$preTagMainReverified
     release_order_verified = $true
     tag_and_release_name_available_before_creation = (-not $ResumeExistingTag)
     ci = [ordered]@{
