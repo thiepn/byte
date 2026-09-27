@@ -470,5 +470,5 @@ console.log(
   "Maintenance policy verified: schema " + schemaMatch[1] +
     ", migration floor " + minMatch[1] +
     ", version " + tauri.version +
-    ", signed public Windows releases required, real-world product gate enabled, physical-device signoff tooling locked, release approval receipt policy locked, controlled tag initiation locked.",
+    ", signed public Windows releases required, real-world product gate enabled, physical-device signoff tooling locked, release approval receipt policy locked, controlled tag initiation locked, post-publish release completion locked.",
 );
