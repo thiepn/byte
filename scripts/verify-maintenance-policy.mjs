@@ -204,7 +204,8 @@ if (!releaseInitiation ||
     releaseInitiation.direct_asset_upload_allowed !== false ||
     releaseInitiation.release_workflow_file !== ".github/workflows/release.yml" ||
     releaseInitiation.release_workflow_name !== "Byte Release" ||
-    releaseInitiation.release_workflow_detection_required !== true) {
+    releaseInitiation.release_workflow_detection_required !== true ||
+    releaseInitiation.github_attestation_reverification_required !== true) {
   throw new Error("Controlled release initiation policy is incomplete or has been weakened.");
 }
 
@@ -242,6 +243,8 @@ for (const required of [
   'ResumeExistingTag',
   'Wait-ForReleaseRun',
   'release.yml',
+  'gh attestation verify',
+  'github_attestation_reverified',
 ]) {
   if (!initiationRunner.includes(required)) {
     throw new Error("P6 release initiation runner is missing required gate: " + required);
@@ -258,6 +261,12 @@ for (const forbidden of [
   if (initiationRunner.includes(forbidden)) {
     throw new Error("P6 release initiation runner contains forbidden mutation: " + forbidden);
   }
+}
+
+const initiationVerifier = fs.readFileSync(releaseInitiation.verifier_script, "utf8");
+if (!initiationVerifier.includes("gh attestation verify") ||
+    !initiationVerifier.includes("github_attestation_reverified")) {
+  throw new Error("P6 verifier must independently re-check candidate GitHub provenance.");
 }
 if (!releaseWorkflow.includes('tags:') || !releaseWorkflow.includes('- "v*"')) {
   throw new Error("Byte Release must remain tag-driven for P6 release initiation.");
