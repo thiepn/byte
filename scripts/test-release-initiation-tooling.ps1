@@ -35,7 +35,7 @@ $requiredRunner = @(
   "Get-SuccessfulWorkflowRun \"package.yml\"",
   "check-release-order.mjs",
   "Assert-TagAndReleaseAbsent",
-  "Assert-NoLocalTag",
+  "Assert-LocalTagState",
   "ConfirmTag",
   "Read-Host",
   "git push origin",
