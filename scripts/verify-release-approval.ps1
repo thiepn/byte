@@ -75,6 +75,8 @@ Assert-Equal ([bool]$approval.candidate.timestamped) ([bool]$manifest.signing.ti
 Assert-Equal ([bool]$approval.candidate.same_signer) ([bool]$manifest.signing.same_signer) "Release approval same-signer mismatch."
 $expectedCandidateType = if ([bool]$manifest.signed) { "signed" } else { "unsigned" }
 Assert-Equal ([string]$approval.candidate.type) $expectedCandidateType "Release approval candidate-type mismatch."
+$expectedAttestationState = [bool]$manifest.signed
+Assert-Equal ([bool]$approval.candidate.github_attestation_verified) $expectedAttestationState "Release approval provenance-verification state mismatch."
 
 Assert-Equal ([string]$approval.physical_device_report.file) ([IO.Path]::GetFileName($reportPath)) "Release approval device-report filename mismatch."
 Assert-Equal ([string]$approval.physical_device_report.sha256) (Digest $reportPath) "Release approval device-report hash mismatch."
@@ -124,6 +126,9 @@ if ($RequireTaggingApproval) {
   }
   if ($report.public_release_ready -ne $true) {
     throw "Tagging approval requires a public-release-ready physical device report."
+  }
+  if ($approval.candidate.github_attestation_verified -ne $true) {
+    throw "Tagging approval requires successful GitHub provenance verification for the downloaded candidate."
   }
 }
 
