@@ -106,33 +106,40 @@ foreach ($artifact in @($installerPath, $portablePath)) {
 }
 
 $release = Invoke-GhJson @(
-  "release", "view", $Tag,
-  "--repo", $repository,
-  "--json", "databaseId,tagName,name,isDraft,isPrerelease,isLatest,publishedAt,url,targetCommitish,body,assets"
+  "api",
+  "repos/$repository/releases/tags/$Tag"
 )
 
 if ($null -eq $release) {
   throw "Could not load GitHub Release metadata for $Tag."
 }
-if ([string]$release.tagName -ne $Tag) {
+if ([string]$release.tag_name -ne $Tag) {
   throw "Published release tag metadata mismatch."
 }
 if ([string]$release.name -ne ("Byte " + $version)) {
   throw "Published release title must be exactly 'Byte $version'."
 }
-if ($release.isDraft -ne $false) {
+if ($release.draft -ne $false) {
   throw "Published release must not be a draft."
 }
-if ([string]::IsNullOrWhiteSpace([string]$release.publishedAt)) {
+if ([string]::IsNullOrWhiteSpace([string]$release.published_at)) {
   throw "Published release is missing publishedAt."
 }
 
 $isBeta = $version -match '-beta\.'
-if ([bool]$release.isPrerelease -ne [bool]$isBeta) {
+if ([bool]$release.prerelease -ne [bool]$isBeta) {
   throw "Published release prerelease state does not match the Byte version channel."
 }
-if (-not $isBeta -and $release.isLatest -ne $true) {
-  throw "Stable Byte release must be marked as the latest release."
+$isLatest = $false
+if (-not $isBeta) {
+  $latestRelease = Invoke-GhJson @(
+    "api",
+    "repos/$repository/releases/latest"
+  )
+  $isLatest = ([string]$latestRelease.tag_name -eq $Tag)
+  if (-not $isLatest) {
+    throw "Stable Byte release must be the repository's latest release."
+  }
 }
 
 $tagRef = Invoke-GhJson @(
@@ -208,22 +215,21 @@ if ($expectedNotesHash -ne $publishedNotesHash) {
 }
 
 $workflow = Invoke-GhJson @(
-  "run", "view", ([string]$env:GITHUB_RUN_ID),
-  "--repo", $repository,
-  "--json", "databaseId,workflowName,event,headSha,headBranch,status,conclusion,url"
+  "api",
+  "repos/$repository/actions/runs/$env:GITHUB_RUN_ID"
 )
 
-if ([string]$workflow.workflowName -ne "Byte Release") {
+if ([string]$workflow.name -ne "Byte Release") {
   throw "P7 must run inside the Byte Release workflow."
 }
 if ([string]$workflow.event -ne "push") {
   throw "Byte Release workflow event must be push."
 }
-if ([string]$workflow.headSha -ne [string]$env:GITHUB_SHA) {
+if ([string]$workflow.head_sha -ne [string]$env:GITHUB_SHA) {
   throw "Byte Release workflow source SHA mismatch."
 }
-if (-not [string]::IsNullOrWhiteSpace([string]$workflow.headBranch) -and
-    [string]$workflow.headBranch -ne $Tag) {
+if (-not [string]::IsNullOrWhiteSpace([string]$workflow.head_branch) -and
+    [string]$workflow.head_branch -ne $Tag) {
   throw "Byte Release workflow head branch/tag mismatch."
 }
 
@@ -243,26 +249,26 @@ $publicCertification = [ordered]@{
   certification_scope = "fresh-public-download-post-publish"
   channel = if ($isBeta) { "beta" } else { "stable" }
   release = [ordered]@{
-    database_id = [long]$release.databaseId
-    tag_name = [string]$release.tagName
+    database_id = [long]$release.id
+    tag_name = [string]$release.tag_name
     name = [string]$release.name
-    url = [string]$release.url
-    draft = [bool]$release.isDraft
-    prerelease = [bool]$release.isPrerelease
-    latest = [bool]$release.isLatest
-    published_at = [string]$release.publishedAt
-    target_commitish = [string]$release.targetCommitish
+    url = [string]$release.html_url
+    draft = [bool]$release.draft
+    prerelease = [bool]$release.prerelease
+    latest = [bool]$isLatest
+    published_at = [string]$release.published_at
+    target_commitish = [string]$release.target_commitish
     body_sha256 = $publishedNotesHash
   }
   workflow = [ordered]@{
-    run_id = [long]$workflow.databaseId
+    run_id = [long]$workflow.id
     run_number = if ($env:GITHUB_RUN_NUMBER) { [long]$env:GITHUB_RUN_NUMBER } else { $null }
     run_attempt = if ($env:GITHUB_RUN_ATTEMPT) { [long]$env:GITHUB_RUN_ATTEMPT } else { $null }
-    name = [string]$workflow.workflowName
+    name = [string]$workflow.name
     event = [string]$workflow.event
-    head_sha = [string]$workflow.headSha
-    head_branch = [string]$workflow.headBranch
-    url = [string]$workflow.url
+    head_sha = [string]$workflow.head_sha
+    head_branch = [string]$workflow.head_branch
+    url = [string]$workflow.html_url
     observed_status = [string]$workflow.status
     observed_conclusion = [string]$workflow.conclusion
   }
@@ -306,5 +312,5 @@ $publicCertification | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath $outp
 
 Write-Host "P7 public release certification written for Byte $version."
 Write-Host "Tag: $Tag"
-Write-Host "Release: $($release.url)"
+Write-Host "Release: $($release.html_url)"
 Write-Host "Fresh public installer/portable launch, signing, checksum, provenance, and metadata checks passed."
