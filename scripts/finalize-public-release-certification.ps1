@@ -174,7 +174,8 @@ if ($localFileList -ne $expectedAssetList) {
 
 $remoteAssetNames = @($release.assets | ForEach-Object { [string]$_.name } | Sort-Object)
 $remoteAssetList = $remoteAssetNames -join [Environment]::NewLine
-$rerunAssetList = @($expectedAssets + "public-release-certification.json" | Sort-Object) -join [Environment]::NewLine
+$rerunAssets = @($expectedAssets + "public-release-certification.json") | Sort-Object
+$rerunAssetList = $rerunAssets -join [Environment]::NewLine
 if ($remoteAssetList -ne $expectedAssetList -and $remoteAssetList -ne $rerunAssetList) {
   throw "GitHub Release asset set must contain exactly the six base assets, with at most one previous P7 certification during a workflow rerun."
 }
