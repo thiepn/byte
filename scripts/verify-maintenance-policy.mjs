@@ -281,6 +281,7 @@ if (!releaseCompletion ||
     releaseCompletion.completion_orchestrator !== "scripts/run-release-completion.ps1" ||
     releaseCompletion.completion_verifier !== "scripts/verify-release-completion.ps1" ||
     releaseCompletion.tooling_harness !== "scripts/test-release-completion-tooling.ps1" ||
+    releaseCompletion.candidate_bound_public_verifier_harness !== "scripts/test-public-release-certification-verifier.ps1" ||
     releaseCompletion.public_certification_schema_version !== 1 ||
     releaseCompletion.completion_receipt_schema_version !== 1 ||
     releaseCompletion.public_certification_asset !== "public-release-certification.json" ||
@@ -309,6 +310,7 @@ for (const script of [
   releaseCompletion.completion_orchestrator,
   releaseCompletion.completion_verifier,
   releaseCompletion.tooling_harness,
+  releaseCompletion.candidate_bound_public_verifier_harness,
 ]) {
   if (!fs.existsSync(script)) {
     throw new Error("P7 release completion tooling is missing: " + script);
@@ -324,6 +326,24 @@ for (const [name, workflow] of [
   if (!workflow.includes("test-release-completion-tooling.ps1")) {
     throw new Error(name + " workflow is missing the P7 release-completion tooling harness.");
   }
+}
+
+for (const [name, workflow] of [
+  ["package", packageWorkflow],
+  ["release", releaseWorkflow],
+  ["signed-device-candidate", deviceCandidateWorkflow],
+]) {
+  if (!workflow.includes("test-public-release-certification-verifier.ps1")) {
+    throw new Error(name + " workflow is missing the P7 candidate-bound public verifier harness.");
+  }
+}
+if (!releaseWorkflow.includes("test-public-release-certification-verifier.ps1 -CandidateDir release-artifacts -RequireSigning") ||
+    !deviceCandidateWorkflow.includes("test-public-release-certification-verifier.ps1 -CandidateDir release-artifacts -RequireSigning")) {
+  throw new Error("Signed P7 candidate paths must exercise the positive public verifier harness.");
+}
+if (!packageWorkflow.includes("test-public-release-certification-verifier.ps1 -CandidateDir release-artifacts") ||
+    packageWorkflow.includes("test-public-release-certification-verifier.ps1 -CandidateDir release-artifacts -RequireSigning")) {
+  throw new Error("Ordinary packaging must exercise P7's unsigned public-release rejection path.");
 }
 
 const requiredP7ReleaseFragments = [
