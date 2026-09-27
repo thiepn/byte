@@ -94,6 +94,9 @@ if ($receipt.preflight.exact_remote_main -ne $true) {
 if ($receipt.preflight.clean_working_tree -ne $true) {
   throw "Release initiation receipt does not record a clean working tree."
 }
+if ($receipt.preflight.pre_tag_main_reverified -ne $true) {
+  throw "Release initiation receipt does not record immediate pre-tag exact-main revalidation."
+}
 if ($receipt.preflight.release_order_verified -ne $true) {
   throw "Release initiation receipt does not record release-order verification."
 }
