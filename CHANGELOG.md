@@ -6,6 +6,9 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ### Added
 
+- Added P6 Controlled Tagging & Release Initiation: P5 receipt re-verification, fresh GitHub provenance re-verification, exact-main CI/Packaging gates, monotonic release-order checks, duplicate tag/release rejection, explicit exact-tag confirmation, lightweight exact-commit tag creation, safe exact-commit resume, Byte Release workflow detection, and machine-readable `release-initiation-vX.Y.Z.json` receipts.
+- Added an independent P6 initiation verifier and a no-force/no-delete/no-direct-publish tooling policy harness.
+
 - Added P5 one-command release approval orchestration: exact-main preflight, signed device-candidate dispatch/reuse, workflow watching, exact-artifact download, local GitHub provenance verification, P4-M execution, independent evidence verification, and candidate-bound `release-approval-vX.Y.Z.json` receipts.
 - Added a strict release-approval verifier and synthetic tamper harness covering device-report hash changes, source-commit changes, and false automatic-tag claims.
 
@@ -21,6 +24,9 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 - Added a dedicated Windows trust/code-signing runbook with certificate setup, rotation, SmartScreen expectations, and user verification commands.
 
 ### Changed
+
+- Release tags now have a documented controlled path: P6 creates only lightweight exact-commit tags and never force-updates, deletes, moves, directly publishes, or directly uploads release assets.
+- Release health now treats tag creation and release workflow initiation as a separate evidence-gated boundary after P5 approval.
 
 - Stable pre-tag readiness now ends at a verified `approved_for_tagging: true` receipt; P5 deliberately never creates/pushes tags or publishes GitHub Releases.
 - CI, packaging, tagged releases, and signed device-candidate workflows now syntax/policy-check P5 tooling, while artifact-producing workflows also exercise the candidate-bound approval verifier.

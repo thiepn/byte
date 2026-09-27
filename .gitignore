@@ -19,3 +19,6 @@ device-certification*.json
 
 # Local release-approval receipts
 release-approval*.json
+
+# Local controlled-release initiation receipts
+release-initiation*.json

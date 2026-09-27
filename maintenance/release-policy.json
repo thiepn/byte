@@ -119,6 +119,33 @@
       "automatic_tagging": false,
       "automatic_release_publish": false,
       "github_attestation_verification_required_for_tagging": true
+    },
+    "release_initiation": {
+      "tooling_required": true,
+      "orchestrator_script": "scripts/run-release-initiation.ps1",
+      "verifier_script": "scripts/verify-release-initiation.ps1",
+      "tooling_harness": "scripts/test-release-initiation-tooling.ps1",
+      "receipt_schema_version": 1,
+      "source_branch": "main",
+      "exact_remote_main_required": true,
+      "clean_working_tree_required": true,
+      "p5_tagging_approval_required": true,
+      "current_main_ci_required": true,
+      "current_main_packaging_required": true,
+      "release_order_required": true,
+      "duplicate_tag_or_release_forbidden": true,
+      "explicit_tag_confirmation_required": true,
+      "tag_type": "lightweight",
+      "exact_commit_tag_required": true,
+      "force_tag_update_allowed": false,
+      "resume_existing_tag_exact_commit_only": true,
+      "direct_release_publish_allowed": false,
+      "direct_asset_upload_allowed": false,
+      "release_workflow_file": ".github/workflows/release.yml",
+      "release_workflow_name": "Byte Release",
+      "release_workflow_detection_required": true,
+      "github_attestation_reverification_required": true,
+      "pre_tag_main_reverification_required": true
     }
   }
 }

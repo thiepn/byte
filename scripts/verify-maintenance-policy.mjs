@@ -180,6 +180,99 @@ for (const forbidden of [
   }
 }
 
+const releaseInitiation = productCertification.release_initiation;
+if (!releaseInitiation ||
+    releaseInitiation.tooling_required !== true ||
+    releaseInitiation.orchestrator_script !== "scripts/run-release-initiation.ps1" ||
+    releaseInitiation.verifier_script !== "scripts/verify-release-initiation.ps1" ||
+    releaseInitiation.tooling_harness !== "scripts/test-release-initiation-tooling.ps1" ||
+    releaseInitiation.receipt_schema_version !== 1 ||
+    releaseInitiation.source_branch !== "main" ||
+    releaseInitiation.exact_remote_main_required !== true ||
+    releaseInitiation.clean_working_tree_required !== true ||
+    releaseInitiation.pre_tag_main_reverification_required !== true ||
+    releaseInitiation.p5_tagging_approval_required !== true ||
+    releaseInitiation.current_main_ci_required !== true ||
+    releaseInitiation.current_main_packaging_required !== true ||
+    releaseInitiation.release_order_required !== true ||
+    releaseInitiation.duplicate_tag_or_release_forbidden !== true ||
+    releaseInitiation.explicit_tag_confirmation_required !== true ||
+    releaseInitiation.tag_type !== "lightweight" ||
+    releaseInitiation.exact_commit_tag_required !== true ||
+    releaseInitiation.force_tag_update_allowed !== false ||
+    releaseInitiation.resume_existing_tag_exact_commit_only !== true ||
+    releaseInitiation.direct_release_publish_allowed !== false ||
+    releaseInitiation.direct_asset_upload_allowed !== false ||
+    releaseInitiation.release_workflow_file !== ".github/workflows/release.yml" ||
+    releaseInitiation.release_workflow_name !== "Byte Release" ||
+    releaseInitiation.release_workflow_detection_required !== true ||
+    releaseInitiation.github_attestation_reverification_required !== true) {
+  throw new Error("Controlled release initiation policy is incomplete or has been weakened.");
+}
+
+for (const script of [
+  releaseInitiation.orchestrator_script,
+  releaseInitiation.verifier_script,
+  releaseInitiation.tooling_harness,
+]) {
+  if (!fs.existsSync(script)) {
+    throw new Error("P6 controlled release initiation tooling is missing: " + script);
+  }
+}
+
+for (const [name, workflow] of [
+  ["CI", ciWorkflow],
+  ["package", packageWorkflow],
+  ["release", releaseWorkflow],
+  ["signed-device-candidate", deviceCandidateWorkflow],
+]) {
+  if (!workflow.includes("test-release-initiation-tooling.ps1")) {
+    throw new Error(name + " workflow is missing the P6 controlled-tagging tooling harness.");
+  }
+}
+
+const initiationRunner = fs.readFileSync(releaseInitiation.orchestrator_script, "utf8");
+for (const required of [
+  'verify-release-approval.ps1',
+  'RequireTaggingApproval',
+  'Get-SuccessfulWorkflowRun "ci.yml"',
+  'Get-SuccessfulWorkflowRun "package.yml"',
+  'check-release-order.mjs',
+  'git push origin',
+  ':refs/tags/',
+  'ConfirmTag',
+  'ResumeExistingTag',
+  'Wait-ForReleaseRun',
+  'release.yml',
+  'gh attestation verify',
+  'github_attestation_reverified',
+]) {
+  if (!initiationRunner.includes(required)) {
+    throw new Error("P6 release initiation runner is missing required gate: " + required);
+  }
+}
+for (const forbidden of [
+  "--force",
+  "git push --force",
+  "git tag -d",
+  "git push origin --delete",
+  "gh release create",
+  "gh release upload",
+]) {
+  if (initiationRunner.includes(forbidden)) {
+    throw new Error("P6 release initiation runner contains forbidden mutation: " + forbidden);
+  }
+}
+
+const initiationVerifier = fs.readFileSync(releaseInitiation.verifier_script, "utf8");
+if (!initiationVerifier.includes("gh attestation verify") ||
+    !initiationVerifier.includes("github_attestation_reverified")) {
+  throw new Error("P6 verifier must independently re-check candidate GitHub provenance.");
+}
+if (!releaseWorkflow.includes('tags:') || !releaseWorkflow.includes('- "v*"')) {
+  throw new Error("Byte Release must remain tag-driven for P6 release initiation.");
+}
+
 const distribution = policy.distribution;
 if (!distribution ||
     distribution.public_release_requires_authenticode !== true ||
@@ -261,5 +354,5 @@ console.log(
   "Maintenance policy verified: schema " + schemaMatch[1] +
     ", migration floor " + minMatch[1] +
     ", version " + tauri.version +
-    ", signed public Windows releases required, real-world product gate enabled, physical-device signoff tooling locked, release approval receipt policy locked.",
+    ", signed public Windows releases required, real-world product gate enabled, physical-device signoff tooling locked, release approval receipt policy locked, controlled tag initiation locked.",
 );

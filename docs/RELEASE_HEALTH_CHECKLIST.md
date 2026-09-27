@@ -18,6 +18,9 @@ Use this checklist for every stable release and for high-risk Beta or hotfix rel
 - [ ] P5 release approval has produced `release-approval-vX.Y.Z.json` from exact current `main`.
 - [ ] The approval receipt verifies with `scripts/verify-release-approval.ps1 -RequireTaggingApproval`.
 - [ ] The approval receipt reports `approved_for_tagging: true`, `github_attestation_verified: true`, `automatic_tag_created: false`, and `automatic_release_published: false`.
+- [ ] P6 dry-run preflight passes for the exact current `main` commit and version.
+- [ ] P6 re-verifies exact remote `main`, local HEAD, branch, and clean working tree immediately before tag mutation.
+- [ ] The version tag is created only through P6 controlled initiation; do not manually force/move/delete the release tag.
 - [ ] Recent scheduled security audit is green.
 - [ ] Recent Windows runner/WebView2 compatibility matrix is green.
 - [ ] Configuration migration tests cover any schema changes.
@@ -47,6 +50,15 @@ On a currently supported physical Windows 11 desktop, use [PHYSICAL_DEVICE_SIGNO
 - [ ] Check for updates opens the expected fixed GitHub destination.
 - [ ] Reinstall preserves settings.
 - [ ] Uninstall removes program/startup registration while preserving Byte app data.
+
+## Release initiation
+
+- [ ] P6 creates a lightweight `vX.Y.Z` tag pointing exactly to the approved `main` commit.
+- [ ] `release-initiation-vX.Y.Z.json` is written and independently verifies with `scripts/verify-release-initiation.ps1 -RequireRemoteState`.
+- [ ] P6 records `github_attestation_reverified: true` after independently rechecking installer and portable provenance.
+- [ ] The initiation receipt references the expected **Byte Release** workflow run.
+- [ ] P6 reports `forced_update: false`, `direct_release_publish_performed: false`, and `direct_asset_upload_performed: false`.
+- [ ] If the local P6 process is interrupted after tag creation, use `-ResumeExistingTag`; never recreate, delete, or force-move the tag.
 
 ## After publishing
 

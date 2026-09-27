@@ -296,4 +296,4 @@ P5 ends at:
 
 It intentionally does not cross into release publication.
 
-After reviewing the receipt, creating the actual release tag remains an explicit action. The tag then triggers the normal Byte Release workflow, which independently rebuilds, signs, certifies, attests, publishes, and re-download-verifies the public assets.
+After reviewing the receipt, use [P6 — Controlled Tagging & Release Initiation](RELEASE_INITIATION.md) for the actual tag boundary. P6 re-verifies the P5 receipt, exact current `main`, CI/Packaging success, release ordering, tag uniqueness, and explicit tag confirmation before creating the exact-commit tag. The tag then triggers the normal Byte Release workflow, which independently rebuilds, signs, certifies, attests, publishes, and re-download-verifies the public assets.
