@@ -28,24 +28,24 @@ $runner = Get-Content "scripts/run-release-initiation.ps1" -Raw
 $verifier = Get-Content "scripts/verify-release-initiation.ps1" -Raw
 
 $requiredRunner = @(
-  "RequireTaggingApproval",
-  "approved_for_tagging",
-  "github_attestation_verified",
-  "Get-SuccessfulWorkflowRun \"ci.yml\"",
-  "Get-SuccessfulWorkflowRun \"package.yml\"",
-  "check-release-order.mjs",
-  "Assert-TagAndReleaseAbsent",
-  "Assert-LocalTagState",
-  "ConfirmTag",
-  "Read-Host",
-  "git push origin",
-  ":refs/tags/",
-  "ResumeExistingTag",
-  "Wait-ForReleaseRun",
-  "release.yml",
-  "direct_release_publish_performed = $false",
-  "direct_asset_upload_performed = $false",
-  "P6 does not retry with force"
+  'RequireTaggingApproval',
+  'approved_for_tagging',
+  'github_attestation_verified',
+  'Get-SuccessfulWorkflowRun "ci.yml"',
+  'Get-SuccessfulWorkflowRun "package.yml"',
+  'check-release-order.mjs',
+  'Assert-TagAndReleaseAbsent',
+  'Assert-LocalTagState',
+  'ConfirmTag',
+  'Read-Host',
+  'git push origin',
+  ':refs/tags/',
+  'ResumeExistingTag',
+  'Wait-ForReleaseRun',
+  'release.yml',
+  'direct_release_publish_performed = $false',
+  'direct_asset_upload_performed = $false',
+  'P6 does not retry with force'
 )
 foreach ($fragment in $requiredRunner) {
   if (-not $runner.Contains($fragment)) {
