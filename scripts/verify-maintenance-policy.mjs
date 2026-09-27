@@ -129,6 +129,7 @@ if (!releaseApproval ||
     releaseApproval.clean_working_tree_required !== true ||
     releaseApproval.signed_candidate_required_for_tagging !== true ||
     releaseApproval.public_device_report_required_for_tagging !== true ||
+    releaseApproval.github_attestation_verification_required_for_tagging !== true ||
     releaseApproval.automatic_tagging !== false ||
     releaseApproval.automatic_release_publish !== false) {
   throw new Error("Release approval policy is incomplete or has been weakened.");
@@ -163,6 +164,10 @@ for (const [name, workflow] of [
   }
 }
 const approvalRunner = fs.readFileSync(releaseApproval.orchestrator_script, "utf8");
+if (!approvalRunner.includes("gh attestation verify") ||
+    !approvalRunner.includes("github_attestation_verified")) {
+  throw new Error("Release approval orchestrator must verify GitHub provenance for signed candidates.");
+}
 for (const forbidden of [
   "git tag",
   "git push --tags",
