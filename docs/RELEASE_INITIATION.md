@@ -321,7 +321,7 @@ P6 verifies that the release workflow was initiated against the correct commit.
 
 It does not declare the release successful merely because the workflow started.
 
-Final public-release success remains the job of the existing Byte Release workflow and its post-publication trust checks.
+After **Byte Release** finishes, use [P7 — Release Completion & Post-Publish Certification](RELEASE_COMPLETION.md). P7 verifies the final public release, the workflow conclusion, the seven-asset public state, and the final release-completion receipt.
 
 ## Release sequence
 
@@ -346,7 +346,11 @@ Byte Release workflow
       ↓
 signed/certified GitHub Release
       ↓
-fresh public-download trust verification
+P7 fresh public-download certification
+      ↓
+public-release-certification.json
+      ↓
+P7 final release closure
 ```
 
 P6 therefore makes tag creation a controlled, evidence-gated release operation rather than a manual `git tag && git push` step.
