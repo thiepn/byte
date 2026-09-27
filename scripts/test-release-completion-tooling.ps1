@@ -6,7 +6,8 @@ $files = @(
   "scripts/finalize-public-release-certification.ps1",
   "scripts/verify-public-release-certification.ps1",
   "scripts/run-release-completion.ps1",
-  "scripts/verify-release-completion.ps1"
+  "scripts/verify-release-completion.ps1",
+  "scripts/test-public-release-certification-verifier.ps1"
 )
 
 foreach ($file in $files) {
@@ -31,6 +32,7 @@ $publicVerifier = Get-Content "scripts/verify-public-release-certification.ps1" 
 $completionRunner = Get-Content "scripts/run-release-completion.ps1" -Raw
 $completionVerifier = Get-Content "scripts/verify-release-completion.ps1" -Raw
 $releaseWorkflow = Get-Content ".github/workflows/release.yml" -Raw
+$publicHarness = Get-Content "scripts/test-public-release-certification-verifier.ps1" -Raw
 
 foreach ($fragment in @(
   "verify-release-artifacts.ps1",
@@ -87,6 +89,16 @@ foreach ($fragment in @(
 )) {
   if (-not $completionRunner.Contains($fragment)) {
     throw "P7 completion runner is missing required invariant: $fragment"
+  }
+}
+
+foreach ($fragment in @(
+  "unsigned candidate cannot qualify as a public release",
+  "public asset hash tampering",
+  "public_distribution_ready"
+)) {
+  if (-not $publicHarness.Contains($fragment)) {
+    throw "P7 candidate-bound public verifier harness is missing required case: $fragment"
   }
 }
 
