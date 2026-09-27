@@ -191,7 +191,7 @@ The working tree must be clean.
 Then run:
 
 ~~~powershell
-npm run release:complete -- \
+npm run release:complete -- `
   -Initiation "$HOME\Documents\Byte\release-initiation-vX.Y.Z.json"
 ~~~
 
@@ -209,7 +209,7 @@ For example:
 
 ~~~powershell
 git checkout v0.2.0
-npm run release:complete -- \
+npm run release:complete -- `
   -Initiation "$HOME\Documents\Byte\release-initiation-v0.2.0.json"
 ~~~
 
@@ -295,14 +295,14 @@ The receipt is hash-bound to every earlier local evidence object and to every fi
 Run:
 
 ~~~powershell
-npm run release:complete:verify -- \
-  -PublishedDir "$HOME\Documents\Byte\ReleaseCompletion\public-vX.Y.Z" \
-  -PublicCertification "$HOME\Documents\Byte\ReleaseCompletion\public-vX.Y.Z\public-release-certification.json" \
-  -Initiation "$HOME\Documents\Byte\release-initiation-vX.Y.Z.json" \
-  -CandidateDir "$HOME\Documents\Byte\ReleaseApproval\candidate-signed-<commit>" \
-  -DeviceReport "$HOME\Documents\Byte\device-certification-vX.Y.Z.json" \
-  -Approval "$HOME\Documents\Byte\release-approval-vX.Y.Z.json" \
-  -Completion "$HOME\Documents\Byte\release-completion-vX.Y.Z.json" \
+npm run release:complete:verify -- `
+  -PublishedDir "$HOME\Documents\Byte\ReleaseCompletion\public-vX.Y.Z" `
+  -PublicCertification "$HOME\Documents\Byte\ReleaseCompletion\public-vX.Y.Z\public-release-certification.json" `
+  -Initiation "$HOME\Documents\Byte\release-initiation-vX.Y.Z.json" `
+  -CandidateDir "$HOME\Documents\Byte\ReleaseApproval\candidate-signed-<commit>" `
+  -DeviceReport "$HOME\Documents\Byte\device-certification-vX.Y.Z.json" `
+  -Approval "$HOME\Documents\Byte\release-approval-vX.Y.Z.json" `
+  -Completion "$HOME\Documents\Byte\release-completion-vX.Y.Z.json" `
   -RequireRemoteState
 ~~~
 
