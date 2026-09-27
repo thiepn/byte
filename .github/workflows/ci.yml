@@ -40,6 +40,10 @@ jobs:
         shell: pwsh
         run: ./scripts/test-release-approval-tooling.ps1
 
+      - name: Verify controlled release initiation tooling
+        shell: pwsh
+        run: ./scripts/test-release-initiation-tooling.ps1
+
       - name: Frontend type check
         run: npm run check
 
