@@ -252,6 +252,20 @@ function FileHash([string]$Path) {
   return (Get-FileHash $Path -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
+function Verify-GitHubProvenance([string]$CandidatePath, [object]$Manifest) {
+  $installer = Join-Path $CandidatePath ([string]$Manifest.installer)
+  $portable = Join-Path $CandidatePath ([string]$Manifest.portable)
+
+  foreach ($artifact in @($installer, $portable)) {
+    & gh attestation verify $artifact --repo $repository
+    if ($LASTEXITCODE -ne 0) {
+      throw "GitHub provenance verification failed for $artifact."
+    }
+  }
+
+  Write-Host "GitHub provenance verified for installer and portable candidate artifacts." -ForegroundColor Cyan
+}
+
 if (!(Test-Path "src-tauri/tauri.conf.json") -or !(Test-Path "package.json")) {
   throw "Run release approval from the Byte repository root."
 }
@@ -316,6 +330,12 @@ if ([string]$manifest.commit -ne $remoteMain) {
 }
 if ($CandidateType -eq "signed" -and -not [bool]$manifest.signed) {
   throw "Signed release approval requires a signed candidate."
+}
+
+$githubAttestationVerified = $false
+if ($CandidateType -eq "signed") {
+  Verify-GitHubProvenance $candidatePath $manifest
+  $githubAttestationVerified = $true
 }
 
 $reportPath = Resolve-ReportPath $version
@@ -398,6 +418,7 @@ $approval = [ordered]@{
     signed = [bool]$manifest.signed
     timestamped = [bool]$manifest.signing.timestamped
     same_signer = [bool]$manifest.signing.same_signer
+    github_attestation_verified = [bool]$githubAttestationVerified
     installer = [ordered]@{
       file = [string]$manifest.installer
       sha256 = FileHash (Join-Path $candidatePath ([string]$manifest.installer))
