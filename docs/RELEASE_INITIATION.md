@@ -150,6 +150,8 @@ It then requires the exact version tag to be typed, for example:
 
 Any mismatch aborts before tagging.
 
+Immediately after confirmation and before any tag mutation, P6 re-reads remote `main`, local HEAD, local branch, and working-tree cleanliness. If `main` moved after the earlier preflight, tagging is aborted and a fresh P5/P6 approval cycle is required.
+
 For an intentionally non-interactive shell, pass the exact tag explicitly:
 
 ```powershell
@@ -226,6 +228,7 @@ It binds together:
 - fresh P6 GitHub-attestation re-verification state,
 - exact-main CI run,
 - exact-main Packaging run,
+- immediate pre-tag exact-main revalidation,
 - release-order result,
 - tag name/ref/type/target,
 - whether the tag was created or resumed,
