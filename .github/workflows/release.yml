@@ -54,6 +54,10 @@ jobs:
         shell: pwsh
         run: ./scripts/test-release-approval-tooling.ps1
 
+      - name: Verify controlled release initiation tooling
+        shell: pwsh
+        run: ./scripts/test-release-initiation-tooling.ps1
+
       - name: Extract curated release notes
         shell: pwsh
         run: |
