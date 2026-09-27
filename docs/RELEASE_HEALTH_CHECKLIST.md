@@ -19,6 +19,7 @@ Use this checklist for every stable release and for high-risk Beta or hotfix rel
 - [ ] The approval receipt verifies with `scripts/verify-release-approval.ps1 -RequireTaggingApproval`.
 - [ ] The approval receipt reports `approved_for_tagging: true`, `github_attestation_verified: true`, `automatic_tag_created: false`, and `automatic_release_published: false`.
 - [ ] P6 dry-run preflight passes for the exact current `main` commit and version.
+- [ ] P6 re-verifies exact remote `main`, local HEAD, branch, and clean working tree immediately before tag mutation.
 - [ ] The version tag is created only through P6 controlled initiation; do not manually force/move/delete the release tag.
 - [ ] Recent scheduled security audit is green.
 - [ ] Recent Windows runner/WebView2 compatibility matrix is green.
