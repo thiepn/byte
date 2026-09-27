@@ -94,6 +94,13 @@ by default.
 
 It then runs normal certified artifact verification with required signing.
 
+For signed candidates, P5 also runs GitHub artifact-attestation verification locally for both:
+
+- the NSIS installer
+- the portable ZIP
+
+A signed candidate cannot reach tagging approval unless both provenance checks succeed.
+
 ### 4. Physical signoff
 
 P5 calls the existing P4-M runner.
@@ -148,6 +155,7 @@ The receipt contains:
 - release-manifest SHA-256
 - product-certification SHA-256
 - release-certification SHA-256
+- whether GitHub candidate provenance was verified
 - physical-device-report SHA-256
 - device/public readiness state
 - whether the evidence is sufficient for tagging
@@ -237,6 +245,7 @@ The verifier rejects:
 - inconsistent device/public-ready state
 - invalid physical-device evidence
 - tagging approval without signed/timestamped same-signer artifacts
+- tagging approval without verified GitHub provenance for the downloaded signed candidate
 - tagging approval without a public-release-ready physical report
 - any claim that P5 automatically created a tag
 - any claim that P5 automatically published a release
