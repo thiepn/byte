@@ -44,6 +44,10 @@ jobs:
         shell: pwsh
         run: ./scripts/test-release-initiation-tooling.ps1
 
+      - name: Verify release completion tooling
+        shell: pwsh
+        run: ./scripts/test-release-completion-tooling.ps1
+
       - name: Frontend type check
         run: npm run check
 
