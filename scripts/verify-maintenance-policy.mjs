@@ -190,6 +190,7 @@ if (!releaseInitiation ||
     releaseInitiation.source_branch !== "main" ||
     releaseInitiation.exact_remote_main_required !== true ||
     releaseInitiation.clean_working_tree_required !== true ||
+    releaseInitiation.pre_tag_main_reverification_required !== true ||
     releaseInitiation.p5_tagging_approval_required !== true ||
     releaseInitiation.current_main_ci_required !== true ||
     releaseInitiation.current_main_packaging_required !== true ||
