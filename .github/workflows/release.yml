@@ -58,6 +58,10 @@ jobs:
         shell: pwsh
         run: ./scripts/test-release-initiation-tooling.ps1
 
+      - name: Verify release completion tooling
+        shell: pwsh
+        run: ./scripts/test-release-completion-tooling.ps1
+
       - name: Extract curated release notes
         shell: pwsh
         run: |
@@ -178,6 +182,10 @@ jobs:
         shell: pwsh
         run: ./scripts/test-release-approval-verifier.ps1 -CandidateDir release-artifacts -RequireSigning
 
+      - name: Test P7 public release verifier
+        shell: pwsh
+        run: ./scripts/test-public-release-certification-verifier.ps1 -CandidateDir release-artifacts -RequireSigning
+
 
       - name: Attest installer provenance
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
@@ -235,30 +243,63 @@ jobs:
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
 
-      - name: Verify published release trust
+      - name: Certify freshly published public release
         shell: pwsh
         run: |
           $tag = $env:GITHUB_REF_NAME
-          $published = Join-Path $env:RUNNER_TEMP "byte-published-release"
+          $published = Join-Path $env:RUNNER_TEMP "byte-published-release-base"
           if (Test-Path $published) {
             Remove-Item $published -Recurse -Force
           }
           New-Item -ItemType Directory -Path $published | Out-Null
 
-          gh release download $tag --dir $published
+          $patterns = @(
+            "*-setup.exe",
+            "*-portable.zip",
+            "release-manifest.json",
+            "product-certification.json",
+            "release-certification.json",
+            "SHA256SUMS.txt"
+          )
+          foreach ($pattern in $patterns) {
+            gh release download $tag --pattern $pattern --dir $published
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+          $cert = Join-Path $env:RUNNER_TEMP "public-release-certification.json"
+          ./scripts/finalize-public-release-certification.ps1 -PublishedDir $published -Tag $tag -ReleaseNotesPath release-notes.md -Output $cert
+
+      - name: Publish public release certification
+        shell: pwsh
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $cert = Join-Path $env:RUNNER_TEMP "public-release-certification.json"
+          gh release upload $tag $cert --clobber
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-          ./scripts/verify-release-artifacts.ps1 -OutputDir $published -RequireCertification -RequireSigning
+      - name: Verify completed public release
+        shell: pwsh
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $completed = Join-Path $env:RUNNER_TEMP "byte-published-release-completed"
+          if (Test-Path $completed) {
+            Remove-Item $completed -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $completed | Out-Null
 
-          $installer = (Get-ChildItem $published -Filter "*-setup.exe" -File | Select-Object -First 1).FullName
-          $portable = (Get-ChildItem $published -Filter "*-portable.zip" -File | Select-Object -First 1).FullName
-          gh attestation verify $installer --repo $env:GITHUB_REPOSITORY
+          gh release download $tag --dir $completed
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          gh attestation verify $portable --repo $env:GITHUB_REPOSITORY
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-          Write-Host "Fresh public-download trust verification passed for $tag."
+          $cert = Join-Path $completed "public-release-certification.json"
+          ./scripts/verify-public-release-certification.ps1 -PublishedDir $completed -Certification $cert -RequireRemoteState
 
+      - name: Retain public release certification
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: byte-${{ github.ref_name }}-public-release-certification
+          path: ${{ runner.temp }}/public-release-certification.json
+          if-no-files-found: error
+          retention-days: 30
       - name: Clean signing material
         if: always()
         shell: pwsh

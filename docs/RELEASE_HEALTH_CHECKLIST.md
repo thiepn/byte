@@ -60,19 +60,34 @@ On a currently supported physical Windows 11 desktop, use [PHYSICAL_DEVICE_SIGNO
 - [ ] P6 reports `forced_update: false`, `direct_release_publish_performed: false`, and `direct_asset_upload_performed: false`.
 - [ ] If the local P6 process is interrupted after tag creation, use `-ResumeExistingTag`; never recreate, delete, or force-move the tag.
 
-## After publishing
+## After publishing — P7 public certification
 
 - [ ] GitHub Release title/version are correct.
-- [ ] Installer, portable ZIP, release manifest, product certification, release certification, and checksums are present.
-- [ ] Release notes match the changelog section.
-- [ ] SHA-256 verification succeeds on a freshly downloaded installer.
-- [ ] GitHub attestation verification succeeds for installer and portable ZIP.
+- [ ] The six base assets are freshly downloaded from the public GitHub Release.
+- [ ] Fresh public assets pass `verify-release-artifacts.ps1 -RequireCertification -RequireSigning`.
+- [ ] Freshly downloaded portable ZIP passes the portable-launch certification.
+- [ ] Freshly downloaded installer passes the signed installer lifecycle certification.
+- [ ] GitHub attestation verification succeeds for the freshly downloaded installer and portable ZIP.
 - [ ] Installer and portable `Byte.exe` both have valid, timestamped Authenticode signatures.
 - [ ] Installer and portable executable signer thumbprints match.
-- [ ] Authenticode state and signer metadata match `release-manifest.json`.
 - [ ] `release-certification.json` reports `public_distribution_ready: true`.
-- [ ] Installer can be downloaded and launched from the public release page.
-- [ ] Beta releases are marked prerelease; Stable releases are not.
+- [ ] Release notes match the changelog-derived notes.
+- [ ] Stable release is non-prerelease/latest; Beta release is prerelease.
+- [ ] Release tag remains a lightweight direct ref to the exact approved source commit.
+- [ ] `public-release-certification.json` is uploaded after all fresh-public checks pass.
+- [ ] Final GitHub Release contains exactly seven expected P7 assets.
+- [ ] Final seven-asset public download verifies with `verify-public-release-certification.ps1 -RequireRemoteState`.
+
+## P7 final release closure
+
+- [ ] The referenced **Byte Release** workflow finishes with `status: completed` and `conclusion: success`.
+- [ ] Local checkout is the exact released source commit/tag with a clean working tree.
+- [ ] `npm run release:complete` re-verifies P6 initiation and downloads the final public release again.
+- [ ] Final local closure reruns the public portable launch and signed installer lifecycle checks.
+- [ ] `release-completion-vX.Y.Z.json` is generated.
+- [ ] The completion receipt verifies with `npm run release:complete:verify ... -RequireRemoteState`.
+- [ ] Completion receipt reports `complete: true`.
+- [ ] Completion receipt reports `tag_mutation_performed: false`, `release_mutation_performed: false`, and `asset_upload_performed: false`.
 
 ## First 72 hours
 

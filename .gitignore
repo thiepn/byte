@@ -22,3 +22,7 @@ release-approval*.json
 
 # Local controlled-release initiation receipts
 release-initiation*.json
+
+# Local P7 release closure evidence
+release-completion*.json
+public-release-certification*.json

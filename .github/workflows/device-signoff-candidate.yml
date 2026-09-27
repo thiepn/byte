@@ -59,6 +59,10 @@ jobs:
         shell: pwsh
         run: ./scripts/test-release-initiation-tooling.ps1
 
+      - name: Verify release completion tooling
+        shell: pwsh
+        run: ./scripts/test-release-completion-tooling.ps1
+
       - name: Frontend dependency audit
         run: npm audit --audit-level=high
 
@@ -118,6 +122,10 @@ jobs:
       - name: Test release approval verifier
         shell: pwsh
         run: ./scripts/test-release-approval-verifier.ps1 -CandidateDir release-artifacts -RequireSigning
+
+      - name: Test P7 public release verifier
+        shell: pwsh
+        run: ./scripts/test-public-release-certification-verifier.ps1 -CandidateDir release-artifacts -RequireSigning
 
 
       - name: Attest installer provenance
