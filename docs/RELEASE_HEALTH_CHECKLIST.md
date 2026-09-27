@@ -54,6 +54,7 @@ On a currently supported physical Windows 11 desktop, use [PHYSICAL_DEVICE_SIGNO
 
 - [ ] P6 creates a lightweight `vX.Y.Z` tag pointing exactly to the approved `main` commit.
 - [ ] `release-initiation-vX.Y.Z.json` is written and independently verifies with `scripts/verify-release-initiation.ps1 -RequireRemoteState`.
+- [ ] P6 records `github_attestation_reverified: true` after independently rechecking installer and portable provenance.
 - [ ] The initiation receipt references the expected **Byte Release** workflow run.
 - [ ] P6 reports `forced_update: false`, `direct_release_publish_performed: false`, and `direct_asset_upload_performed: false`.
 - [ ] If the local P6 process is interrupted after tag creation, use `-ResumeExistingTag`; never recreate, delete, or force-move the tag.
