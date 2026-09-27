@@ -31,7 +31,10 @@
     "release:approve:tooling": "pwsh -NoProfile -File scripts/test-release-approval-tooling.ps1",
     "release:initiate": "pwsh -NoProfile -File scripts/run-release-initiation.ps1",
     "release:initiate:verify": "pwsh -NoProfile -File scripts/verify-release-initiation.ps1",
-    "release:initiate:tooling": "pwsh -NoProfile -File scripts/test-release-initiation-tooling.ps1"
+    "release:initiate:tooling": "pwsh -NoProfile -File scripts/test-release-initiation-tooling.ps1",
+    "release:complete": "pwsh -NoProfile -File scripts/run-release-completion.ps1",
+    "release:complete:verify": "pwsh -NoProfile -File scripts/verify-release-completion.ps1",
+    "release:complete:tooling": "pwsh -NoProfile -File scripts/test-release-completion-tooling.ps1"
   },
   "dependencies": {
     "@tauri-apps/api": "2.11.1",
