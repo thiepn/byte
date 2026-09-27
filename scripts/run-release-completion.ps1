@@ -147,9 +147,8 @@ $initiationVerifyArgs = @{
 
 $workflowRunId = [long]$initiationData.release_workflow.run_id
 $workflow = Invoke-GhJson @(
-  "run", "view", ([string]$workflowRunId),
-  "--repo", $repository,
-  "--json", "databaseId,workflowName,event,headSha,headBranch,status,conclusion,url"
+  "api",
+  "repos/$repository/actions/runs/$workflowRunId"
 )
 
 if ($workflow.status -ne "completed" -or $workflow.conclusion -ne "success") {
@@ -198,9 +197,8 @@ if ([string]$publicCert.tag -ne $tag) {
 }
 
 $release = Invoke-GhJson @(
-  "release", "view", $tag,
-  "--repo", $repository,
-  "--json", "databaseId,tagName,name,isDraft,isPrerelease,isLatest,publishedAt,url,targetCommitish,assets"
+  "api",
+  "repos/$repository/releases/tags/$tag"
 )
 
 $outputPath = if ([string]::IsNullOrWhiteSpace($Output)) {
@@ -253,22 +251,22 @@ $completion = [ordered]@{
     schema_version = [int]$publicCert.schema_version
   }
   release = [ordered]@{
-    database_id = [long]$release.databaseId
-    tag_name = [string]$release.tagName
+    database_id = [long]$release.id
+    tag_name = [string]$release.tag_name
     name = [string]$release.name
-    url = [string]$release.url
-    draft = [bool]$release.isDraft
-    prerelease = [bool]$release.isPrerelease
-    latest = [bool]$release.isLatest
-    published_at = [string]$release.publishedAt
+    url = [string]$release.html_url
+    draft = [bool]$release.draft
+    prerelease = [bool]$release.prerelease
+    latest = [bool]$publicCert.release.latest
+    published_at = [string]$release.published_at
   }
   workflow = [ordered]@{
-    run_id = [long]$workflow.databaseId
-    url = [string]$workflow.url
-    name = [string]$workflow.workflowName
+    run_id = [long]$workflow.id
+    url = [string]$workflow.html_url
+    name = [string]$workflow.name
     event = [string]$workflow.event
-    head_sha = [string]$workflow.headSha
-    head_branch = [string]$workflow.headBranch
+    head_sha = [string]$workflow.head_sha
+    head_branch = [string]$workflow.head_branch
     status = [string]$workflow.status
     conclusion = [string]$workflow.conclusion
   }
@@ -313,7 +311,7 @@ Write-Host "P7 release completion certified." -ForegroundColor Green
 Write-Host "  Tag: $tag"
 Write-Host "  Commit: $sourceCommit"
 Write-Host "  Byte Release run: $workflowRunId"
-Write-Host "  Public release: $($release.url)"
+Write-Host "  Public release: $($release.html_url)"
 Write-Host "  Completion receipt: $outputPath"
 Write-Host ""
 Write-Host "P7 performed no tag, release, or asset mutation."
