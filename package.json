@@ -28,7 +28,10 @@
     "device:signoff:tooling": "pwsh -NoProfile -File scripts/test-physical-device-signoff-tooling.ps1",
     "release:approve": "pwsh -NoProfile -File scripts/run-release-approval.ps1",
     "release:approve:verify": "pwsh -NoProfile -File scripts/verify-release-approval.ps1",
-    "release:approve:tooling": "pwsh -NoProfile -File scripts/test-release-approval-tooling.ps1"
+    "release:approve:tooling": "pwsh -NoProfile -File scripts/test-release-approval-tooling.ps1",
+    "release:initiate": "pwsh -NoProfile -File scripts/run-release-initiation.ps1",
+    "release:initiate:verify": "pwsh -NoProfile -File scripts/verify-release-initiation.ps1",
+    "release:initiate:tooling": "pwsh -NoProfile -File scripts/test-release-initiation-tooling.ps1"
   },
   "dependencies": {
     "@tauri-apps/api": "2.11.1",
