@@ -117,7 +117,8 @@
       "signed_candidate_required_for_tagging": true,
       "public_device_report_required_for_tagging": true,
       "automatic_tagging": false,
-      "automatic_release_publish": false
+      "automatic_release_publish": false,
+      "github_attestation_verification_required_for_tagging": true
     }
   }
 }
