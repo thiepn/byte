@@ -79,6 +79,8 @@ The approval must still report:
 - public-release-ready physical signoff,
 - verified GitHub candidate provenance.
 
+P6 then independently runs `gh attestation verify` again against both the signed installer and portable ZIP. Tagging does not rely only on the older P5 receipt's provenance flag.
+
 ### Version and release notes
 
 P6 requires:
@@ -221,6 +223,7 @@ It binds together:
 - physical-device report SHA-256,
 - signed candidate release-manifest SHA-256,
 - signed candidate release-certification SHA-256,
+- fresh P6 GitHub-attestation re-verification state,
 - exact-main CI run,
 - exact-main Packaging run,
 - release-order result,
@@ -261,6 +264,7 @@ The verifier independently requires:
 - no force update was recorded,
 - no direct publishing/upload was performed,
 - remote GitHub tag is a direct commit ref to the approved commit,
+- GitHub provenance verifies again for the signed installer and portable ZIP,
 - referenced workflow is **Byte Release**,
 - workflow event is `push`,
 - workflow source SHA equals the approved commit.
