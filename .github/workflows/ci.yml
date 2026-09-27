@@ -36,6 +36,10 @@ jobs:
         shell: pwsh
         run: ./scripts/test-physical-device-signoff-tooling.ps1
 
+      - name: Verify release approval tooling
+        shell: pwsh
+        run: ./scripts/test-release-approval-tooling.ps1
+
       - name: Frontend type check
         run: npm run check
 

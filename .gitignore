@@ -16,3 +16,6 @@ src-tauri/tauri.signing.conf.json
 
 # Local physical-device certification evidence
 device-certification*.json
+
+# Local release-approval receipts
+release-approval*.json

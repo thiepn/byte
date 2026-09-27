@@ -15,6 +15,9 @@ Use this checklist for every stable release and for high-risk Beta or hotfix rel
 - [ ] A signed `Byte Device Signoff Candidate` has been generated from `main` for final physical trust/device testing.
 - [ ] P4-M physical Windows signoff is complete on the signed candidate.
 - [ ] The resulting device report verifies with `scripts/verify-physical-device-signoff.ps1 -RequireSigning -RequirePublicReleaseReady`.
+- [ ] P5 release approval has produced `release-approval-vX.Y.Z.json` from exact current `main`.
+- [ ] The approval receipt verifies with `scripts/verify-release-approval.ps1 -RequireTaggingApproval`.
+- [ ] The approval receipt reports `approved_for_tagging: true`, `github_attestation_verified: true`, `automatic_tag_created: false`, and `automatic_release_published: false`.
 - [ ] Recent scheduled security audit is green.
 - [ ] Recent Windows runner/WebView2 compatibility matrix is green.
 - [ ] Configuration migration tests cover any schema changes.

@@ -104,6 +104,21 @@
       "signed_candidate_retention_days": 14,
       "signed_candidate_main_only": true,
       "candidate_bound_verifier_harness": "scripts/test-physical-device-signoff-verifier.ps1"
+    },
+    "release_approval": {
+      "tooling_required": true,
+      "orchestrator_script": "scripts/run-release-approval.ps1",
+      "verifier_script": "scripts/verify-release-approval.ps1",
+      "verifier_harness": "scripts/test-release-approval-verifier.ps1",
+      "receipt_schema_version": 1,
+      "source_branch": "main",
+      "exact_remote_main_required": true,
+      "clean_working_tree_required": true,
+      "signed_candidate_required_for_tagging": true,
+      "public_device_report_required_for_tagging": true,
+      "automatic_tagging": false,
+      "automatic_release_publish": false,
+      "github_attestation_verification_required_for_tagging": true
     }
   }
 }

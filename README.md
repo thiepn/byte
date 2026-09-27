@@ -43,7 +43,7 @@ Byte now has a canonical Tauri 2 + Svelte 5 architecture plus one production Win
 - Phase 26 makes Byte distributable: a current-user NSIS installer, stable `Byte.exe` binary naming, downgrade protection, WebView2 bootstrap recovery, uninstall cleanup for the HKCU startup entry, version/tag invariants, portable ZIP + release manifest + SHA-256 artifacts, real install/reinstall/uninstall packaging CI, optional Windows Authenticode signing, and tag-driven GitHub Releases.
 - Phase 27 certifies the actual downloadable binaries: staged-artifact SHA-256 validation, x64 PE/version checks, portable launch smoke testing, application-data preservation across reinstall/uninstall, machine-readable release certification, exact-main release candidates, and GitHub provenance attestations verified before tagged releases are published.
 - Phase 28 establishes post-release maintenance: explicit Stable/Beta update channels without background polling, schema-v9 migration policy, monotonic release-preparation tooling, changelog-backed release notes, grouped Dependabot maintenance, weekly security and Windows/WebView2 regression jobs, a patch-forward certified hotfix workflow, and a formal release-health checklist.
-- Post-v0.1 P1 hardens Windows signing/trust and distribution; P2 redesigns the application UI/UX and extends interface scaling through 200%; P3 polishes companion behavior and the Customization Studio; P4 adds packaged real-world product-state certification; P4-M adds guided physical Windows signoff, full process-tree performance measurement, strict device-report verification, and a signed non-publishing device candidate workflow.
+- Post-v0.1 P1 hardens Windows signing/trust and distribution; P2 redesigns the application UI/UX and extends interface scaling through 200%; P3 polishes companion behavior and the Customization Studio; P4 adds packaged real-world product-state certification; P4-M adds guided physical Windows signoff, full process-tree performance measurement, strict device-report verification, and a signed non-publishing device candidate workflow; P5 adds one-command exact-main candidate acquisition, physical-signoff orchestration, and tamper-resistant pre-tag approval receipts without automatic tagging or publishing.
 - Activity persists only meaningful events locally; trend points are session-only and globally bounded.
 - Customization and personality are entirely local; there is no account, store, virtual currency, unlock timer, or cloud inventory.
 - Cleaners, RAM trimming, generic process killing, analytics, and arbitrary command execution are absent.
@@ -126,5 +126,6 @@ cargo check --manifest-path src-tauri/Cargo.toml
 - [Release health checklist](docs/RELEASE_HEALTH_CHECKLIST.md)
 - [P4 real-world product certification](docs/REAL_WORLD_PRODUCT_CERTIFICATION.md)
 - [P4-M physical Windows device signoff](docs/PHYSICAL_DEVICE_SIGNOFF.md)
+- [P5 one-command release approval](docs/RELEASE_APPROVAL.md)
 
 The planned production roadmap is complete through Phase 28. Ongoing work should now enter the maintenance/release process instead of creating another catch-all feature phase.
