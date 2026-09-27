@@ -50,8 +50,8 @@ foreach ($fragment in @(
   "exact_lightweight_tag_target",
   "public_installer_lifecycle",
   "public_portable_launch",
-  "public_distribution_ready = $true",
-  "receipt_self_hashed = $false"
+  'public_distribution_ready = $true',
+  'receipt_self_hashed = $false'
 )) {
   if (-not $finalizer.Contains($fragment)) {
     throw "P7 public certification finalizer is missing required invariant: $fragment"
@@ -80,12 +80,12 @@ foreach ($fragment in @(
   "gh release download",
   "public-release-certification.json",
   "verify-public-release-certification.ps1",
-  "RecheckRuntime = $true",
+  'RecheckRuntime = $true',
   "release-completion-v",
-  "tag_mutation_performed = $false",
-  "release_mutation_performed = $false",
-  "asset_upload_performed = $false",
-  "complete = $true"
+  'tag_mutation_performed = $false',
+  'release_mutation_performed = $false',
+  'asset_upload_performed = $false',
+  'complete = $true'
 )) {
   if (-not $completionRunner.Contains($fragment)) {
     throw "P7 completion runner is missing required invariant: $fragment"
