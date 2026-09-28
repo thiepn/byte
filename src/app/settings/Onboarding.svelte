@@ -179,8 +179,8 @@
 </div>
 
 <style>
-  .onboarding { width:100vw; min-height:100vh; display:grid; place-items:center; padding:32px; background:var(--surface-base); color:var(--text-primary); }
-  .onboarding-card { width:min(760px,100%); min-height:560px; padding:28px; display:grid; grid-template-rows:auto auto 1fr auto auto; gap:18px; border:1px solid var(--border-default); border-radius:22px; background:var(--surface-raised); box-shadow:var(--shadow-panel); }
+  .onboarding { width:100%; height:100%; min-height:0; display:grid; place-items:start center; overflow-y:auto; overscroll-behavior:contain; scrollbar-gutter:stable; padding:32px; background:var(--surface-base); color:var(--text-primary); }
+  .onboarding-card { width:min(760px,100%); min-height:560px; margin-block:auto; padding:28px; display:grid; grid-template-rows:auto auto 1fr auto auto; gap:18px; border:1px solid var(--border-default); border-radius:22px; background:var(--surface-raised); box-shadow:var(--shadow-panel); }
   header { display:flex; align-items:center; gap:11px; }
   header > div:last-child { display:grid; gap:2px; }
   header span { color:var(--text-muted); font-size:10px; }
