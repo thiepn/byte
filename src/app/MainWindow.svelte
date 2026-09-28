@@ -787,8 +787,8 @@
   .skip-link { position: fixed; left: 12px; top: 12px; z-index: 1000; transform: translateY(-200%); padding: 8px 10px; border: 1px solid var(--accent-primary); border-radius: 9px; background: var(--surface-overlay); color: var(--text-primary); box-shadow: var(--shadow-card); }
   .skip-link:focus { transform: translateY(0); }
 
-  .app-shell { min-height: 100vh; display: grid; grid-template-columns: 216px minmax(0,1fr); background: var(--surface-base); color: var(--text-primary); }
-  .sidebar { min-width: 0; padding: 20px 14px 14px; border-right: 1px solid var(--border-default); background: var(--surface-raised); display: flex; flex-direction: column; gap: 16px; box-shadow: 8px 0 28px rgba(15,23,42,.025); }
+  .app-shell { width: 100%; height: 100%; min-width: 0; min-height: 0; display: grid; grid-template-columns: 216px minmax(0,1fr); overflow: hidden; background: var(--surface-base); color: var(--text-primary); }
+  .sidebar { min-width: 0; min-height: 0; padding: 20px 14px 14px; overflow-y: auto; overflow-x: hidden; border-right: 1px solid var(--border-default); background: var(--surface-raised); display: flex; flex-direction: column; gap: 16px; box-shadow: 8px 0 28px rgba(15,23,42,.025); }
   .brand { display: flex; align-items: center; gap: 11px; padding: 3px 8px 10px; }
   .brand-copy { display: grid; gap: 1px; min-width: 0; }
   .brand-copy strong { font-size: 15px; letter-spacing: -.015em; }
@@ -817,7 +817,7 @@
   .companion-mini-copy em { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); font-size: 9px; font-style: normal; }
   .settings-link { margin-top: 0; }
 
-  .content { min-width: 0; padding: 40px clamp(26px,4vw,52px) 64px; overflow: auto; overflow-wrap: anywhere; }
+  .content { min-width: 0; min-height: 0; padding: 40px clamp(26px,4vw,52px) 64px; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; overflow-wrap: anywhere; }
   .content:focus { outline: none; }
   .page { max-width: 1040px; margin: 0 auto; }
   .studio-page { max-width: 1180px; margin: 0 auto; }
