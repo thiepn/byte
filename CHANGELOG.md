@@ -51,6 +51,10 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 - Windows package metadata now uses publisher `THIEPN` and the Byte product homepage at `https://thiepn.dev/byte/`.
 - Release manifest and certification formats advance to schema v2 and distinguish structurally certified candidates from signed public-distribution-ready builds.
 
+### Fixed
+
+- Restored vertical scrolling in the main application and onboarding at constrained window heights and large interface scales by bounding the app shell to the WebView viewport and making the intended content regions explicit scroll containers.
+
 ### Security
 
 - Portable `Byte.exe` is explicitly signed after Tauri bundling, preventing the restored standalone binary from bypassing the public signing policy.
