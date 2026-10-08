@@ -13,13 +13,13 @@ P7 expands existing production **256×256 editable vector-pixel manifest art**; 
 | World | P7 authored visual additions | Extra primitives | Preserved |
 |---|---|---:|---|
 | **Meadow** | Pixel birch canopy and tree trunks, flower clusters, dew, meadow grass, mushrooms and close reeds | 185 | Rolling hills, breezes, fireflies, flowers, meadow health signals |
-| **Cozy Desk** | Tiny book-spine shelving, workspace side props, desk tiles, pencil-note forms, lamp/window light | 109 | Monitor, coffee/desk elements, workload, books/storage warnings |
-| **Bedroom** | Framed art, reading shelf, patchwork bed fabric, plants/rug trim, soft time-of-day lighting | 103 | Bed, curtains, clock, radiator, sleep/warmth signals |
-| **Space** | Constellation points, side bulkheads, control light strips, deck tiles and relay lights | 115 | Planets, station floor, energy, signal and cargo reactions |
-| **Aquarium** | Coral gardens, individual tiny fish, stationary bubbles, water beams, shells and scattered pebbles | 126 | Tank, sand, sea plants, low-energy/charging bubbles |
+| **Cozy Desk** | Tiny book-spine shelving, workspace side props, desk tiles, pencil-note forms, lamp/window light | 111 | Monitor, coffee/desk elements, workload, books/storage warnings |
+| **Bedroom** | Framed art, reading shelf, patchwork bed fabric, plants/rug trim, soft time-of-day lighting | 106 | Bed, curtains, clock, radiator, sleep/warmth signals |
+| **Space** | Constellation points, side bulkheads, control light strips, deck tiles and relay lights | 118 | Planets, station floor, energy, signal and cargo reactions |
+| **Aquarium** | Coral gardens, individual tiny fish, stationary bubbles, water beams, shells and scattered pebbles | 127 | Tank, sand, sea plants, low-energy/charging bubbles |
 | **Rooftop** | Dense small city facade windows, raised planter boxes, railing highlights, masonry and evening glow | 194 | Layered skyline, antenna and solar/thermal reactions |
 
-**Total:** 832 additional original scenery primitives, across **54 new authored layers** (eight scene-specific layers plus one character-contact shadow layer per scene). Every scene has an explicit P7 layer for **each of four local-time states** (MORNING, DAY, EVENING, NIGHT). Existing canvas, focal ground point, decoration slots and state layers remain unchanged. The six visuals intentionally have different compositional rhythms; the center foreground is reserved for the mascot.
+**Total:** 841 additional original scenery primitives, across **54 new authored layers** (eight scene-specific layers plus one character-contact shadow layer per scene). Every scene has an explicit P7 layer for **each of four local-time states** (MORNING, DAY, EVENING, NIGHT). Existing canvas, focal ground point, decoration slots and state layers remain unchanged. The six visuals intentionally have different compositional rhythms; the center foreground is reserved for the mascot.
 
 ## Character protection and depth
 
