@@ -14,7 +14,7 @@ GitHub Actions run [37761788902](https://github.com/thiepn/byte/actions/runs/377
 
 | Surface | Verified inventory | Limitation |
 | --- | --- | --- |
-| Characters | Byte / Mochi / Pip / Kiwi, each 26 distinct indexed sprite frames, 26 clips, 29 semantic behaviors, 9 palettes; native art 48 px on a 64×64 animation frame | Actual frame sheets reviewed below; they do not demonstrate motion flow or desktop compositing |
+| Characters | Byte / Mochi / Pip / Kiwi, each 26 indexed frames (only 18–21 distinct pixel bitmaps), 26 clips, 29 semantic behaviors, 9 palettes; native art 48 px on a 64×64 animation frame | Actual frame sheets reviewed below; they do not demonstrate motion flow or desktop compositing |
 | Atlas / previews | Four 512×256 atlas PNGs and four preview PNGs | Generated sprite contact sheets have been visually inspected; composited quality remains unverified |
 | Animation | Shared 12 FPS scheduler, lifecycle suspension, semantic priority, reduced-motion fallbacks | Motion timing cannot be judged from a clip manifest alone |
 | Habitats | Meadow 81 primitives / 18 layers; Desk 78 / 17; Bedroom 65 / 18; Space 71 / 17; Aquarium 62 / 16; Rooftop 76 / 18; four time-of-day palettes each | Every background is drawn from geometric primitives; no image-backed primitive layers |
@@ -37,7 +37,7 @@ GitHub Actions run [37761788902](https://github.com/thiepn/byte/actions/runs/377
 | Pip | 2.5 | 2 | Simple blob with clear outline, but resting pose is a generic circle; emotional changes are minor facial pixels. | More characterful silhouette, stronger squash/stretch, clear mouth and elastic reactions |
 | Kiwi | 3 | 2 | Recognizable small bird with feet and beak and a stronger happy wings-up pose. Everyday expressions look nearly identical. | Larger expressive eyes, head tilts, fluffy body, independent wing motion and comic pecking |
 
-**Verified repetition:** exact pixel comparisons of the 26 contact-sheet crops found identical **idle_a/idle_b**, **sleep_a/sleep_b**, and **busy_a/busy_b** pairs **for every character**. Across all possible pose pairs (325 each), exact duplicates counted Byte **7**, Mochi **12**, Pip **8**, and Kiwi **19**. This is source bitmap comparison, not a claim that animations have identical durations.
+**Verified repetition:** exact pixel comparisons of the 26 contact-sheet crops found identical **idle_a/idle_b**, **sleep_a/sleep_b**, and **busy_a/busy_b** pairs **for every character**. Across all possible pose pairs (325 each), exact duplicates counted Byte **7**, Mochi **12**, Pip **8**, and Kiwi **19**. The CI-generated `frame-diversity.json` independently verifies **Byte 21**, **Mochi 20**, **Pip 21**, and **Kiwi 18** unique bitmap poses per 26 manifest frame slots. In particular, Kiwi's `idle_a`, `idle_b`, `wake`, `click`, `surprised`, and `stressed` all share one exactly identical sprite. This limits expressive coverage despite the full behavior vocabulary. This is source bitmap comparison, not a claim that animations have identical durations.
 
 **Art assessment:** the current sprites are coherent, lightweight and distinct, but not yet sufficiently expressive for a mascot-first Byte 2.0. Their primary deficit is routine-pose repetition and weak expression variation, not necessarily sprite resolution. Existing clips/behavior architecture should be retained while authored poses are improved.
 
