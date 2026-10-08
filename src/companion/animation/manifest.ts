@@ -54,6 +54,11 @@ export function validateCharacterManifest(value: unknown): CharacterManifest {
     if (!transition.includes(">") || !manifest.clips[clipId]) {
       throw new Error(`Invalid transition "${transition}"`);
     }
+    // A transition clip is an entrance, not a persistent animation. A looping
+    // clip would trap CharacterAnimator.pending and never reach its target.
+    if (manifest.clips[clipId].loop) {
+      throw new Error(`Transition "${transition}" cannot use looping clip "${clipId}"`);
+    }
   }
 
   if (
@@ -175,7 +180,7 @@ function validateClips(
       if (!frames[entry.frame]) {
         throw new Error(`Clip "${id}" references missing frame "${entry.frame}"`);
       }
-      if (entry.durationMs != null && entry.durationMs <= 0) {
+      if (entry.durationMs != null && (!Number.isFinite(entry.durationMs) || entry.durationMs <= 0)) {
         throw new Error(`Clip "${id}" has an invalid frame duration`);
       }
     }
