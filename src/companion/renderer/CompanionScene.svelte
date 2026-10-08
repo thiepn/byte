@@ -241,6 +241,9 @@
   onMount(() => {
     let disposed = false;
     let visualRevision = 0;
+    let latestCompanionPreferences: CompanionPreferences | null = null;
+    let latestAppPreferences: AppPreferences | null = null;
+    let receivedMoveModeEvent = false;
     let unsubscribeAnimation: (() => void) | null = null;
     let mediaQuery: MediaQueryList | null = null;
     const cleanups: Array<() => void> = [];
@@ -398,15 +401,19 @@
           getDesktopAwareness(),
         ]);
         if (disposed) return;
+        // Preference change events may arrive while these initial native reads
+        // are pending; the event payload is newer than that initial snapshot.
+        const currentCompanion = latestCompanionPreferences ?? preferences.companion;
+        const currentApp = latestAppPreferences ?? preferences.app;
         lifecycleSuspended = awareness.suppressed;
         companionVisible =
-          !awareness.suppressed && preferences.companion.display_mode !== "TRAY";
-        forceReducedMotion = preferences.app.reduce_motion;
+          !awareness.suppressed && currentCompanion.display_mode !== "TRAY";
+        forceReducedMotion = currentApp.reduce_motion;
         habitatState = {
           ...habitatState,
           reducedMotion: forceReducedMotion || (mediaQuery?.matches ?? false),
         };
-        await applyVisualPreferences(preferences.companion);
+        await applyVisualPreferences(currentCompanion);
         if (disposed) return;
 
         if (!lifecycleSuspended) {
@@ -420,7 +427,7 @@
 
     void getWindowShellState()
       .then((shell) => {
-        if (!disposed) moveMode = shell.move_mode;
+        if (!disposed && !receivedMoveModeEvent) moveMode = shell.move_mode;
       })
       .catch(() => {});
 
@@ -438,7 +445,10 @@
 
     if (isTauri()) {
       register<boolean>("byte://move-mode-changed", (payload) => {
-        if (!disposed) moveMode = payload;
+        if (!disposed) {
+          receivedMoveModeEvent = true;
+          moveMode = payload;
+        }
       });
 
       register<DisplayMode>("byte://display-mode-changed", (payload) => {
@@ -481,6 +491,7 @@
 
       register<AppPreferences>("byte://app-preferences-changed", (payload) => {
         if (disposed) return;
+        latestAppPreferences = payload;
         forceReducedMotion = payload.reduce_motion;
         const reduced = forceReducedMotion || (mediaQuery?.matches ?? false);
         animator?.setReducedMotion(reduced);
@@ -495,6 +506,7 @@
         "byte://companion-preferences-changed",
         (payload) => {
           if (disposed) return;
+          latestCompanionPreferences = payload;
           void applyVisualPreferences(payload).catch(() => {
             if (!disposed) runtimeError = true;
           });
