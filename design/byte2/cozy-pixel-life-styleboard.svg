@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="915" viewBox="0 0 1400 915">
+<title>Byte 2.0 — Cozy Pixel Life: P2 design reference board</title>
+<desc>A schematic, original editable silhouette and interface direction sheet. These are concept shapes, not production sprites or screenshots.</desc>
+<rect width="1400" height="915" fill="#F2F0EB"/>
+<text x="65" y="70" fill="#273146" font-size="39" font-weight="750" font-family="Segoe UI, sans-serif">Cozy Pixel Life</text>
+<text x="65" y="101" fill="#536073" font-size="16" font-family="Segoe UI, sans-serif">Byte 2.0 / P2 — character silhouette &amp; desktop visual contract</text>
+<path d="M65 118H1335" stroke="#C8C9C5" stroke-width="1"/>
+<text x="65" y="158" fill="#273146" font-size="21" font-weight="650" font-family="Segoe UI, sans-serif">Four unmistakable friends</text>
+<text x="65" y="179" fill="#536073" font-size="12" font-family="Segoe UI, sans-serif">Expressive faces, stepped pixel-style edges, gentle upper-left lighting and grounded shadows</text>
+<g><rect x="65" y="198" width="310" height="289" rx="12" fill="#FFFCF5" stroke="#C8C9C5"/><rect x="73" y="206" width="294" height="216" rx="8" fill="#70BFDA" opacity=".18"/><g transform="translate(133 217)"><g transform="translate(65 45)">
+  <ellipse cx="84" cy="162" rx="68" ry="12" fill="#C6C6CD" opacity=".55"/>
+  <path d="M70 24V4H82V24M112 24V10H124V24" fill="none" stroke="#26313B" stroke-width="6"/>
+  <rect x="66" y="0" width="20" height="16" rx="6" fill="#F4BD6A" stroke="#26313B" stroke-width="4"/>
+  <rect x="109" y="6" width="18" height="14" rx="6" fill="#F4BD6A" stroke="#26313B" stroke-width="4"/>
+  <rect x="20" y="30" width="124" height="126" rx="27" fill="#26313B"/>
+  <rect x="26" y="34" width="112" height="115" rx="23" fill="#70BFDA"/>
+  <rect x="38" y="45" width="89" height="72" rx="23" fill="#273146"/>
+  <rect x="57" y="65" width="21" height="28" rx="8" fill="#E1F7FD"/>
+  <rect x="92" y="65" width="21" height="28" rx="8" fill="#E1F7FD"/>
+  <path d="M77 105q8 7 16 0" fill="none" stroke="#E1F7FD" stroke-width="4" stroke-linecap="round"/>
+  <rect x="10" y="92" width="16" height="26" rx="7" fill="#F4BD6A"/>
+  <rect x="139" y="92" width="16" height="26" rx="7" fill="#F4BD6A"/>
+  <rect x="41" y="148" width="30" height="18" rx="6" fill="#4D7894"/>
+  <rect x="91" y="148" width="30" height="18" rx="6" fill="#4D7894"/>
+</g></g><text x="83" y="450" font-size="21" font-weight="700" fill="#273146" font-family="Segoe UI,sans-serif">BYTE</text><text x="83" y="469" font-size="13" fill="#536073" font-family="Segoe UI,sans-serif">Curious / kind / helpful</text></g>
+<g><rect x="385" y="198" width="310" height="289" rx="12" fill="#FFFCF5" stroke="#C8C9C5"/><rect x="393" y="206" width="294" height="216" rx="8" fill="#F3D9C5" opacity=".18"/><g transform="translate(453 217)"><g transform="translate(63 39)">
+  <ellipse cx="83" cy="169" rx="80" ry="12" fill="#CCC5C0" opacity=".55"/>
+  <path d="M18 77L18 0L62 35H111L151 0V78" fill="#F3D9C5" stroke="#493A3B" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M28 15L32 49L54 37ZM139 15L114 37L139 49Z" fill="#ECA98B"/>
+  <path d="M14 75Q14 36 45 37H120Q154 37 154 75V129Q154 163 118 165H47Q12 165 14 129Z" fill="#F3D9C5" stroke="#493A3B" stroke-width="8"/>
+  <path d="M137 124Q177 130 163 103Q155 87 169 83" fill="none" stroke="#ECA98B" stroke-width="14" stroke-linecap="round"/>
+  <rect x="42" y="80" width="12" height="18" rx="5" fill="#493A3B"/>
+  <rect x="110" y="80" width="12" height="18" rx="5" fill="#493A3B"/>
+  <ellipse cx="33" cy="109" rx="12" ry="7" fill="#E9A0A6"/>
+  <ellipse cx="129" cy="109" rx="12" ry="7" fill="#E9A0A6"/>
+  <path d="M76 107l7 5 8-5M83 112q-10 12-18 0M83 112q11 12 19 0" fill="none" stroke="#493A3B" stroke-width="3" stroke-linecap="round"/>
+  <rect x="30" y="137" width="48" height="28" rx="12" fill="#FFF5E6" stroke="#493A3B" stroke-width="5"/>
+  <rect x="86" y="137" width="48" height="28" rx="12" fill="#FFF5E6" stroke="#493A3B" stroke-width="5"/>
+ </g></g><text x="403" y="450" font-size="21" font-weight="700" fill="#273146" font-family="Segoe UI,sans-serif">MOCHI</text><text x="403" y="469" font-size="13" fill="#536073" font-family="Segoe UI,sans-serif">Affectionate / sleepy / playful</text></g>
+<g><rect x="705" y="198" width="310" height="289" rx="12" fill="#FFFCF5" stroke="#C8C9C5"/><rect x="713" y="206" width="294" height="216" rx="8" fill="#9CCBFB" opacity=".18"/><g transform="translate(773 217)"><g transform="translate(65 47)">
+  <ellipse cx="84" cy="158" rx="73" ry="12" fill="#C6C6CD" opacity=".52"/>
+  <path d="M79 4Q91 16 119 19Q151 42 153 94Q158 132 132 150Q119 162 75 162Q35 161 18 143Q-5 112 13 67Q33 19 79 4Z" fill="#9CCBFB" stroke="#30425E" stroke-width="8"/>
+  <path d="M36 51Q46 29 66 29" fill="none" stroke="#E1F5FF" stroke-width="15" stroke-linecap="round"/>
+  <rect x="48" y="74" width="16" height="23" rx="8" fill="#30425E"/>
+  <rect x="98" y="74" width="16" height="23" rx="8" fill="#30425E"/>
+  <ellipse cx="33" cy="105" rx="11" ry="6" fill="#E5A5C7"/>
+  <ellipse cx="129" cy="105" rx="11" ry="6" fill="#E5A5C7"/>
+  <path d="M72 109Q82 128 95 109" fill="none" stroke="#30425E" stroke-width="5" stroke-linecap="round"/>
+  <path d="M12 105Q-3 103 5 118M149 105Q163 104 159 122" fill="none" stroke="#30425E" stroke-width="8" stroke-linecap="round"/>
+ </g></g><text x="723" y="450" font-size="21" font-weight="700" fill="#273146" font-family="Segoe UI,sans-serif">PIP</text><text x="723" y="469" font-size="13" fill="#536073" font-family="Segoe UI,sans-serif">Squishy / gentle / brave</text></g>
+<g><rect x="1025" y="198" width="310" height="289" rx="12" fill="#FFFCF5" stroke="#C8C9C5"/><rect x="1033" y="206" width="294" height="216" rx="8" fill="#A8CB72" opacity=".18"/><g transform="translate(1093 217)"><g transform="translate(70 37)">
+  <ellipse cx="81" cy="174" rx="67" ry="10" fill="#C6C6CD" opacity=".55"/>
+  <path d="M76 28Q64 6 79 1M80 24Q91 7 105 14" fill="none" stroke="#364336" stroke-width="7" stroke-linecap="round"/>
+  <path d="M80 26Q132 22 148 81Q164 153 111 167Q45 188 21 134Q2 87 34 51Q51 29 80 26Z" fill="#A8CB72" stroke="#364336" stroke-width="8"/>
+  <path d="M24 100Q-4 84 3 119Q9 139 26 142" fill="#84A558" stroke="#364336" stroke-width="5"/>
+  <path d="M145 100Q174 79 163 115Q159 136 148 140" fill="#84A558" stroke="#364336" stroke-width="5"/>
+  <ellipse cx="61" cy="85" rx="10" ry="13" fill="#364336"/>
+  <ellipse cx="110" cy="85" rx="10" ry="13" fill="#364336"/>
+  <path d="M74 109L85 121L99 107Z" fill="#F5C376" stroke="#364336" stroke-width="4"/>
+  <ellipse cx="35" cy="109" rx="11" ry="6" fill="#E9A39C"/>
+  <ellipse cx="131" cy="109" rx="11" ry="6" fill="#E9A39C"/>
+  <path d="M62 165V180M104 166V180" stroke="#D78C53" stroke-width="9" stroke-linecap="round"/>
+ </g></g><text x="1043" y="450" font-size="21" font-weight="700" fill="#273146" font-family="Segoe UI,sans-serif">KIWI</text><text x="1043" y="469" font-size="13" fill="#536073" font-family="Segoe UI,sans-serif">Curious / upbeat / clumsy</text></g>
+<g><rect x="65" y="551" width="204" height="111" rx="9" fill="#A2D2A0" stroke="#C8C9C5"/><text x="81" y="623" font-size="48" fill="#273146" opacity=".7" font-family="Segoe UI,sans-serif">☘</text><text x="75" y="685" font-size="14" font-weight="650" fill="#273146" font-family="Segoe UI,sans-serif">Meadow</text></g>
+<g><rect x="280" y="551" width="204" height="111" rx="9" fill="#D7AD81" stroke="#C8C9C5"/><text x="296" y="623" font-size="48" fill="#273146" opacity=".7" font-family="Segoe UI,sans-serif">▤</text><text x="290" y="685" font-size="14" font-weight="650" fill="#273146" font-family="Segoe UI,sans-serif">Cozy Desk</text></g>
+<g><rect x="495" y="551" width="204" height="111" rx="9" fill="#E4B6B5" stroke="#C8C9C5"/><text x="511" y="623" font-size="48" fill="#273146" opacity=".7" font-family="Segoe UI,sans-serif">▦</text><text x="505" y="685" font-size="14" font-weight="650" fill="#273146" font-family="Segoe UI,sans-serif">Bedroom</text></g>
+<g><rect x="710" y="551" width="204" height="111" rx="9" fill="#70749B" stroke="#C8C9C5"/><text x="726" y="623" font-size="48" fill="#273146" opacity=".7" font-family="Segoe UI,sans-serif">✦</text><text x="720" y="685" font-size="14" font-weight="650" fill="#273146" font-family="Segoe UI,sans-serif">Space</text></g>
+<g><rect x="925" y="551" width="204" height="111" rx="9" fill="#76C7CD" stroke="#C8C9C5"/><text x="941" y="623" font-size="48" fill="#273146" opacity=".7" font-family="Segoe UI,sans-serif">≈</text><text x="935" y="685" font-size="14" font-weight="650" fill="#273146" font-family="Segoe UI,sans-serif">Aquarium</text></g>
+<g><rect x="1140" y="551" width="204" height="111" rx="9" fill="#C89B9A" stroke="#C8C9C5"/><text x="1156" y="623" font-size="48" fill="#273146" opacity=".7" font-family="Segoe UI,sans-serif">▥</text><text x="1150" y="685" font-size="14" font-weight="650" fill="#273146" font-family="Segoe UI,sans-serif">Rooftop</text></g>
+<text x="65" y="533" fill="#273146" font-size="20" font-weight="650" font-family="Segoe UI,sans-serif">Six lived-in little worlds</text>
+<text x="65" y="723" fill="#273146" font-size="20" font-weight="650" font-family="Segoe UI,sans-serif">UI surface rules</text>
+<rect x="65" y="739" width="690" height="112" rx="11" fill="#FFFCF5" stroke="#C8C9C5"/>
+<text x="84" y="773" font-size="16" font-weight="650" fill="#273146" font-family="Segoe UI,sans-serif">Character first · Health when needed · Real native controls</text>
+<text x="84" y="799" font-size="14" fill="#536073" font-family="Segoe UI,sans-serif">No SaaS hero, card grid, giant typography or permanent gauges</text>
+<text x="84" y="824" font-size="13" fill="#536073" font-family="Segoe UI,sans-serif">All 64px sprite outputs pixel-snapped; scene logical size 256px; 12 FPS</text>
+<rect x="778" y="739" width="557" height="112" rx="11" fill="#2A3442" stroke="#586577"/>
+<text x="798" y="769" font-size="15" font-weight="650" fill="#F8F5ED" font-family="Segoe UI,sans-serif">Palette reference</text>
+<rect x="800" y="782" width="70" height="18" fill="#F2F0EB"/>
+<rect x="877" y="782" width="70" height="18" fill="#273146"/>
+<rect x="954" y="782" width="70" height="18" fill="#70BFDA"/>
+<rect x="1031" y="782" width="70" height="18" fill="#F3D9C5"/>
+<rect x="1108" y="782" width="70" height="18" fill="#9CCBFB"/>
+<rect x="1185" y="782" width="70" height="18" fill="#A8CB72"/>
+<text x="800" y="824" font-size="12" fill="#CDD5DF" font-family="Segoe UI,sans-serif">Semantic UI contrast checked; original sprite art is still P3–P4.</text>
+<text x="65" y="892" fill="#687383" font-size="12" font-family="Segoe UI,sans-serif">P2 SCHEMATIC STYLEBOARD — editable vector concept only. Not source sprite artwork and not a running-app screenshot.</text>
+</svg>
