@@ -170,6 +170,10 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .setup(move |app| {
             let app_config_dir = app.path().app_config_dir()?;
+            // Install local, bounded diagnostics before loading user state so
+            // unexpected startup panics can be diagnosed without collecting
+            // user activity, panic payloads, or absolute filesystem paths.
+            core::crash::install(&app_config_dir);
             let config = ConfigStore::load(app_config_dir.join("config.json"))?;
             let activity = ActivityStore::load(app_config_dir.join("activity.json"))?;
             let collection = CollectionStore::load(app_config_dir.join("collection.json"))?;

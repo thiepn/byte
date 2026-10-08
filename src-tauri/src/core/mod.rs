@@ -1,6 +1,7 @@
 pub mod activity;
 pub mod collection;
 pub mod config;
+pub mod crash;
 pub mod diagnostics;
 pub mod error;
 pub mod lifecycle;
