@@ -114,6 +114,36 @@ function readManifest(id: string): CharacterManifest {
   return validateCharacterManifest(JSON.parse(readFileSync(path, "utf8")));
 }
 
+function opaqueBounds(values: Uint8Array): { width: number; height: number } {
+  let left = 64, right = -1, top = 64, bottom = -1;
+  for (let y = 0; y < 64; y += 1) {
+    for (let x = 0; x < 64; x += 1) {
+      if (values[y * 64 + x] === 0) continue;
+      left = Math.min(left, x); right = Math.max(right, x);
+      top = Math.min(top, y); bottom = Math.max(bottom, y);
+    }
+  }
+  return { width: right - left + 1, height: bottom - top + 1 };
+}
+
+describe("P4 silhouette animation, not only changed facial pixels", () => {
+  it("Pip visibly flattens while sleeping", () => {
+    const manifest = readManifest("pip");
+    const atlas = decodeIndexedPng(readFileSync(join(process.cwd(), "public", manifest.atlas.src)));
+    const idle = opaqueBounds(frameBytes(atlas, manifest.frames.idle_a.index));
+    const sleep = opaqueBounds(frameBytes(atlas, manifest.frames.sleep_a.index));
+    expect(sleep.height).toBeLessThanOrEqual(idle.height - 15);
+  });
+
+  it("Kiwi raises its wings into a wider happy silhouette", () => {
+    const manifest = readManifest("kiwi");
+    const atlas = decodeIndexedPng(readFileSync(join(process.cwd(), "public", manifest.atlas.src)));
+    const idle = opaqueBounds(frameBytes(atlas, manifest.frames.idle_a.index));
+    const happy = opaqueBounds(frameBytes(atlas, manifest.frames.happy.index));
+    expect(happy.width).toBeGreaterThanOrEqual(idle.width + 3);
+  });
+});
+
 describe("P3/P4 original four-character production sprite artwork", () => {
   for (const id of CHARACTERS) {
     it(`${id} contains at least 24 genuinely different 64px sprites`, () => {
