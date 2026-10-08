@@ -124,6 +124,7 @@
   ): Promise<void> {
     if (busyAction) return;
     busyAction = action;
+    ++refreshGeneration;
     actionError = "";
 
     try {
@@ -144,6 +145,7 @@
   async function changeMode(mode: DisplayMode): Promise<void> {
     if (busyAction || !preferences) return;
     busyAction = `mode:${mode}`;
+    ++refreshGeneration;
     actionError = "";
 
     try {
@@ -165,6 +167,7 @@
   async function toggleClickThrough(): Promise<void> {
     if (busyAction || !shell) return;
     busyAction = "click-through";
+    ++refreshGeneration;
     actionError = "";
 
     try {
@@ -179,6 +182,7 @@
   async function moveByte(): Promise<void> {
     if (busyAction) return;
     busyAction = "move";
+    ++refreshGeneration;
     actionError = "";
 
     try {
