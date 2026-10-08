@@ -16,7 +16,7 @@ const clone=()=>JSON.parse(JSON.stringify(original));
 test("P2 original visual identity is compatible and accessible",()=>{
   assert.deepEqual(verifyByte2Identity(original,manifests),[]);
   assert.ok(contrastRatio("#000000","#FFFFFF")>20);
-  assert.ok(contrastRatio("#FFF","#FFF")!==contrastRatio("#FFFFFF","#FFFFFF"));
+  assert.ok(Number.isNaN(contrastRatio("#FFF", "#FFFFFF")));
 });
 
 test("P2 rejects missing mascots and incompatible runtime frame dimensions",()=>{
