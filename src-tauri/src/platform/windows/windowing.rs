@@ -570,8 +570,18 @@ fn position_quick_panel(app: &AppHandle) -> Result<(), ByteError> {
     let margin = physical_pixels(DEFAULT_MARGIN_LOGICAL, scale) as i32;
     let preferred_x = work.position.x + work.size.width as i32 - panel_size.width as i32 - margin;
     let preferred_y = work.position.y + work.size.height as i32 - panel_size.height as i32 - margin;
-    let x = clamp_panel_origin(preferred_x, work.position.x, work.size.width, panel_size.width);
-    let y = clamp_panel_origin(preferred_y, work.position.y, work.size.height, panel_size.height);
+    let x = clamp_panel_origin(
+        preferred_x,
+        work.position.x,
+        work.size.width,
+        panel_size.width,
+    );
+    let y = clamp_panel_origin(
+        preferred_y,
+        work.position.y,
+        work.size.height,
+        panel_size.height,
+    );
 
     panel
         .set_position(PhysicalPosition::new(x, y))
