@@ -31,9 +31,9 @@ function decodeIndexedPng(bytes: Buffer): IndexedPng {
   let height = 0;
   let bitDepth = 0;
   let colorType = 0;
-  let palette = Buffer.alloc(0);
+  let palette: Buffer<ArrayBufferLike> = Buffer.alloc(0);
   const payloads: Buffer[] = [];
-  let transparency = Buffer.alloc(0);
+  let transparency: Buffer<ArrayBufferLike> = Buffer.alloc(0);
   for (let pos = 8; pos + 12 <= bytes.length;) {
     const length = bytes.readUInt32BE(pos);
     const name = bytes.toString("ascii", pos + 4, pos + 8);
