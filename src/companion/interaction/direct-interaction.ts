@@ -46,6 +46,10 @@ export class DirectInteractionController {
     return true;
   }
 
+  isTracking(pointerId: number): boolean {
+    return this.active?.id === pointerId;
+  }
+
   move(position: PointerPosition, insideCharacter: boolean): DirectGesture | null {
     const pointer = this.active;
     if (!pointer || position.pointerId !== pointer.id || pointer.triggered) {
