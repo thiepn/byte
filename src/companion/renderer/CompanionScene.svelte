@@ -6,6 +6,13 @@
   import { animationScheduler } from "../animation/scheduler";
   import { systemBehaviorForSnapshot } from "../animation/system-behavior";
   import { applyInputReaction } from "../animation/input-reactions";
+  import {
+    DirectInteractionController,
+    gestureBehavior,
+    hitTestCharacterCanvas,
+    insideCharacterCanvasBounds,
+    type DirectGesture,
+  } from "../interaction/direct-interaction";
   import type { CharacterManifest, RenderFrame } from "../animation/types";
   import type { InputReactionEvent } from "../../lib/types/input";
   import type {
@@ -15,6 +22,7 @@
     DisplayMode,
     LifecycleState,
     SystemSnapshot,
+    InteractionLevel,
   } from "../../lib/types/domain";
   import { hashSeed } from "../animation/random";
   import { HabitatParticleEngine } from "../habitats/particles";
@@ -84,6 +92,9 @@
   let forceReducedMotion = false;
   let lifecycleSuspended = false;
   let companionVisible = true;
+  let interactionLevel: InteractionLevel = "NORMAL";
+  const directInteraction = new DirectInteractionController();
+  let suppressSceneClickFromGesture = false;
 
   function isTauri(): boolean {
     return "__TAURI_INTERNALS__" in window;
@@ -155,8 +166,93 @@
     }
   }
 
+  function canInteract(): boolean {
+    return !runtimeError && !moveMode && !dragging &&
+      !lifecycleSuspended && companionVisible &&
+      animator !== null && characterRenderer !== null && characterManifest !== null;
+  }
+
+  function showDirectGesture(gesture: DirectGesture): void {
+    if (!canInteract() || !animator || !characterManifest) return;
+
+    const behavior = gestureBehavior(characterManifest.id, gesture);
+    const accepted = animator.requestBehavior({ behavior, source: "interaction" });
+    if (accepted && interactionLevel !== "QUIET") {
+      nudgeHabitat(gesture === "tap" ? 0.22 : gesture === "wave" ? 0.42 : 0.3);
+    }
+  }
+
+  function handleScenePointerDown(event: PointerEvent): void {
+    if (moveMode) {
+      directInteraction.cancel();
+      void startMove(event);
+      return;
+    }
+    if (!canInteract() || !event.isPrimary || event.button !== 0) return;
+    // Transparent portions of the 64px canvas remain regular status-click
+    // background; the local pixel alpha is the sole interaction hitbox.
+    if (!hitTestCharacterCanvas(characterCanvas, event.clientX, event.clientY)) {
+      suppressSceneClickFromGesture = false;
+      return;
+    }
+    const accepted = directInteraction.start({
+      pointerId: event.pointerId, x: event.clientX, y: event.clientY,
+      at: performance.now(),
+    });
+    if (!accepted) return;
+    suppressSceneClickFromGesture = true;
+    event.preventDefault();
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  }
+
+  function handleScenePointerMove(event: PointerEvent): void {
+    // No image read on passive mousemove: only active local gestures use
+    // sprite alpha sampling. This matters for a lightweight always-on-top app.
+    if (!directInteraction.isTracking(event.pointerId)) return;
+    if (!canInteract()) {
+      directInteraction.cancel();
+      return;
+    }
+    const gesture = directInteraction.move({
+      pointerId: event.pointerId, x: event.clientX, y: event.clientY,
+      at: performance.now(),
+    }, insideCharacterCanvasBounds(characterCanvas, event.clientX, event.clientY));
+    if (gesture) showDirectGesture(gesture);
+  }
+
+  function handleScenePointerUp(event: PointerEvent): void {
+    const gesture = directInteraction.finish({
+      pointerId: event.pointerId, x: event.clientX, y: event.clientY,
+      at: performance.now(),
+    });
+    const target = event.currentTarget as HTMLElement;
+    if (target.hasPointerCapture(event.pointerId)) {
+      target.releasePointerCapture(event.pointerId);
+    }
+    if (gesture) showDirectGesture(gesture);
+  }
+
+  function handleSceneClick(): void {
+    if (suppressSceneClickFromGesture) {
+      suppressSceneClickFromGesture = false;
+      return;
+    }
+    void openPanel();
+  }
+
   function handleKeydown(event: KeyboardEvent): void {
-    if ((event.key === "Enter" || event.key === " ") && !moveMode) {
+    if (event.target !== event.currentTarget || moveMode) return;
+    if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.repeat) {
+      const shortcut = event.key.toLowerCase();
+      const gesture = shortcut === "p" ? "pet" :
+        shortcut === "w" ? "wave" : shortcut === "h" ? "hold" : null;
+      if (gesture) {
+        event.preventDefault();
+        showDirectGesture(gesture);
+        return;
+      }
+    }
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       void openPanel();
     }
@@ -193,6 +289,8 @@
     }
 
     personalityDirector?.tick(deltaMs, animator);
+    const heldGesture = directInteraction.tick(performance.now());
+    if (heldGesture) showDirectGesture(heldGesture);
     const frame = animator.tick(deltaMs);
     characterRenderer.render(frame);
 
@@ -305,6 +403,7 @@
       );
       const characterChanged =
         !characterManifest || characterManifest.id !== nextCharacterManifest.id;
+      if (characterChanged) directInteraction.cancel();
 
       if (characterChanged) {
         const nextRenderer = new CharacterCanvasRenderer(
@@ -324,6 +423,7 @@
       }
 
       personalityDirector = nextPersonalityDirector;
+      interactionLevel = preferences.interaction_level;
       animator?.setIdleProfile(
         nextPersonalityDirector.idleProfile(nextCharacterManifest),
       );
@@ -462,6 +562,7 @@
       register<boolean>("byte://companion-visibility-changed", (payload) => {
         if (disposed) return;
         companionVisible = payload;
+        if (!payload) directInteraction.cancel();
         if (companionVisible && !lifecycleSuspended) {
           startAnimation();
           void refreshSystemState();
@@ -477,6 +578,7 @@
 
         lifecycleSuspended = suspended;
         if (suspended) {
+          directInteraction.cancel();
           stopAnimation();
         } else if (companionVisible) {
           startAnimation();
@@ -533,6 +635,7 @@
 
     return () => {
       disposed = true;
+      directInteraction.cancel();
       visualRevision += 1;
       stopAnimation();
       for (const cleanup of cleanups) cleanup();
@@ -556,10 +659,15 @@
   class:perch-mode={displayMode === "PERCH"}
   role="button"
   tabindex="0"
-  aria-label={moveMode ? "Move Byte" : "Open Byte status"}
-  onclick={() => void openPanel()}
+  aria-label={moveMode ? "Move Byte" : "Open Byte status. P to pet, W to wave, H to cuddle."}
+  aria-keyshortcuts="Enter Space P W H"
+  title={moveMode ? "Drag to move Byte" : "Tap character · double-tap to wave · stroke to pet · hold for a cuddle · background to open status"}
+  onclick={handleSceneClick}
   onkeydown={handleKeydown}
-  onpointerdown={(event) => void startMove(event)}
+  onpointerdown={handleScenePointerDown}
+  onpointermove={handleScenePointerMove}
+  onpointerup={handleScenePointerUp}
+  onpointercancel={() => directInteraction.cancel()}
   onpointerenter={() => {
     if (animator) personalityDirector?.onPointerEnter(animator);
     nudgeHabitat(0.35);
@@ -613,6 +721,7 @@
     transform: translateY(0);
     transition: transform 120ms ease;
     user-select: none;
+    touch-action: none;
   }
 
   .scene:focus-visible {
