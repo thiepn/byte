@@ -199,7 +199,8 @@ pub fn set_companion_size(app: &AppHandle, size: CompanionSize) -> Result<ByteCo
         store.update_companion_with(|preferences| preferences.size = size)?
     };
 
-    if let Err(error) = apply_companion_layout_with_visibility(app, &config.companion, was_visible) {
+    if let Err(error) = apply_companion_layout_with_visibility(app, &config.companion, was_visible)
+    {
         rollback_companion_preferences(app, &previous, was_visible);
         return Err(error);
     }
@@ -221,7 +222,9 @@ pub fn set_edge_anchor(app: &AppHandle, anchor: EdgeAnchor) -> Result<ByteConfig
     };
 
     if config.companion.display_mode == DisplayMode::Edge {
-        if let Err(error) = apply_companion_layout_with_visibility(app, &config.companion, was_visible) {
+        if let Err(error) =
+            apply_companion_layout_with_visibility(app, &config.companion, was_visible)
+        {
             rollback_companion_preferences(app, &previous, was_visible);
             return Err(error);
         }
@@ -856,16 +859,40 @@ mod tests {
 
     #[test]
     fn changing_a_hidden_companions_appearance_does_not_reveal_it() {
-        assert!(!visibility_for_mode_update(false, DisplayMode::Habitat, DisplayMode::Habitat));
-        assert!(!visibility_for_mode_update(false, DisplayMode::Mini, DisplayMode::Mini));
-        assert!(!visibility_for_mode_update(false, DisplayMode::Habitat, DisplayMode::Tray));
+        assert!(!visibility_for_mode_update(
+            false,
+            DisplayMode::Habitat,
+            DisplayMode::Habitat
+        ));
+        assert!(!visibility_for_mode_update(
+            false,
+            DisplayMode::Mini,
+            DisplayMode::Mini
+        ));
+        assert!(!visibility_for_mode_update(
+            false,
+            DisplayMode::Habitat,
+            DisplayMode::Tray
+        ));
     }
 
     #[test]
     fn explicitly_changing_display_mode_reveals_the_companion() {
-        assert!(visibility_for_mode_update(false, DisplayMode::Tray, DisplayMode::Habitat));
-        assert!(visibility_for_mode_update(false, DisplayMode::Mini, DisplayMode::Perch));
-        assert!(visibility_for_mode_update(true, DisplayMode::Perch, DisplayMode::Perch));
+        assert!(visibility_for_mode_update(
+            false,
+            DisplayMode::Tray,
+            DisplayMode::Habitat
+        ));
+        assert!(visibility_for_mode_update(
+            false,
+            DisplayMode::Mini,
+            DisplayMode::Perch
+        ));
+        assert!(visibility_for_mode_update(
+            true,
+            DisplayMode::Perch,
+            DisplayMode::Perch
+        ));
     }
 
     #[test]
