@@ -514,10 +514,8 @@ fn position_quick_panel(app: &AppHandle) -> Result<(), ByteError> {
     if companion_visible {
         let monitor = choose_monitor(&companion, None)?;
         let scale = monitor.scale_factor();
-        let panel_size = PhysicalSize::new(
-            physical_pixels(QUICK_PANEL_LOGICAL_WIDTH, scale),
-            physical_pixels(QUICK_PANEL_LOGICAL_HEIGHT, scale),
-        );
+        let work = monitor.work_area();
+        let panel_size = quick_panel_size(work.size, scale);
         panel
             .set_size(panel_size)
             .map_err(|error| ByteError::Window(error.to_string()))?;
@@ -528,22 +526,28 @@ fn position_quick_panel(app: &AppHandle) -> Result<(), ByteError> {
         let companion_size = companion
             .outer_size()
             .map_err(|error| ByteError::Window(error.to_string()))?;
-        let work = monitor.work_area();
         let gap = physical_pixels(PANEL_GAP_LOGICAL, scale) as i32;
 
         let work_right = work.position.x + work.size.width as i32;
-        let work_bottom = work.position.y + work.size.height as i32;
-
         let right_candidate = companion_position.x + companion_size.width as i32 + gap;
         let left_candidate = companion_position.x - panel_size.width as i32 - gap;
-        let x = if right_candidate + panel_size.width as i32 <= work_right {
+        let preferred_x = if right_candidate + panel_size.width as i32 <= work_right {
             right_candidate
         } else {
-            left_candidate.max(work.position.x)
+            left_candidate
         };
-
-        let max_panel_y = (work_bottom - panel_size.height as i32).max(work.position.y);
-        let y = companion_position.y.clamp(work.position.y, max_panel_y);
+        let x = clamp_panel_origin(
+            preferred_x,
+            work.position.x,
+            work.size.width,
+            panel_size.width,
+        );
+        let y = clamp_panel_origin(
+            companion_position.y,
+            work.position.y,
+            work.size.height,
+            panel_size.height,
+        );
 
         panel
             .set_position(PhysicalPosition::new(x, y))
@@ -557,24 +561,20 @@ fn position_quick_panel(app: &AppHandle) -> Result<(), ByteError> {
         .or_else(|| panel.available_monitors().ok()?.into_iter().next())
         .ok_or_else(|| ByteError::Window("No monitor is available".into()))?;
     let scale = monitor.scale_factor();
-    let panel_size = PhysicalSize::new(
-        physical_pixels(QUICK_PANEL_LOGICAL_WIDTH, scale),
-        physical_pixels(QUICK_PANEL_LOGICAL_HEIGHT, scale),
-    );
+    let work = monitor.work_area();
+    let panel_size = quick_panel_size(work.size, scale);
     panel
         .set_size(panel_size)
         .map_err(|error| ByteError::Window(error.to_string()))?;
 
-    let work = monitor.work_area();
     let margin = physical_pixels(DEFAULT_MARGIN_LOGICAL, scale) as i32;
-    let x = work.position.x + work.size.width as i32 - panel_size.width as i32 - margin;
-    let y = work.position.y + work.size.height as i32 - panel_size.height as i32 - margin;
+    let preferred_x = work.position.x + work.size.width as i32 - panel_size.width as i32 - margin;
+    let preferred_y = work.position.y + work.size.height as i32 - panel_size.height as i32 - margin;
+    let x = clamp_panel_origin(preferred_x, work.position.x, work.size.width, panel_size.width);
+    let y = clamp_panel_origin(preferred_y, work.position.y, work.size.height, panel_size.height);
 
     panel
-        .set_position(PhysicalPosition::new(
-            x.max(work.position.x),
-            y.max(work.position.y),
-        ))
+        .set_position(PhysicalPosition::new(x, y))
         .map_err(|error| ByteError::Window(error.to_string()))
 }
 
@@ -740,6 +740,21 @@ fn physical_pixels(logical: f64, scale_factor: f64) -> u32 {
     (logical * scale_factor).round().max(1.0) as u32
 }
 
+// A fixed 500dp panel can exceed the usable area on scaled or small monitors.
+// The panel's CSS is scrollable, so reduce its native bounds rather than
+// placing its close button or controls outside the reachable work area.
+fn quick_panel_size(work: PhysicalSize<u32>, scale_factor: f64) -> PhysicalSize<u32> {
+    PhysicalSize::new(
+        physical_pixels(QUICK_PANEL_LOGICAL_WIDTH, scale_factor).min(work.width.max(1)),
+        physical_pixels(QUICK_PANEL_LOGICAL_HEIGHT, scale_factor).min(work.height.max(1)),
+    )
+}
+
+fn clamp_panel_origin(preferred: i32, work_start: i32, work_size: u32, panel_size: u32) -> i32 {
+    let available = work_size.saturating_sub(panel_size) as i32;
+    preferred.clamp(work_start, work_start.saturating_add(available))
+}
+
 fn rollback_companion_preferences(app: &AppHandle, previous: &CompanionPreferences) {
     let state = app.state::<AppState>();
     let result = state
@@ -799,6 +814,29 @@ mod tests {
     fn physical_pixel_conversion_is_integer_and_dpi_aware() {
         assert_eq!(physical_pixels(240.0, 1.25), 300);
         assert_eq!(physical_pixels(116.0, 1.5), 174);
+    }
+
+    #[test]
+    fn quick_panel_never_exceeds_the_screen_work_area() {
+        assert_eq!(
+            quick_panel_size(PhysicalSize::new(1280, 720), 2.0),
+            PhysicalSize::new(680, 720)
+        );
+        assert_eq!(
+            quick_panel_size(PhysicalSize::new(600, 400), 2.0),
+            PhysicalSize::new(600, 400)
+        );
+        assert_eq!(
+            quick_panel_size(PhysicalSize::new(1920, 1040), 1.0),
+            PhysicalSize::new(340, 500)
+        );
+    }
+
+    #[test]
+    fn quick_panel_clamps_to_negative_origin_and_work_bounds() {
+        assert_eq!(clamp_panel_origin(-200, -100, 600, 320), -100);
+        assert_eq!(clamp_panel_origin(900, -100, 600, 320), 180);
+        assert_eq!(clamp_panel_origin(70, -100, 600, 600), -100);
     }
 
     #[test]
