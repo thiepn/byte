@@ -911,6 +911,1053 @@
           "color": "accent2"
         }
       ]
+    },
+    {
+      "id": "p7_constellation_pixels",
+      "plane": "BACK",
+      "order": 7,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 25,
+          "y": 18,
+          "width": 2,
+          "height": 2,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 72,
+          "y": 91,
+          "width": 3,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 119,
+          "y": 10,
+          "width": 2,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 166,
+          "y": 83,
+          "width": 3,
+          "height": 3,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 213,
+          "y": 156,
+          "width": 2,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 16,
+          "y": 75,
+          "width": 3,
+          "height": 3,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 63,
+          "y": 148,
+          "width": 2,
+          "height": 2,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 110,
+          "y": 67,
+          "width": 3,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 204,
+          "y": 59,
+          "width": 3,
+          "height": 3,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 7,
+          "y": 132,
+          "width": 2,
+          "height": 2,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 51,
+          "width": 3,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 148,
+          "y": 43,
+          "width": 3,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 195,
+          "y": 116,
+          "width": 2,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 242,
+          "y": 35,
+          "width": 3,
+          "height": 3,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 45,
+          "y": 108,
+          "width": 2,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 92,
+          "y": 27,
+          "width": 3,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 186,
+          "y": 19,
+          "width": 3,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 233,
+          "y": 92,
+          "width": 2,
+          "height": 2,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 36,
+          "y": 11,
+          "width": 3,
+          "height": 3,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 83,
+          "y": 84,
+          "width": 2,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 177,
+          "y": 76,
+          "width": 2,
+          "height": 2,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 224,
+          "y": 149,
+          "width": 3,
+          "height": 3,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 27,
+          "y": 68,
+          "width": 2,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 74,
+          "y": 141,
+          "width": 3,
+          "height": 3,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 121,
+          "y": 60,
+          "width": 2,
+          "height": 2,
+          "color": "light"
+        }
+      ]
+    },
+    {
+      "id": "p7_station_side_bulkheads",
+      "plane": "BACK",
+      "order": 15,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 6,
+          "y": 155,
+          "width": 25,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 9,
+          "y": 161,
+          "width": 19,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 40,
+          "y": 155,
+          "width": 25,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 43,
+          "y": 161,
+          "width": 19,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 74,
+          "y": 155,
+          "width": 25,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 77,
+          "y": 161,
+          "width": 19,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 108,
+          "y": 155,
+          "width": 25,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 111,
+          "y": 161,
+          "width": 19,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 142,
+          "y": 155,
+          "width": 25,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 145,
+          "y": 161,
+          "width": 19,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 176,
+          "y": 155,
+          "width": 25,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 179,
+          "y": 161,
+          "width": 19,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 210,
+          "y": 155,
+          "width": 25,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 213,
+          "y": 161,
+          "width": 19,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 244,
+          "y": 155,
+          "width": 25,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 247,
+          "y": 161,
+          "width": 19,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 7,
+          "y": 100,
+          "width": 32,
+          "height": 42,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 12,
+          "y": 105,
+          "width": 22,
+          "height": 30,
+          "color": "sky2"
+        },
+        {
+          "kind": "RECT",
+          "x": 16,
+          "y": 111,
+          "width": 13,
+          "height": 3,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 16,
+          "y": 116,
+          "width": 4,
+          "height": 11,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 214,
+          "y": 87,
+          "width": 31,
+          "height": 54,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 217,
+          "y": 91,
+          "width": 24,
+          "height": 46,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 224,
+          "y": 97,
+          "width": 11,
+          "height": 6,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 221,
+          "y": 111,
+          "width": 18,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 224,
+          "y": 124,
+          "width": 11,
+          "height": 5,
+          "color": "accent"
+        }
+      ]
+    },
+    {
+      "id": "p7_deck_control_trims",
+      "plane": "BACK",
+      "order": 28,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 5,
+          "y": 195,
+          "width": 24,
+          "height": 5,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 9,
+          "y": 197,
+          "width": 7,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 23,
+          "y": 197,
+          "width": 4,
+          "height": 2,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 34,
+          "y": 195,
+          "width": 24,
+          "height": 5,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 38,
+          "y": 197,
+          "width": 7,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 52,
+          "y": 197,
+          "width": 4,
+          "height": 2,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 63,
+          "y": 195,
+          "width": 24,
+          "height": 5,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 67,
+          "y": 197,
+          "width": 7,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 81,
+          "y": 197,
+          "width": 4,
+          "height": 2,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 92,
+          "y": 195,
+          "width": 24,
+          "height": 5,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 96,
+          "y": 197,
+          "width": 7,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 110,
+          "y": 197,
+          "width": 4,
+          "height": 2,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 121,
+          "y": 195,
+          "width": 24,
+          "height": 5,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 125,
+          "y": 197,
+          "width": 7,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 139,
+          "y": 197,
+          "width": 4,
+          "height": 2,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 150,
+          "y": 195,
+          "width": 24,
+          "height": 5,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 154,
+          "y": 197,
+          "width": 7,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 168,
+          "y": 197,
+          "width": 4,
+          "height": 2,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 179,
+          "y": 195,
+          "width": 24,
+          "height": 5,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 183,
+          "y": 197,
+          "width": 7,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 197,
+          "y": 197,
+          "width": 4,
+          "height": 2,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 208,
+          "y": 195,
+          "width": 24,
+          "height": 5,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 212,
+          "y": 197,
+          "width": 7,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 226,
+          "y": 197,
+          "width": 4,
+          "height": 2,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 237,
+          "y": 195,
+          "width": 24,
+          "height": 5,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 241,
+          "y": 197,
+          "width": 7,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 255,
+          "y": 197,
+          "width": 4,
+          "height": 2,
+          "color": "signal"
+        }
+      ]
+    },
+    {
+      "id": "p7_morning_aurora",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 45,
+          "y": 87,
+          "width": 9,
+          "height": 3,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 64,
+          "y": 69,
+          "width": 4,
+          "height": 4,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 58,
+          "y": 86,
+          "width": 4,
+          "height": 4,
+          "color": "warm"
+        }
+      ],
+      "time": [
+        "MORNING"
+      ]
+    },
+    {
+      "id": "p7_day_relay_sheen",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 56,
+          "y": 86,
+          "width": 5,
+          "height": 4,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 193,
+          "y": 74,
+          "width": 9,
+          "height": 2,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 63,
+          "y": 71,
+          "width": 5,
+          "height": 4,
+          "color": "light"
+        }
+      ],
+      "time": [
+        "DAY"
+      ]
+    },
+    {
+      "id": "p7_evening_engine_glow",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 189,
+          "y": 97,
+          "width": 8,
+          "height": 3,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 190,
+          "y": 103,
+          "width": 5,
+          "height": 2,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 198,
+          "y": 105,
+          "width": 3,
+          "height": 5,
+          "color": "light"
+        }
+      ],
+      "time": [
+        "EVENING"
+      ]
+    },
+    {
+      "id": "p7_night_starbursts",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 30,
+          "y": 46,
+          "width": 2,
+          "height": 8,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 27,
+          "y": 49,
+          "width": 8,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 198,
+          "y": 46,
+          "width": 2,
+          "height": 8,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 195,
+          "y": 49,
+          "width": 8,
+          "height": 2,
+          "color": "light"
+        }
+      ],
+      "time": [
+        "NIGHT"
+      ]
+    },
+    {
+      "id": "p7_deck_light_stripes",
+      "plane": "FRONT",
+      "order": 77,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 10,
+          "y": 238,
+          "width": 22,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 14,
+          "y": 244,
+          "width": 12,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 20,
+          "y": 232,
+          "width": 3,
+          "height": 4,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 37,
+          "y": 238,
+          "width": 22,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 41,
+          "y": 244,
+          "width": 12,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 47,
+          "y": 232,
+          "width": 3,
+          "height": 4,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 64,
+          "y": 238,
+          "width": 22,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 68,
+          "y": 244,
+          "width": 12,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 74,
+          "y": 232,
+          "width": 3,
+          "height": 4,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 91,
+          "y": 238,
+          "width": 22,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 95,
+          "y": 244,
+          "width": 12,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 101,
+          "y": 232,
+          "width": 3,
+          "height": 4,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 118,
+          "y": 238,
+          "width": 22,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 122,
+          "y": 244,
+          "width": 12,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 128,
+          "y": 232,
+          "width": 3,
+          "height": 4,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 145,
+          "y": 238,
+          "width": 22,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 149,
+          "y": 244,
+          "width": 12,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 155,
+          "y": 232,
+          "width": 3,
+          "height": 4,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 172,
+          "y": 238,
+          "width": 22,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 176,
+          "y": 244,
+          "width": 12,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 182,
+          "y": 232,
+          "width": 3,
+          "height": 4,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 199,
+          "y": 238,
+          "width": 22,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 203,
+          "y": 244,
+          "width": 12,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 209,
+          "y": 232,
+          "width": 3,
+          "height": 4,
+          "color": "signal"
+        },
+        {
+          "kind": "RECT",
+          "x": 226,
+          "y": 238,
+          "width": 22,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 230,
+          "y": 244,
+          "width": 12,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 236,
+          "y": 232,
+          "width": 3,
+          "height": 4,
+          "color": "signal"
+        }
+      ]
+    },
+    {
+      "id": "p7_companion_contact_shadow",
+      "plane": "BACK",
+      "order": 33,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "ELLIPSE",
+          "x": 128,
+          "y": 217,
+          "radiusX": 29,
+          "radiusY": 6,
+          "color": "shadow"
+        }
+      ],
+      "opacity": 0.32
     }
   ],
   "decorationSlots": [

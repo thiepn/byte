@@ -1014,6 +1014,1589 @@
           "color": "light"
         }
       ]
+    },
+    {
+      "id": "p7_birch_canopy",
+      "plane": "BACK",
+      "order": 11,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 13,
+          "y": 84,
+          "width": 8,
+          "height": 98,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 9,
+          "y": 102,
+          "width": 18,
+          "height": 9,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 5,
+          "y": 119,
+          "width": 29,
+          "height": 8,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 0,
+          "y": 68,
+          "width": 23,
+          "height": 23,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 0,
+          "y": 71,
+          "width": 14,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 16,
+          "y": 53,
+          "width": 27,
+          "height": 27,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 20,
+          "y": 56,
+          "width": 18,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 31,
+          "y": 74,
+          "width": 19,
+          "height": 19,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 35,
+          "y": 77,
+          "width": 10,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 5,
+          "y": 47,
+          "width": 17,
+          "height": 17,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 9,
+          "y": 50,
+          "width": 8,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 47,
+          "y": 104,
+          "width": 8,
+          "height": 98,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 43,
+          "y": 122,
+          "width": 14,
+          "height": 9,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 39,
+          "y": 139,
+          "width": 25,
+          "height": 8,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 29,
+          "y": 88,
+          "width": 23,
+          "height": 23,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 33,
+          "y": 91,
+          "width": 14,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 50,
+          "y": 73,
+          "width": 27,
+          "height": 27,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 76,
+          "width": 18,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 65,
+          "y": 94,
+          "width": 19,
+          "height": 19,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 69,
+          "y": 97,
+          "width": 10,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 39,
+          "y": 67,
+          "width": 17,
+          "height": 17,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 43,
+          "y": 70,
+          "width": 8,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 205,
+          "y": 92,
+          "width": 8,
+          "height": 98,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 201,
+          "y": 110,
+          "width": 19,
+          "height": 9,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 197,
+          "y": 127,
+          "width": 30,
+          "height": 8,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 187,
+          "y": 76,
+          "width": 23,
+          "height": 23,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 191,
+          "y": 79,
+          "width": 14,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 208,
+          "y": 61,
+          "width": 27,
+          "height": 27,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 212,
+          "y": 64,
+          "width": 18,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 223,
+          "y": 82,
+          "width": 19,
+          "height": 19,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 227,
+          "y": 85,
+          "width": 10,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 197,
+          "y": 55,
+          "width": 17,
+          "height": 17,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 201,
+          "y": 58,
+          "width": 8,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 230,
+          "y": 116,
+          "width": 8,
+          "height": 98,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 226,
+          "y": 134,
+          "width": 11,
+          "height": 9,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 222,
+          "y": 151,
+          "width": 22,
+          "height": 8,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 212,
+          "y": 100,
+          "width": 23,
+          "height": 23,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 216,
+          "y": 103,
+          "width": 14,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 229,
+          "y": 85,
+          "width": 27,
+          "height": 27,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 229,
+          "y": 88,
+          "width": 18,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 237,
+          "y": 106,
+          "width": 19,
+          "height": 19,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 237,
+          "y": 109,
+          "width": 10,
+          "height": 4,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 222,
+          "y": 79,
+          "width": 17,
+          "height": 17,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 226,
+          "y": 82,
+          "width": 8,
+          "height": 4,
+          "color": "ground"
+        }
+      ]
+    },
+    {
+      "id": "p7_meadow_micro_grass",
+      "plane": "BACK",
+      "order": 22,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 8,
+          "y": 182,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 12,
+          "y": 179,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 16,
+          "y": 182,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 45,
+          "y": 199,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 49,
+          "y": 196,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 53,
+          "y": 199,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 82,
+          "y": 216,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 86,
+          "y": 213,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 90,
+          "y": 216,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 119,
+          "y": 233,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 123,
+          "y": 230,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 127,
+          "y": 233,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 193,
+          "y": 210,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 197,
+          "y": 207,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 201,
+          "y": 210,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 230,
+          "y": 227,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 234,
+          "y": 224,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 238,
+          "y": 227,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 27,
+          "y": 187,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 31,
+          "y": 184,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 35,
+          "y": 187,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 64,
+          "y": 204,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 68,
+          "y": 201,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 72,
+          "y": 204,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 138,
+          "y": 238,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 142,
+          "y": 235,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 146,
+          "y": 238,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 175,
+          "y": 198,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 179,
+          "y": 195,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 183,
+          "y": 198,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 212,
+          "y": 215,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 216,
+          "y": 212,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 220,
+          "y": 215,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 9,
+          "y": 232,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 13,
+          "y": 229,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 17,
+          "y": 232,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 46,
+          "y": 192,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 50,
+          "y": 189,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 192,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 83,
+          "y": 209,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 87,
+          "y": 206,
+          "width": 3,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 91,
+          "y": 209,
+          "width": 2,
+          "height": 3,
+          "color": "ground2"
+        }
+      ]
+    },
+    {
+      "id": "p7_wildflower_clusters",
+      "plane": "BACK",
+      "order": 27,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 27,
+          "y": 189,
+          "width": 2,
+          "height": 12,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 23,
+          "y": 191,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 29,
+          "y": 194,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 24,
+          "y": 187,
+          "width": 8,
+          "height": 4,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 26,
+          "y": 184,
+          "width": 4,
+          "height": 10,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 27,
+          "y": 188,
+          "width": 3,
+          "height": 3,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 46,
+          "y": 218,
+          "width": 2,
+          "height": 12,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 42,
+          "y": 220,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 48,
+          "y": 223,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 43,
+          "y": 216,
+          "width": 8,
+          "height": 4,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 45,
+          "y": 213,
+          "width": 4,
+          "height": 10,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 46,
+          "y": 217,
+          "width": 3,
+          "height": 3,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 64,
+          "y": 207,
+          "width": 2,
+          "height": 12,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 60,
+          "y": 209,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 66,
+          "y": 212,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 61,
+          "y": 205,
+          "width": 8,
+          "height": 4,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 63,
+          "y": 202,
+          "width": 4,
+          "height": 10,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 64,
+          "y": 206,
+          "width": 3,
+          "height": 3,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 190,
+          "y": 204,
+          "width": 2,
+          "height": 12,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 186,
+          "y": 206,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 192,
+          "y": 209,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 187,
+          "y": 202,
+          "width": 8,
+          "height": 4,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 189,
+          "y": 199,
+          "width": 4,
+          "height": 10,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 190,
+          "y": 203,
+          "width": 3,
+          "height": 3,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 207,
+          "y": 221,
+          "width": 2,
+          "height": 12,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 203,
+          "y": 223,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 209,
+          "y": 226,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 204,
+          "y": 219,
+          "width": 8,
+          "height": 4,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 206,
+          "y": 216,
+          "width": 4,
+          "height": 10,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 207,
+          "y": 220,
+          "width": 3,
+          "height": 3,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 231,
+          "y": 186,
+          "width": 2,
+          "height": 12,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 227,
+          "y": 188,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 233,
+          "y": 191,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 228,
+          "y": 184,
+          "width": 8,
+          "height": 4,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 230,
+          "y": 181,
+          "width": 4,
+          "height": 10,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 231,
+          "y": 185,
+          "width": 3,
+          "height": 3,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 16,
+          "y": 233,
+          "width": 2,
+          "height": 12,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 12,
+          "y": 235,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 18,
+          "y": 238,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 13,
+          "y": 231,
+          "width": 8,
+          "height": 4,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 15,
+          "y": 228,
+          "width": 4,
+          "height": 10,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 16,
+          "y": 232,
+          "width": 3,
+          "height": 3,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 240,
+          "y": 228,
+          "width": 2,
+          "height": 12,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 236,
+          "y": 230,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 242,
+          "y": 233,
+          "width": 5,
+          "height": 2,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 237,
+          "y": 226,
+          "width": 8,
+          "height": 4,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 239,
+          "y": 223,
+          "width": 4,
+          "height": 10,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 240,
+          "y": 227,
+          "width": 3,
+          "height": 3,
+          "color": "accent2"
+        }
+      ]
+    },
+    {
+      "id": "p7_morning_dew",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 74,
+          "y": 88,
+          "width": 3,
+          "height": 7,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 83,
+          "y": 96,
+          "width": 6,
+          "height": 2,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 183,
+          "y": 72,
+          "width": 3,
+          "height": 7,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 192,
+          "y": 80,
+          "width": 6,
+          "height": 2,
+          "color": "warm"
+        }
+      ],
+      "time": [
+        "MORNING"
+      ]
+    },
+    {
+      "id": "p7_day_sunflakes",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 79,
+          "y": 115,
+          "width": 8,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 83,
+          "y": 113,
+          "width": 4,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 161,
+          "y": 98,
+          "width": 8,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 165,
+          "y": 96,
+          "width": 4,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 220,
+          "y": 134,
+          "width": 8,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 224,
+          "y": 132,
+          "width": 4,
+          "height": 2,
+          "color": "light"
+        }
+      ],
+      "time": [
+        "DAY"
+      ]
+    },
+    {
+      "id": "p7_evening_glimmer",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 78,
+          "y": 65,
+          "width": 5,
+          "height": 2,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 80,
+          "y": 63,
+          "width": 2,
+          "height": 5,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 185,
+          "y": 48,
+          "width": 5,
+          "height": 2,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 187,
+          "y": 46,
+          "width": 2,
+          "height": 5,
+          "color": "warm"
+        }
+      ],
+      "time": [
+        "EVENING"
+      ]
+    },
+    {
+      "id": "p7_moon_sparkles",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 68,
+          "y": 43,
+          "width": 2,
+          "height": 8,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 65,
+          "y": 46,
+          "width": 8,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 175,
+          "y": 24,
+          "width": 2,
+          "height": 8,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 172,
+          "y": 27,
+          "width": 8,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 216,
+          "y": 52,
+          "width": 2,
+          "height": 8,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 213,
+          "y": 55,
+          "width": 8,
+          "height": 2,
+          "color": "light"
+        }
+      ],
+      "time": [
+        "NIGHT"
+      ]
+    },
+    {
+      "id": "p7_close_mushrooms_reeds",
+      "plane": "FRONT",
+      "order": 76,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 32,
+          "y": 226,
+          "width": 16,
+          "height": 5,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 35,
+          "y": 221,
+          "width": 10,
+          "height": 5,
+          "color": "accent2"
+        },
+        {
+          "kind": "RECT",
+          "x": 38,
+          "y": 218,
+          "width": 4,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 37,
+          "y": 229,
+          "width": 2,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 209,
+          "y": 235,
+          "width": 16,
+          "height": 5,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 212,
+          "y": 230,
+          "width": 10,
+          "height": 5,
+          "color": "accent2"
+        },
+        {
+          "kind": "RECT",
+          "x": 215,
+          "y": 227,
+          "width": 4,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 214,
+          "y": 238,
+          "width": 2,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 17,
+          "y": 206,
+          "width": 16,
+          "height": 5,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 20,
+          "y": 201,
+          "width": 10,
+          "height": 5,
+          "color": "accent2"
+        },
+        {
+          "kind": "RECT",
+          "x": 23,
+          "y": 198,
+          "width": 4,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 22,
+          "y": 209,
+          "width": 2,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 8,
+          "y": 242,
+          "width": 3,
+          "height": 10,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 12,
+          "y": 239,
+          "width": 4,
+          "height": 13,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 6,
+          "y": 237,
+          "width": 3,
+          "height": 11,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 24,
+          "y": 242,
+          "width": 3,
+          "height": 10,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 28,
+          "y": 239,
+          "width": 4,
+          "height": 13,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 22,
+          "y": 237,
+          "width": 3,
+          "height": 11,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 41,
+          "y": 242,
+          "width": 3,
+          "height": 10,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 45,
+          "y": 239,
+          "width": 4,
+          "height": 13,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 39,
+          "y": 237,
+          "width": 3,
+          "height": 11,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 203,
+          "y": 242,
+          "width": 3,
+          "height": 10,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 207,
+          "y": 239,
+          "width": 4,
+          "height": 13,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 201,
+          "y": 237,
+          "width": 3,
+          "height": 11,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 221,
+          "y": 242,
+          "width": 3,
+          "height": 10,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 225,
+          "y": 239,
+          "width": 4,
+          "height": 13,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 219,
+          "y": 237,
+          "width": 3,
+          "height": 11,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 238,
+          "y": 242,
+          "width": 3,
+          "height": 10,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 242,
+          "y": 239,
+          "width": 4,
+          "height": 13,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 236,
+          "y": 237,
+          "width": 3,
+          "height": 11,
+          "color": "far2"
+        }
+      ]
+    },
+    {
+      "id": "p7_companion_contact_shadow",
+      "plane": "BACK",
+      "order": 33,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "ELLIPSE",
+          "x": 128,
+          "y": 219,
+          "radiusX": 29,
+          "radiusY": 6,
+          "color": "shadow"
+        }
+      ],
+      "opacity": 0.32
     }
   ],
   "decorationSlots": [

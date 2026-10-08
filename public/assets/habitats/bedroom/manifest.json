@@ -870,6 +870,957 @@
           "color": "accent2"
         }
       ]
+    },
+    {
+      "id": "p7_bedroom_wall_frames",
+      "plane": "BACK",
+      "order": 10,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 11,
+          "y": 19,
+          "width": 24,
+          "height": 3,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 15,
+          "y": 22,
+          "width": 16,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 50,
+          "y": 19,
+          "width": 24,
+          "height": 3,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 22,
+          "width": 16,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 89,
+          "y": 19,
+          "width": 24,
+          "height": 3,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 93,
+          "y": 22,
+          "width": 16,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 128,
+          "y": 19,
+          "width": 24,
+          "height": 3,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 132,
+          "y": 22,
+          "width": 16,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 167,
+          "y": 19,
+          "width": 24,
+          "height": 3,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 171,
+          "y": 22,
+          "width": 16,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 206,
+          "y": 19,
+          "width": 24,
+          "height": 3,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 210,
+          "y": 22,
+          "width": 16,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 245,
+          "y": 19,
+          "width": 24,
+          "height": 3,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 249,
+          "y": 22,
+          "width": 16,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 207,
+          "y": 44,
+          "width": 28,
+          "height": 31,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 211,
+          "y": 48,
+          "width": 20,
+          "height": 23,
+          "color": "sky2"
+        },
+        {
+          "kind": "RECT",
+          "x": 216,
+          "y": 52,
+          "width": 10,
+          "height": 12,
+          "color": "accent2"
+        },
+        {
+          "kind": "RECT",
+          "x": 207,
+          "y": 77,
+          "width": 28,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 18,
+          "y": 44,
+          "width": 28,
+          "height": 24,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 22,
+          "y": 48,
+          "width": 20,
+          "height": 16,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 27,
+          "y": 51,
+          "width": 10,
+          "height": 6,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 18,
+          "y": 70,
+          "width": 28,
+          "height": 3,
+          "color": "ground2"
+        }
+      ]
+    },
+    {
+      "id": "p7_reading_nook",
+      "plane": "BACK",
+      "order": 15,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 12,
+          "y": 114,
+          "width": 27,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 14,
+          "y": 105,
+          "width": 8,
+          "height": 9,
+          "color": "accent2"
+        },
+        {
+          "kind": "RECT",
+          "x": 24,
+          "y": 99,
+          "width": 7,
+          "height": 15,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 33,
+          "y": 107,
+          "width": 4,
+          "height": 7,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 215,
+          "y": 115,
+          "width": 27,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 217,
+          "y": 106,
+          "width": 8,
+          "height": 9,
+          "color": "accent2"
+        },
+        {
+          "kind": "RECT",
+          "x": 227,
+          "y": 100,
+          "width": 7,
+          "height": 15,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 236,
+          "y": 108,
+          "width": 4,
+          "height": 7,
+          "color": "far2"
+        }
+      ]
+    },
+    {
+      "id": "p7_patchwork_bedding",
+      "plane": "BACK",
+      "order": 27,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 15,
+          "y": 173,
+          "width": 12,
+          "height": 9,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 17,
+          "y": 175,
+          "width": 5,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 28,
+          "y": 174,
+          "width": 12,
+          "height": 9,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 30,
+          "y": 175,
+          "width": 5,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 41,
+          "y": 175,
+          "width": 12,
+          "height": 9,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 43,
+          "y": 175,
+          "width": 5,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 173,
+          "width": 12,
+          "height": 9,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 56,
+          "y": 175,
+          "width": 5,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 67,
+          "y": 174,
+          "width": 12,
+          "height": 9,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 69,
+          "y": 175,
+          "width": 5,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 80,
+          "y": 175,
+          "width": 12,
+          "height": 9,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 82,
+          "y": 175,
+          "width": 5,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 170,
+          "y": 153,
+          "width": 13,
+          "height": 10,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 172,
+          "y": 155,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 185,
+          "y": 153,
+          "width": 13,
+          "height": 10,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 187,
+          "y": 155,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 200,
+          "y": 153,
+          "width": 13,
+          "height": 10,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 202,
+          "y": 155,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 215,
+          "y": 153,
+          "width": 13,
+          "height": 10,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 217,
+          "y": 155,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 230,
+          "y": 153,
+          "width": 13,
+          "height": 10,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 232,
+          "y": 155,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 170,
+          "y": 166,
+          "width": 13,
+          "height": 10,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 172,
+          "y": 168,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 185,
+          "y": 166,
+          "width": 13,
+          "height": 10,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 187,
+          "y": 168,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 200,
+          "y": 166,
+          "width": 13,
+          "height": 10,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 202,
+          "y": 168,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 215,
+          "y": 166,
+          "width": 13,
+          "height": 10,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 217,
+          "y": 168,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 230,
+          "y": 166,
+          "width": 13,
+          "height": 10,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 232,
+          "y": 168,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 170,
+          "y": 179,
+          "width": 13,
+          "height": 10,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 172,
+          "y": 181,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 185,
+          "y": 179,
+          "width": 13,
+          "height": 10,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 187,
+          "y": 181,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 200,
+          "y": 179,
+          "width": 13,
+          "height": 10,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 202,
+          "y": 181,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 215,
+          "y": 179,
+          "width": 13,
+          "height": 10,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 217,
+          "y": 181,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 230,
+          "y": 179,
+          "width": 13,
+          "height": 10,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 232,
+          "y": 181,
+          "width": 6,
+          "height": 3,
+          "color": "light"
+        }
+      ]
+    },
+    {
+      "id": "p7_morning_curtain_light",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 51,
+          "y": 40,
+          "width": 4,
+          "height": 8,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 58,
+          "y": 49,
+          "width": 3,
+          "height": 12,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 62,
+          "y": 59,
+          "width": 4,
+          "height": 8,
+          "color": "light"
+        }
+      ],
+      "time": [
+        "MORNING"
+      ]
+    },
+    {
+      "id": "p7_day_curtain_light",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 52,
+          "y": 44,
+          "width": 5,
+          "height": 14,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 59,
+          "y": 64,
+          "width": 10,
+          "height": 3,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 62,
+          "y": 77,
+          "width": 5,
+          "height": 7,
+          "color": "light"
+        }
+      ],
+      "time": [
+        "DAY"
+      ]
+    },
+    {
+      "id": "p7_evening_bedside_warmth",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 43,
+          "width": 8,
+          "height": 5,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 224,
+          "y": 51,
+          "width": 5,
+          "height": 8,
+          "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 213,
+          "y": 60,
+          "width": 6,
+          "height": 4,
+          "color": "warm"
+        }
+      ],
+      "time": [
+        "EVENING"
+      ]
+    },
+    {
+      "id": "p7_night_dream_lights",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 64,
+          "y": 47,
+          "width": 2,
+          "height": 8,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 61,
+          "y": 50,
+          "width": 8,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 209,
+          "y": 58,
+          "width": 18,
+          "height": 4,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 80,
+          "width": 3,
+          "height": 3,
+          "color": "light"
+        }
+      ],
+      "time": [
+        "NIGHT"
+      ]
+    },
+    {
+      "id": "p7_rug_stitches_and_plants",
+      "plane": "FRONT",
+      "order": 77,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 13,
+          "y": 242,
+          "width": 26,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 17,
+          "y": 246,
+          "width": 9,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 50,
+          "y": 242,
+          "width": 26,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 246,
+          "width": 9,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 87,
+          "y": 242,
+          "width": 26,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 91,
+          "y": 246,
+          "width": 9,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 124,
+          "y": 242,
+          "width": 26,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 128,
+          "y": 246,
+          "width": 9,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 161,
+          "y": 242,
+          "width": 26,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 165,
+          "y": 246,
+          "width": 9,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 198,
+          "y": 242,
+          "width": 26,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 202,
+          "y": 246,
+          "width": 9,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 235,
+          "y": 242,
+          "width": 26,
+          "height": 3,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 239,
+          "y": 246,
+          "width": 9,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 14,
+          "y": 226,
+          "width": 23,
+          "height": 14,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 17,
+          "y": 223,
+          "width": 17,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 20,
+          "y": 220,
+          "width": 11,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 222,
+          "y": 227,
+          "width": 22,
+          "height": 12,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 226,
+          "y": 224,
+          "width": 15,
+          "height": 4,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 231,
+          "y": 220,
+          "width": 7,
+          "height": 4,
+          "color": "accent"
+        }
+      ]
+    },
+    {
+      "id": "p7_companion_contact_shadow",
+      "plane": "BACK",
+      "order": 33,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "ELLIPSE",
+          "x": 128,
+          "y": 219,
+          "radiusX": 29,
+          "radiusY": 6,
+          "color": "shadow"
+        }
+      ],
+      "opacity": 0.32
     }
   ],
   "decorationSlots": [
