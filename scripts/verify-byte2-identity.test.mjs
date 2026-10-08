@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, expect } from "vitest";
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { resolve, join } from "node:path";
