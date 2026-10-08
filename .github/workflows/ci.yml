@@ -51,6 +51,12 @@ jobs:
       - name: Visual asset integrity
         run: npm run visual:audit
 
+      - name: P2 visual identity contract
+        run: npm run design:verify
+
+      - name: P2 design contract regressions
+        run: npm run design:test
+
       - name: Frontend type check
         run: npm run check
 

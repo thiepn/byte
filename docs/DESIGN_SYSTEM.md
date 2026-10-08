@@ -1,5 +1,8 @@
 # Byte v1.0 Visual Contract
 
+> **Byte 2.0 direction:** [P2 Cozy Pixel Life Visual Identity](BYTE2_P2_VISUAL_IDENTITY.md) and [editable styleboard](../design/byte2/cozy-pixel-life-styleboard.svg) are the locked targets for future artwork and UI work. This v1 contract still describes *current production assets* until the P3–P13 migrations land. Do not treat a concept board as an already-shipped screen.
+
+
 Art direction: modern cozy pixel art for the companion world, paired with a clean modern Windows interface.
 
 ## Production companion

@@ -1,5 +1,8 @@
 # Byte Production Characters
 
+> Byte 2.0 mascot redesign requirements are defined in [P2 Cozy Pixel Life](BYTE2_P2_VISUAL_IDENTITY.md), with the measurable quality gates in [`design/byte2/identity.json`](../design/byte2/identity.json). This document describes **existing** sprite atlases; redesign and approval happen in P3/P4. The P1 audit found some common pose frames are duplicates.
+
+
 Phase 9 replaces the development sprite placeholder with four complete production character families.
 
 All four characters use the same Phase 8 runtime contract, 64×64 animation canvas, semantic behavior vocabulary, and cosmetic-anchor system. Their art and motion language are intentionally different so changing characters feels meaningful rather than like recoloring the same mascot.
