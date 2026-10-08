@@ -123,6 +123,22 @@ describe("CharacterAnimator", () => {
     expect(animator.frame().clipId).toBe("alert");
   });
 
+  it("carries remaining elapsed time into the target after an entrance clip ends", () => {
+    const source = manifest();
+    source.clips.alert.frames = [
+      { frame: "alert", durationMs: 100 },
+      { frame: "happy", durationMs: 100 },
+    ];
+    const animator = new CharacterAnimator(source, 9);
+    animator.requestBehavior({ behavior: "needs_attention", source: "critical" });
+    // 40ms warning entrance + 85ms of the persistent alert loop.
+    animator.tick(125);
+    expect(animator.frame().clipId).toBe("alert");
+    expect(animator.frame().frameId).toBe("alert");
+    animator.tick(20);
+    expect(animator.frame().frameId).toBe("happy");
+  });
+
   it("returns to the base behavior after a one-shot reaction", () => {
     const animator = new CharacterAnimator(manifest(), 1);
     animator.requestBehavior({ behavior: "happy", source: "interaction" });
