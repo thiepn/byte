@@ -19,6 +19,8 @@
     "tauri:build": "tauri build",
     "verify": "npm run check && npm run test && npm run build",
     "visual:audit": "node scripts/audit-visual-assets.mjs",
+    "design:verify": "node scripts/verify-byte2-identity.mjs",
+    "design:test": "node --test scripts/verify-byte2-identity.test.mjs",
     "release:verify": "node scripts/verify-release-version.mjs",
     "bundle:windows": "tauri build --bundles nsis",
     "release:prepare": "node scripts/prepare-release.mjs",
