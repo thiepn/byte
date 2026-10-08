@@ -106,7 +106,7 @@ describe("P6 pixel-perfect character hitbox", () => {
     const source = canvas(255);
     source.getContext = () => { throw new Error("readback unavailable"); };
     // Browser context acquisition can throw on an unusual renderer.
-    expect(() => hitTestCharacterCanvas(source, 50, 50)).toThrow("readback unavailable");
+    expect(hitTestCharacterCanvas(source, 50, 50)).toBe(false);
     const noContext = canvas(255);
     noContext.getContext = () => null;
     expect(hitTestCharacterCanvas(noContext, 50, 50)).toBe(false);
