@@ -6,6 +6,7 @@ import {
   DirectInteractionController,
   gestureBehavior,
   hitTestCharacterCanvas,
+  insideCharacterCanvasBounds,
 } from "./direct-interaction";
 
 function point(pointerId: number, x: number, y: number, at: number) {
@@ -111,6 +112,10 @@ describe("P6 pixel-perfect character hitbox", () => {
     expect(hitTestCharacterCanvas(canvas(15), 40, 45)).toBe(false);
     expect(hitTestCharacterCanvas(canvas(255), 5, 45)).toBe(false);
     expect(hitTestCharacterCanvas(canvas(255), 139, 45)).toBe(false);
+    // A stroke already started on an opaque pixel can pass over a gap,
+    // without making the gap clickable as a new starting hit target.
+    expect(insideCharacterCanvasBounds(canvas(0), 40, 45)).toBe(true);
+    expect(insideCharacterCanvasBounds(canvas(0), 139, 45)).toBe(false);
   });
 
   it("fails safely when the canvas readback is unavailable", () => {
