@@ -194,10 +194,17 @@ export class CharacterAnimator {
     }
 
     let remaining = deltaMs;
-    while (remaining > 0) {
-      const frame = clip.frames[this.active.frameCursor];
+    // A one-shot entrance can finish between two scheduler ticks. Carry its
+    // leftover time into the pending target clip, rather than dropping time
+    // and making movement cadence depend on which animation was interrupted.
+    // The small work bound also protects against a malformed 1ms looping clip.
+    let steps = 0;
+    while (remaining > 0 && steps < 16) {
+      steps += 1;
+      const currentClip = this.clip();
+      const frame = currentClip.frames[this.active.frameCursor];
       const duration = Math.max(1, frame.durationMs ?? 100);
-      const available = duration - this.active.frameElapsedMs;
+      const available = Math.max(0, duration - this.active.frameElapsedMs);
 
       if (remaining < available) {
         this.active.frameElapsedMs += remaining;
@@ -208,12 +215,11 @@ export class CharacterAnimator {
       this.active.frameElapsedMs = 0;
       this.active.frameCursor += 1;
 
-      if (this.active.frameCursor >= clip.frames.length) {
-        if (clip.loop) {
+      if (this.active.frameCursor >= currentClip.frames.length) {
+        if (currentClip.loop) {
           this.active.frameCursor = 0;
         } else {
           this.finishClip();
-          return;
         }
       }
     }
