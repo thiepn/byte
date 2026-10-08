@@ -20,7 +20,9 @@ pub fn install(directory: &Path) {
             .duration_since(UNIX_EPOCH)
             .map(|value| value.as_secs())
             .unwrap_or(0);
-        let location = info.location().map(|location| (location.file(), location.line()));
+        let location = info
+            .location()
+            .map(|location| (location.file(), location.line()));
         let record = diagnostic_record(timestamp, location);
         let _ = append_record(&log, &record);
         default_hook(info);
@@ -74,7 +76,10 @@ mod tests {
     fn panic_record_omits_sensitive_paths_and_payloads() {
         let record = diagnostic_record(1_234, Some(("C:\\private\\person\\src\\runtime.rs", 42)));
         assert_eq!(record, "panic epoch_seconds=1234 source=runtime.rs:42\n");
-        assert_eq!(diagnostic_record(0, None), "panic epoch_seconds=0 source=unknown\n");
+        assert_eq!(
+            diagnostic_record(0, None),
+            "panic epoch_seconds=0 source=unknown\n"
+        );
         assert!(!record.contains("person"));
     }
 
