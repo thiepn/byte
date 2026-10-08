@@ -1,0 +1,49 @@
+name: Byte P1 Visual Evidence
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "public/assets/**"
+      - "src/app/**"
+      - "src/companion/**"
+      - "src/features/quick-panel/**"
+      - "scripts/audit-visual-assets.mjs"
+      - "scripts/build-p1-contact-sheets.ps1"
+      - ".github/workflows/p1-visual-evidence.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-art-evidence:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+
+      - name: Validate asset references and manifests
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path "visual-evidence/p1" -Force | Out-Null
+          node scripts/audit-visual-assets.mjs --json | Out-File -FilePath visual-evidence/p1/asset-inventory.json -Encoding utf8
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Generate original-frame contact sheets
+        shell: pwsh
+        run: ./scripts/build-p1-contact-sheets.ps1 -OutputDir visual-evidence/p1/contact-sheets
+
+      - name: Upload source art evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: byte-p1-source-art-${{ github.sha }}
+          path: visual-evidence/p1/
+          if-no-files-found: error
+          retention-days: 30
