@@ -301,6 +301,7 @@
       const nextPersonalityDirector = new PersonalityDirector(
         preferences.personality,
         preferences.interaction_level,
+        nextCharacterManifest.id,
       );
       const characterChanged =
         !characterManifest || characterManifest.id !== nextCharacterManifest.id;
