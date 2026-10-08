@@ -154,9 +154,9 @@ export function hitTestCharacterCanvas(
 
   const x = Math.floor((clientX - bounds.left) * canvas.width / bounds.width);
   const y = Math.floor((clientY - bounds.top) * canvas.height / bounds.height);
-  const context = canvas.getContext("2d", { willReadFrequently: true });
-  if (!context) return false;
   try {
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context) return false;
     // No hitbox padding around the sprite; non-opaque PNG corners stay passable.
     return context.getImageData(x, y, 1, 1).data[3] >= 16;
   } catch {
