@@ -224,9 +224,10 @@ pub fn execute_recommended_action(
     app: AppHandle,
     action: RecommendedActionKind,
 ) -> Result<(), ByteError> {
-    actions::execute(&app, action)?;
-    let _ = windowing::hide_quick_panel(&app);
-    Ok(())
+    // Native actions should not silently swallow Quick Panel hide failures.
+    // The Quick Panel closes itself after a successful launch and can report a
+    // separate close error; callers in the main app remain independent.
+    actions::execute(&app, action)
 }
 
 #[tauri::command]
