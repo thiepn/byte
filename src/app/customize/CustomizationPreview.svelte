@@ -126,70 +126,78 @@
     const localRevision = ++revision;
     status = "Updating preview…";
 
-    const [nextCharacter, nextHabitat, attachments] = await Promise.all([
-      loadCharacterManifest(next.character.toLowerCase()),
-      loadHabitatManifest(next.habitat.toLowerCase()),
-      loadSelectedCosmetics(next.customization),
-    ]);
+    try {
+      const [nextCharacter, nextHabitat, attachments] = await Promise.all([
+        loadCharacterManifest(next.character.toLowerCase()),
+        loadHabitatManifest(next.habitat.toLowerCase()),
+        loadSelectedCosmetics(next.customization),
+      ]);
 
-    if (localRevision !== revision) return;
-
-    if (!characterManifest || characterManifest.id !== nextCharacter.id) {
-      const renderer = new CharacterCanvasRenderer(characterCanvas, nextCharacter);
-      await renderer.load();
       if (localRevision !== revision) return;
 
-      characterManifest = nextCharacter;
-      characterRenderer = renderer;
-      animator = new CharacterAnimator(
-        nextCharacter,
-        hashSeed(`studio:${nextCharacter.id}`),
+      if (!characterManifest || characterManifest.id !== nextCharacter.id) {
+        const renderer = new CharacterCanvasRenderer(characterCanvas, nextCharacter);
+        await renderer.load();
+        if (localRevision !== revision) return;
+
+        characterManifest = nextCharacter;
+        characterRenderer = renderer;
+        animator = new CharacterAnimator(
+          nextCharacter,
+          hashSeed(`studio:${nextCharacter.id}`),
+        );
+        animator.setReducedMotion(reducedMotion);
+      }
+
+      animator?.setIdleProfile(
+        idleProfileForPersonality(
+          nextCharacter,
+          next.personality,
+          next.interaction_level,
+        ),
       );
-      animator.setReducedMotion(reducedMotion);
-    }
+      characterRenderer?.setPalette(next.palette);
+      characterRenderer?.setAttachments(attachments);
 
-    animator?.setIdleProfile(
-      idleProfileForPersonality(
-        nextCharacter,
-        next.personality,
-        next.interaction_level,
-      ),
-    );
-    characterRenderer?.setPalette(next.palette);
-    characterRenderer?.setAttachments(attachments);
+      if (!habitatManifest || habitatManifest.id !== nextHabitat.id) {
+        habitatManifest = nextHabitat;
+        habitatRenderer = new HabitatCanvasRenderer(
+          backCanvas,
+          frontCanvas,
+          nextHabitat,
+        );
+        particleEngine = new HabitatParticleEngine(
+          nextHabitat,
+          hashSeed(`studio:${nextHabitat.id}`),
+        );
+      }
 
-    if (!habitatManifest || habitatManifest.id !== nextHabitat.id) {
-      habitatManifest = nextHabitat;
-      habitatRenderer = new HabitatCanvasRenderer(
-        backCanvas,
-        frontCanvas,
-        nextHabitat,
+      habitatRenderer?.setDecorations(
+        resolveHabitatDecorations(
+          nextHabitat,
+          next.customization.decorations,
+        ),
       );
-      particleEngine = new HabitatParticleEngine(
-        nextHabitat,
-        hashSeed(`studio:${nextHabitat.id}`),
-      );
+
+      if (animator && characterRenderer) {
+        const frame = animator.frame();
+        characterRenderer.render(frame);
+        positionCharacter(frame);
+      }
+
+      if (habitatRenderer && particleEngine) {
+        const state = habitatState();
+        habitatRenderer.render(state, particleEngine.update(0, state));
+      }
+
+      status = "Live preview";
+    } catch {
+      // An unavailable/invalid asset must not produce an unhandled rejection.
+      // Discard errors from previews superseded by a more recent selection.
+      if (mounted && localRevision === revision) {
+        status = "Preview unavailable. Select another look.";
+      }
     }
-
-    habitatRenderer?.setDecorations(
-      resolveHabitatDecorations(
-        nextHabitat,
-        next.customization.decorations,
-      ),
-    );
-
-    if (animator && characterRenderer) {
-      const frame = animator.frame();
-      characterRenderer.render(frame);
-      positionCharacter(frame);
-    }
-
-    if (habitatRenderer && particleEngine) {
-      const state = habitatState();
-      habitatRenderer.render(state, particleEngine.update(0, state));
-    }
-
-    status = "Live preview";
   }
 
   function previewBehavior(behavior: BehaviorId): void {

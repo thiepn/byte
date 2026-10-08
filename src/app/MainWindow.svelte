@@ -122,21 +122,42 @@
   let saving = false;
   let runningAction = "";
   let rerunOnboarding = false;
+  let loading = false;
 
   async function load(): Promise<void> {
+    if (loading) return;
+    loading = true;
     try {
-      [snapshot, preferences, activity] = await Promise.all([
+      // A failed sensor or history request must not prevent Settings and
+      // onboarding from opening. Preferences are the startup-critical read.
+      const [nextSnapshot, nextPreferences, nextActivity] = await Promise.allSettled([
         getSnapshot(),
         getPreferences(),
         getActivityHistory(),
       ]);
-      await refreshPaletteOptions();
-    } catch {
-      errorMessage = "Byte could not load its local state.";
+
+      if (nextSnapshot.status === "fulfilled") snapshot = nextSnapshot.value;
+      if (nextActivity.status === "fulfilled") activity = nextActivity.value;
+      if (nextPreferences.status === "fulfilled") {
+        preferences = nextPreferences.value;
+        await refreshPaletteOptions();
+      }
+
+      errorMessage = nextPreferences.status === "rejected"
+        ? "Byte could not read your local preferences. Retry the connection."
+        : nextSnapshot.status === "rejected" || nextActivity.status === "rejected"
+          ? "Some system data is unavailable. Byte will retry automatically."
+          : "";
+    } finally {
+      loading = false;
     }
   }
 
   async function refreshLive(): Promise<void> {
+    if (!preferences) {
+      await load();
+      return;
+    }
     try {
       [snapshot, activity] = await Promise.all([
         getSnapshot(),
@@ -396,7 +417,17 @@
   });
 </script>
 
-{#if preferences && (!preferences.app.onboarding_completed || rerunOnboarding)}
+{#if !preferences}
+  <main class="startup-state" aria-busy={loading}>
+    <strong>Byte</strong>
+    {#if errorMessage}
+      <p role="alert">{errorMessage}</p>
+      <button disabled={loading} onclick={() => void load()}>Retry</button>
+    {:else}
+      <p>Loading local preferences…</p>
+    {/if}
+  </main>
+{:else if !preferences.app.onboarding_completed || rerunOnboarding}
   <Onboarding
     {preferences}
     rerun={rerunOnboarding}
@@ -784,6 +815,12 @@
 {/if}
 
 <style>
+  .startup-state { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 28px; color: var(--text-primary); background: var(--surface-base); text-align: center; }
+  .startup-state strong { font-size: 20px; }
+  .startup-state p { max-width: 460px; margin: 0; color: var(--text-secondary); line-height: 1.5; }
+  .startup-state button { min-height: 38px; padding: 9px 18px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface-raised); color: var(--text-primary); cursor: pointer; }
+  .startup-state button:disabled { opacity: .6; cursor: default; }
+
   .skip-link { position: fixed; left: 12px; top: 12px; z-index: 1000; transform: translateY(-200%); padding: 8px 10px; border: 1px solid var(--accent-primary); border-radius: 9px; background: var(--surface-overlay); color: var(--text-primary); box-shadow: var(--shadow-card); }
   .skip-link:focus { transform: translateY(0); }
 
