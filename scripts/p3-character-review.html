@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Byte P3 Sprite Art Review (local only)</title>
+<style>
+  :root{color-scheme:light dark;font-family:system-ui,sans-serif}
+  body{max-width:1000px;margin:0 auto;padding:24px;background:#f2f0eb;color:#273146}
+  h1{font-size:22px;margin:0 0 8px}.hint{font-size:13px;color:#536073;line-height:1.5}
+  .controls{display:flex;flex-wrap:wrap;gap:16px;align-items:center;padding:16px 0}
+  label{display:grid;gap:6px;font-size:13px;font-weight:600}
+  select{font:inherit;padding:8px;border:1px solid #a9b3be;background:white;color:#273146;border-radius:6px}
+  .stages{display:flex;flex-wrap:wrap;gap:12px}.stage{width:185px;display:grid;place-items:center;background:white;min-height:175px;border:1px solid #c8c9c5;border-radius:10px;padding:10px}
+  .stage.dark{background:#1f2835;color:white}.stage.checker{background:repeating-conic-gradient(#edf0f3 0% 25%,white 0% 50%) 50% / 16px 16px}
+  .stage canvas{image-rendering:pixelated}.stage small{font-size:11px;color:inherit}
+  .atlas{max-width:100%;width:100%;image-rendering:pixelated;background:white; border:1px solid #c8c9c5}
+  button{padding:8px 14px;border:1px solid #697689;background:white;color:#273146;border-radius:6px;cursor:pointer}
+  .buttons{display:flex;gap:8px;margin:18px 0}#message{font-size:12px;color:#875322}
+  @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<h1>Byte P3 — production sprite inspection</h1>
+<p class="hint">Local QA surface. Loads actual committed atlas PNG + manifest, never generated concept art. Compare the same pose at Mini and native sizes, switch the original palette, and step through the 26 frames. Serve the repo root over localhost (for example <code>python -m http.server</code>) and open <code>/scripts/p3-character-review.html</code>.</p>
+<div class="controls">
+<label>Character <select id="character"><option value="byte">Byte</option><option value="mochi">Mochi</option></select></label>
+<label>Pose <select id="pose"></select></label>
+<label>Palette <select id="palette"></select></label>
+<label>Background <select id="background"><option value="cream">Warm cream</option><option value="dark">Graphite</option><option value="checker">Transparency checker</option></select></label>
+</div>
+<div class="stages" id="stages"></div>
+<div class="buttons"><button id="prev">Previous pose</button><button id="next">Next pose</button><button id="play" aria-pressed="false">Play idle</button></div>
+<p id="message" aria-live="polite"></p>
+<img class="atlas" id="atlas" alt="Full original 26-frame character atlas">
+<script type="module">
+const byId=id=>document.getElementById(id);
+const sizes=[24,32,48,96];
+let manifest=null,image=null,playTimer=null;
+const hexToRgb=hex=>[1,3,5].map(n=>parseInt(hex.slice(n,n+2),16));
+function paint(source,colors){
+  const ctx=source.getContext('2d',{willReadFrequently:true});
+  const pixels=ctx.getImageData(0,0,source.width,source.height);
+  const replacements=new Map();
+  for(const [slot,color] of Object.entries(manifest.paletteSlots)){
+    const [r,g,b]=hexToRgb(color), target=hexToRgb(colors[slot]);
+    replacements.set((r<<16)|(g<<8)|b,target);
+  }
+  for(let i=0;i<pixels.data.length;i+=4){
+    if(!pixels.data[i+3])continue;
+    const key=(pixels.data[i]<<16)|(pixels.data[i+1]<<8)|pixels.data[i+2];
+    const next=replacements.get(key);if(next) pixels.data.set(next,i);
+  }
+  ctx.putImageData(pixels,0,0);
+}
+function redraw(){
+  if(!manifest||!image)return;
+  const p=byId('pose').value;
+  const frame=manifest.frames[p];
+  const palette=manifest.palettes.find(x=>x.id===byId('palette').value);
+  const colored=document.createElement('canvas');
+  colored.width=manifest.atlas.width;colored.height=manifest.atlas.height;
+  colored.getContext('2d').drawImage(image,0,0);
+  paint(colored,palette.colors);
+  const frameCanvas=document.createElement('canvas');
+  frameCanvas.width=64;frameCanvas.height=64;
+  frameCanvas.getContext('2d').drawImage(colored,frame.index%8*64,Math.floor(frame.index/8)*64,64,64,0,0,64,64);
+  const background=byId('background').value;
+  const stage=byId('stages');stage.replaceChildren();
+  for(const size of sizes){
+    const wrapper=document.createElement('section');wrapper.className='stage '+(background==='cream'?'':background);
+    const canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;canvas.style.width=size+'px';canvas.style.height=size+'px';
+    const ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;ctx.drawImage(frameCanvas,0,0,size,size);
+    const label=document.createElement('small');label.textContent=size+'×'+size+' px';
+    wrapper.append(canvas,label);stage.append(wrapper);
+  }
+  const atlas=byId('atlas');
+  const url=colored.toDataURL('image/png');atlas.src=url;atlas.alt=manifest.name+' recolored source atlas';
+  byId('message').textContent=manifest.name+' · '+p+' · '+palette.name+' · frame '+frame.index;
+}
+async function loadCharacter(){
+  stop();
+  const id=byId('character').value;
+  const path='../public/assets/characters/'+id+'/';
+  try{
+    const data=await fetch(path+'manifest.json');if(!data.ok)throw new Error('Manifest HTTP '+data.status);
+    const m=await data.json();
+    const img=new Image();img.src=path+'atlas.png';await img.decode();
+    manifest=m;image=img;
+    const pose=byId('pose');pose.replaceChildren();
+    for(const key of Object.keys(m.frames)){const opt=new Option(key,key);pose.add(opt);}
+    const palettes=byId('palette');palettes.replaceChildren();
+    for(const item of m.palettes){palettes.add(new Option(item.name,item.id));}
+    pose.value='idle_a';palettes.value=m.defaultPalette;
+    redraw();
+  }catch(error){byId('message').textContent='Could not open local assets: '+error.message;}
+}
+function step(dir){
+  const values=[...byId('pose').options].map(x=>x.value);
+  byId('pose').value=values[(values.indexOf(byId('pose').value)+dir+values.length)%values.length];
+  redraw();
+}
+function stop(){if(playTimer!==null)clearInterval(playTimer);playTimer=null;byId('play').textContent='Play idle';byId('play').setAttribute('aria-pressed','false');}
+function toggle(){
+  if(playTimer!==null){stop();return;}
+  byId('play').setAttribute('aria-pressed','true');byId('play').textContent='Stop idle';
+  playTimer=setInterval(()=>{
+    byId('pose').value=byId('pose').value==='idle_a'?'idle_b':'idle_a';redraw();
+  },520);
+}
+byId('character').addEventListener('change',loadCharacter);
+for(const id of ['pose','palette','background'])byId(id).addEventListener('change',redraw);
+byId('prev').onclick=()=>step(-1);byId('next').onclick=()=>step(1);byId('play').onclick=toggle;
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+loadCharacter();
+</script>
+</body>
+</html>

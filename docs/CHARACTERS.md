@@ -1,6 +1,6 @@
 # Byte Production Characters
 
-> Byte 2.0 mascot redesign requirements are defined in [P2 Cozy Pixel Life](BYTE2_P2_VISUAL_IDENTITY.md), with the measurable quality gates in [`design/byte2/identity.json`](../design/byte2/identity.json). This document describes **existing** sprite atlases; redesign and approval happen in P3/P4. The P1 audit found some common pose frames are duplicates.
+> **Byte 2.0 progress:** Byte and Mochi's actual sprite atlases, palette colors and pose anchors have been redesigned in [P3 Flagship Characters](BYTE2_P3_FLAGSHIP_CHARACTERS.md). Pip and Kiwi still use the P1-era artwork until P4. [P2 Cozy Pixel Life](BYTE2_P2_VISUAL_IDENTITY.md) remains the art direction and [`design/byte2/identity.json`](../design/byte2/identity.json) remains the machine-readable target. P3's 26 distinct poses per mascot require physical Windows appearance and cosmetic fit review before release.
 
 
 Phase 9 replaces the development sprite placeholder with four complete production character families.
