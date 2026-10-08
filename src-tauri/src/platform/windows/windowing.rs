@@ -25,7 +25,7 @@ enum TaskbarEdge {
 
 pub fn initialize(app: &AppHandle) -> Result<(), ByteError> {
     let preferences = companion_preferences(app);
-    apply_companion_layout(app, &preferences)
+    apply_companion_layout_with_visibility(app, &preferences, true)
 }
 
 pub fn apply_capture_affinity(app: &AppHandle, exclude: bool) -> Result<(), ByteError> {
@@ -128,7 +128,7 @@ pub fn show_companion(app: &AppHandle) -> Result<(), ByteError> {
     if preferences.display_mode == DisplayMode::Tray {
         return Ok(());
     }
-    apply_companion_layout(app, &preferences)
+    apply_companion_layout_with_visibility(app, &preferences, true)
 }
 
 pub fn hide_companion(app: &AppHandle) -> Result<(), ByteError> {
@@ -167,6 +167,7 @@ pub fn toggle_companion(app: &AppHandle) -> Result<(), ByteError> {
 
 pub fn set_display_mode(app: &AppHandle, mode: DisplayMode) -> Result<ByteConfig, ByteError> {
     let previous = companion_preferences(app);
+    let was_visible = is_companion_visible(app)?;
     let config = {
         let state = app.state::<AppState>();
         let mut store = state
@@ -176,8 +177,9 @@ pub fn set_display_mode(app: &AppHandle, mode: DisplayMode) -> Result<ByteConfig
         store.update_companion_with(|preferences| preferences.display_mode = mode)?
     };
 
-    if let Err(error) = apply_companion_layout(app, &config.companion) {
-        rollback_companion_preferences(app, &previous);
+    let reveal = visibility_for_mode_update(was_visible, previous.display_mode, mode);
+    if let Err(error) = apply_companion_layout_with_visibility(app, &config.companion, reveal) {
+        rollback_companion_preferences(app, &previous, was_visible);
         return Err(error);
     }
 
@@ -187,6 +189,7 @@ pub fn set_display_mode(app: &AppHandle, mode: DisplayMode) -> Result<ByteConfig
 
 pub fn set_companion_size(app: &AppHandle, size: CompanionSize) -> Result<ByteConfig, ByteError> {
     let previous = companion_preferences(app);
+    let was_visible = is_companion_visible(app)?;
     let config = {
         let state = app.state::<AppState>();
         let mut store = state
@@ -196,8 +199,8 @@ pub fn set_companion_size(app: &AppHandle, size: CompanionSize) -> Result<ByteCo
         store.update_companion_with(|preferences| preferences.size = size)?
     };
 
-    if let Err(error) = apply_companion_layout(app, &config.companion) {
-        rollback_companion_preferences(app, &previous);
+    if let Err(error) = apply_companion_layout_with_visibility(app, &config.companion, was_visible) {
+        rollback_companion_preferences(app, &previous, was_visible);
         return Err(error);
     }
 
@@ -207,6 +210,7 @@ pub fn set_companion_size(app: &AppHandle, size: CompanionSize) -> Result<ByteCo
 
 pub fn set_edge_anchor(app: &AppHandle, anchor: EdgeAnchor) -> Result<ByteConfig, ByteError> {
     let previous = companion_preferences(app);
+    let was_visible = is_companion_visible(app)?;
     let config = {
         let state = app.state::<AppState>();
         let mut store = state
@@ -217,8 +221,8 @@ pub fn set_edge_anchor(app: &AppHandle, anchor: EdgeAnchor) -> Result<ByteConfig
     };
 
     if config.companion.display_mode == DisplayMode::Edge {
-        if let Err(error) = apply_companion_layout(app, &config.companion) {
-            rollback_companion_preferences(app, &previous);
+        if let Err(error) = apply_companion_layout_with_visibility(app, &config.companion, was_visible) {
+            rollback_companion_preferences(app, &previous, was_visible);
             return Err(error);
         }
     }
@@ -368,6 +372,26 @@ pub fn apply_companion_layout(
     app: &AppHandle,
     preferences: &CompanionPreferences,
 ) -> Result<(), ByteError> {
+    let was_visible = is_companion_visible(app)?;
+    apply_companion_layout_with_visibility(app, preferences, was_visible)
+}
+
+// Layout changes must not unhide a companion hidden through the tray.
+// Entering a new display mode is an explicit show request, while changing
+// cosmetics, size, edge anchor, or recovering a failed write is not.
+pub fn visibility_for_mode_update(
+    was_visible: bool,
+    previous_mode: DisplayMode,
+    next_mode: DisplayMode,
+) -> bool {
+    was_visible || (previous_mode != next_mode && next_mode != DisplayMode::Tray)
+}
+
+pub fn apply_companion_layout_with_visibility(
+    app: &AppHandle,
+    preferences: &CompanionPreferences,
+    requested_visible: bool,
+) -> Result<(), ByteError> {
     let window = companion_window(app)?;
 
     if preferences.display_mode == DisplayMode::Tray {
@@ -436,7 +460,7 @@ pub fn apply_companion_layout(
         return Ok(());
     }
 
-    if app.state::<AppState>().is_visibility_suppressed() {
+    if app.state::<AppState>().is_visibility_suppressed() || !requested_visible {
         window
             .hide()
             .map_err(|error| ByteError::Window(error.to_string()))?;
@@ -765,7 +789,11 @@ fn clamp_panel_origin(preferred: i32, work_start: i32, work_size: u32, panel_siz
     preferred.clamp(work_start, work_start.saturating_add(available))
 }
 
-fn rollback_companion_preferences(app: &AppHandle, previous: &CompanionPreferences) {
+fn rollback_companion_preferences(
+    app: &AppHandle,
+    previous: &CompanionPreferences,
+    previous_visible: bool,
+) {
     let state = app.state::<AppState>();
     let result = state
         .config
@@ -774,7 +802,7 @@ fn rollback_companion_preferences(app: &AppHandle, previous: &CompanionPreferenc
         .update_companion(previous.clone());
 
     if result.is_ok() {
-        let _ = apply_companion_layout(app, previous);
+        let _ = apply_companion_layout_with_visibility(app, previous, previous_visible);
     }
 }
 
@@ -824,6 +852,20 @@ mod tests {
     fn physical_pixel_conversion_is_integer_and_dpi_aware() {
         assert_eq!(physical_pixels(240.0, 1.25), 300);
         assert_eq!(physical_pixels(116.0, 1.5), 174);
+    }
+
+    #[test]
+    fn changing_a_hidden_companions_appearance_does_not_reveal_it() {
+        assert!(!visibility_for_mode_update(false, DisplayMode::Habitat, DisplayMode::Habitat));
+        assert!(!visibility_for_mode_update(false, DisplayMode::Mini, DisplayMode::Mini));
+        assert!(!visibility_for_mode_update(false, DisplayMode::Habitat, DisplayMode::Tray));
+    }
+
+    #[test]
+    fn explicitly_changing_display_mode_reveals_the_companion() {
+        assert!(visibility_for_mode_update(false, DisplayMode::Tray, DisplayMode::Habitat));
+        assert!(visibility_for_mode_update(false, DisplayMode::Mini, DisplayMode::Perch));
+        assert!(visibility_for_mode_update(true, DisplayMode::Perch, DisplayMode::Perch));
     }
 
     #[test]
