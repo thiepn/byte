@@ -1590,6 +1590,14 @@
           "width": 12,
           "height": 2,
           "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 215,
+          "y": 59,
+          "width": 3,
+          "height": 4,
+          "color": "warm"
         }
       ],
       "time": [
