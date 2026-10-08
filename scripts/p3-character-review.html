@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Byte P3 Sprite Art Review (local only)</title>
+<title>Byte 2.0 Production Sprite Review (local only)</title>
 <style>
   :root{color-scheme:light dark;font-family:system-ui,sans-serif}
   body{max-width:1000px;margin:0 auto;padding:24px;background:#f2f0eb;color:#273146}
@@ -21,10 +21,10 @@
 </style>
 </head>
 <body>
-<h1>Byte P3 — production sprite inspection</h1>
-<p class="hint">Local QA surface. Loads actual committed atlas PNG + manifest, never generated concept art. Compare the same pose at Mini and native sizes, switch the original palette, and step through the 26 frames. Serve the repo root over localhost (for example <code>python -m http.server</code>) and open <code>/scripts/p3-character-review.html</code>.</p>
+<h1>Byte 2.0 — production sprite inspection</h1>
+<p class="hint">Local QA surface. Loads actual committed atlas PNG + manifest, never generated concept art. Compare all four mascots at Mini and native sizes, switch any saved palette and step through all 26 production frames. Serve the repo root over localhost (for example <code>python -m http.server</code>) and open <code>/scripts/p3-character-review.html</code>.</p>
 <div class="controls">
-<label>Character <select id="character"><option value="byte">Byte</option><option value="mochi">Mochi</option></select></label>
+<label>Character <select id="character"><option value="byte">Byte</option><option value="mochi">Mochi</option><option value="pip">Pip</option><option value="kiwi">Kiwi</option></select></label>
 <label>Pose <select id="pose"></select></label>
 <label>Palette <select id="palette"></select></label>
 <label>Background <select id="background"><option value="cream">Warm cream</option><option value="dark">Graphite</option><option value="checker">Transparency checker</option></select></label>
