@@ -82,7 +82,7 @@ try {
       $diversity += [pscustomobject]@{
         character = $id
         poses = $fingerprints.Count
-        distinctBitmapPoses = $fingerprints.Count - (($groups | Measure-Object { $_.Count - 1 } -Sum).Sum)
+        distinctBitmapPoses = @($fingerprints | Group-Object hash).Count
         duplicatePairs = $duplicatePairs
         exactDuplicateSets = @($duplicateSets)
       }
