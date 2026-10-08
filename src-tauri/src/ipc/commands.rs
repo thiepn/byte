@@ -120,7 +120,7 @@ pub fn update_app_preferences(
     }
 
     if !previous.onboarding_completed && preferences.onboarding_completed {
-        let _ = windowing::apply_companion_layout(&app, &config.companion);
+        let _ = windowing::apply_companion_layout_with_visibility(&app, &config.companion, true);
         crate::start_background_integrations(&app);
     }
 
@@ -192,6 +192,7 @@ pub fn update_companion_preferences(
         .unwrap_or_else(|poisoned| poisoned.into_inner())
         .snapshot()
         .companion;
+    let was_visible = windowing::is_companion_visible(&app)?;
 
     let config = state
         .config
@@ -199,14 +200,25 @@ pub fn update_companion_preferences(
         .unwrap_or_else(|poisoned| poisoned.into_inner())
         .update_companion(preferences)?;
 
-    if let Err(error) = windowing::apply_companion_layout(&app, &config.companion) {
+    let reveal = windowing::visibility_for_mode_update(
+        was_visible,
+        previous.display_mode,
+        config.companion.display_mode,
+    );
+    if let Err(error) =
+        windowing::apply_companion_layout_with_visibility(&app, &config.companion, reveal)
+    {
         let rollback = state
             .config
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
             .update_companion(previous.clone());
         if rollback.is_ok() {
-            let _ = windowing::apply_companion_layout(&app, &previous);
+            let _ = windowing::apply_companion_layout_with_visibility(
+                &app,
+                &previous,
+                was_visible,
+            );
         }
         return Err(error);
     }
