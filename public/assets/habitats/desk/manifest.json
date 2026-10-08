@@ -1539,6 +1539,14 @@
           "width": 2,
           "height": 20,
           "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 106,
+          "y": 59,
+          "width": 3,
+          "height": 12,
+          "color": "light"
         }
       ],
       "time": [
@@ -1567,6 +1575,14 @@
           "y": 57,
           "width": 13,
           "height": 2,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 109,
+          "y": 61,
+          "width": 3,
+          "height": 9,
           "color": "warm"
         }
       ],
