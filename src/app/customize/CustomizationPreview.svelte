@@ -126,6 +126,7 @@
     const localRevision = ++revision;
     status = "Updating preview…";
 
+    try {
     const [nextCharacter, nextHabitat, attachments] = await Promise.all([
       loadCharacterManifest(next.character.toLowerCase()),
       loadHabitatManifest(next.habitat.toLowerCase()),
@@ -190,6 +191,13 @@
     }
 
     status = "Live preview";
+    } catch {
+      // An unavailable/invalid asset must not produce an unhandled rejection.
+      // Discard errors from previews superseded by a more recent selection.
+      if (mounted && localRevision === revision) {
+        status = "Preview unavailable. Select another look.";
+      }
+    }
   }
 
   function previewBehavior(behavior: BehaviorId): void {
