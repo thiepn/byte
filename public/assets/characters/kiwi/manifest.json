@@ -1033,11 +1033,15 @@
       "frames": [
         {
           "frame": "idle_a",
-          "durationMs": 520
+          "durationMs": 380
         },
         {
           "frame": "idle_b",
-          "durationMs": 520
+          "durationMs": 175
+        },
+        {
+          "frame": "idle_a",
+          "durationMs": 390
         }
       ],
       "loop": true,
@@ -1047,15 +1051,15 @@
       "frames": [
         {
           "frame": "idle_a",
-          "durationMs": 80
+          "durationMs": 95
         },
         {
           "frame": "blink",
-          "durationMs": 90
+          "durationMs": 95
         },
         {
-          "frame": "idle_a",
-          "durationMs": 120
+          "frame": "idle_b",
+          "durationMs": 145
         }
       ],
       "loop": false,
@@ -1065,12 +1069,16 @@
     "look_left": {
       "frames": [
         {
+          "frame": "idle_a",
+          "durationMs": 90
+        },
+        {
           "frame": "look_left",
-          "durationMs": 240
+          "durationMs": 210
         },
         {
           "frame": "idle_a",
-          "durationMs": 100
+          "durationMs": 125
         }
       ],
       "loop": false,
@@ -1080,12 +1088,16 @@
     "look_right": {
       "frames": [
         {
+          "frame": "idle_a",
+          "durationMs": 90
+        },
+        {
           "frame": "look_right",
-          "durationMs": 240
+          "durationMs": 210
         },
         {
           "frame": "idle_a",
-          "durationMs": 100
+          "durationMs": 125
         }
       ],
       "loop": false,
@@ -1096,11 +1108,11 @@
       "frames": [
         {
           "frame": "idle_b",
-          "durationMs": 120
+          "durationMs": 130
         },
         {
           "frame": "sleep_a",
-          "durationMs": 180
+          "durationMs": 205
         }
       ],
       "loop": false,
@@ -1111,11 +1123,15 @@
       "frames": [
         {
           "frame": "sleep_a",
-          "durationMs": 650
+          "durationMs": 900
         },
         {
           "frame": "sleep_b",
-          "durationMs": 650
+          "durationMs": 280
+        },
+        {
+          "frame": "sleep_a",
+          "durationMs": 680
         }
       ],
       "loop": true,
@@ -1125,19 +1141,19 @@
       "frames": [
         {
           "frame": "sleep_b",
-          "durationMs": 100
+          "durationMs": 105
         },
         {
           "frame": "wake",
-          "durationMs": 160
+          "durationMs": 145
         },
         {
           "frame": "idle_a",
-          "durationMs": 100
+          "durationMs": 130
         }
       ],
       "loop": false,
-      "reducedMotionFrame": "wake",
+      "reducedMotionFrame": "sleep_b",
       "reducedMotionDurationMs": 160
     },
     "move_left": {
@@ -1147,8 +1163,12 @@
           "durationMs": 140
         },
         {
+          "frame": "idle_b",
+          "durationMs": 110
+        },
+        {
           "frame": "idle_a",
-          "durationMs": 90
+          "durationMs": 115
         }
       ],
       "loop": false,
@@ -1162,8 +1182,12 @@
           "durationMs": 140
         },
         {
+          "frame": "idle_b",
+          "durationMs": 110
+        },
+        {
           "frame": "idle_a",
-          "durationMs": 90
+          "durationMs": 115
         }
       ],
       "loop": false,
@@ -1174,59 +1198,67 @@
       "frames": [
         {
           "frame": "type_left",
-          "durationMs": 80
+          "durationMs": 105
         },
         {
-          "frame": "idle_a",
-          "durationMs": 60
+          "frame": "idle_b",
+          "durationMs": 90
         }
       ],
       "loop": false,
       "reducedMotionFrame": "type_left",
-      "reducedMotionDurationMs": 90
+      "reducedMotionDurationMs": 100
     },
     "type_right": {
       "frames": [
         {
           "frame": "type_right",
-          "durationMs": 80
+          "durationMs": 105
         },
         {
-          "frame": "idle_a",
-          "durationMs": 60
+          "frame": "idle_b",
+          "durationMs": 90
         }
       ],
       "loop": false,
       "reducedMotionFrame": "type_right",
-      "reducedMotionDurationMs": 90
+      "reducedMotionDurationMs": 100
     },
     "typing_fast": {
       "frames": [
         {
           "frame": "type_left",
-          "durationMs": 62
+          "durationMs": 95
         },
         {
           "frame": "type_right",
-          "durationMs": 62
+          "durationMs": 95
+        },
+        {
+          "frame": "idle_b",
+          "durationMs": 92
         }
       ],
       "loop": true,
-      "reducedMotionFrame": "idle_a"
+      "reducedMotionFrame": "type_left"
     },
     "click": {
       "frames": [
         {
           "frame": "click",
-          "durationMs": 90
-        },
-        {
-          "frame": "happy",
           "durationMs": 100
         },
         {
+          "frame": "surprised",
+          "durationMs": 100
+        },
+        {
+          "frame": "happy",
+          "durationMs": 180
+        },
+        {
           "frame": "idle_a",
-          "durationMs": 80
+          "durationMs": 105
         }
       ],
       "loop": false,
@@ -1236,12 +1268,24 @@
     "happy": {
       "frames": [
         {
+          "frame": "idle_b",
+          "durationMs": 105
+        },
+        {
           "frame": "happy",
-          "durationMs": 170
+          "durationMs": 210
+        },
+        {
+          "frame": "idle_b",
+          "durationMs": 115
+        },
+        {
+          "frame": "happy",
+          "durationMs": 145
         },
         {
           "frame": "idle_a",
-          "durationMs": 100
+          "durationMs": 120
         }
       ],
       "loop": false,
@@ -1251,12 +1295,16 @@
     "surprised": {
       "frames": [
         {
+          "frame": "idle_b",
+          "durationMs": 95
+        },
+        {
           "frame": "surprised",
-          "durationMs": 200
+          "durationMs": 220
         },
         {
           "frame": "idle_a",
-          "durationMs": 110
+          "durationMs": 120
         }
       ],
       "loop": false,
@@ -1267,11 +1315,15 @@
       "frames": [
         {
           "frame": "annoyed",
-          "durationMs": 260
+          "durationMs": 240
+        },
+        {
+          "frame": "look_left",
+          "durationMs": 140
         },
         {
           "frame": "idle_a",
-          "durationMs": 100
+          "durationMs": 130
         }
       ],
       "loop": false,
@@ -1282,11 +1334,11 @@
       "frames": [
         {
           "frame": "busy_a",
-          "durationMs": 170
+          "durationMs": 185
         },
         {
           "frame": "busy_b",
-          "durationMs": 170
+          "durationMs": 185
         }
       ],
       "loop": true,
@@ -1296,11 +1348,11 @@
       "frames": [
         {
           "frame": "stressed",
-          "durationMs": 220
+          "durationMs": 390
         },
         {
           "frame": "busy_a",
-          "durationMs": 140
+          "durationMs": 250
         }
       ],
       "loop": true,
@@ -1310,11 +1362,11 @@
       "frames": [
         {
           "frame": "hot",
-          "durationMs": 240
+          "durationMs": 440
         },
         {
           "frame": "stressed",
-          "durationMs": 180
+          "durationMs": 265
         }
       ],
       "loop": true,
@@ -1324,11 +1376,11 @@
       "frames": [
         {
           "frame": "memory",
-          "durationMs": 260
+          "durationMs": 360
         },
         {
           "frame": "stressed",
-          "durationMs": 160
+          "durationMs": 240
         }
       ],
       "loop": true,
@@ -1338,11 +1390,11 @@
       "frames": [
         {
           "frame": "low_battery",
-          "durationMs": 420
+          "durationMs": 790
         },
         {
           "frame": "sleep_a",
-          "durationMs": 320
+          "durationMs": 355
         }
       ],
       "loop": true,
@@ -1352,11 +1404,11 @@
       "frames": [
         {
           "frame": "charging",
-          "durationMs": 180
+          "durationMs": 345
         },
         {
           "frame": "happy",
-          "durationMs": 160
+          "durationMs": 215
         }
       ],
       "loop": true,
@@ -1366,11 +1418,11 @@
       "frames": [
         {
           "frame": "network",
-          "durationMs": 140
+          "durationMs": 150
         },
         {
           "frame": "idle_b",
-          "durationMs": 120
+          "durationMs": 130
         }
       ],
       "loop": false,
@@ -1380,12 +1432,12 @@
     "needs_attention": {
       "frames": [
         {
-          "frame": "surprised",
-          "durationMs": 120
+          "frame": "stressed",
+          "durationMs": 510
         },
         {
-          "frame": "stressed",
-          "durationMs": 230
+          "frame": "surprised",
+          "durationMs": 170
         }
       ],
       "loop": true,
@@ -1395,12 +1447,20 @@
     "rare_a": {
       "frames": [
         {
+          "frame": "idle_b",
+          "durationMs": 105
+        },
+        {
           "frame": "rare_a",
-          "durationMs": 520
+          "durationMs": 420
+        },
+        {
+          "frame": "happy",
+          "durationMs": 155
         },
         {
           "frame": "idle_a",
-          "durationMs": 120
+          "durationMs": 160
         }
       ],
       "loop": false,
@@ -1410,17 +1470,40 @@
     "rare_b": {
       "frames": [
         {
+          "frame": "idle_b",
+          "durationMs": 95
+        },
+        {
           "frame": "rare_b",
-          "durationMs": 520
+          "durationMs": 470
+        },
+        {
+          "frame": "look_right",
+          "durationMs": 170
         },
         {
           "frame": "idle_a",
-          "durationMs": 120
+          "durationMs": 145
         }
       ],
       "loop": false,
       "reducedMotionFrame": "rare_b",
       "reducedMotionDurationMs": 220
+    },
+    "attention_enter": {
+      "loop": false,
+      "frames": [
+        {
+          "frame": "surprised",
+          "durationMs": 135
+        },
+        {
+          "frame": "stressed",
+          "durationMs": 205
+        }
+      ],
+      "reducedMotionFrame": "surprised",
+      "reducedMotionDurationMs": 160
     }
   },
   "behaviors": {
@@ -1456,10 +1539,9 @@
   },
   "transitions": {
     "idle>sleep": "sleep_enter",
-    "sleep>wake": "wake",
-    "idle>needs_attention": "needs_attention",
-    "busy>needs_attention": "needs_attention",
-    "stressed>needs_attention": "needs_attention"
+    "idle>needs_attention": "attention_enter",
+    "busy>needs_attention": "attention_enter",
+    "stressed>needs_attention": "attention_enter"
   },
   "idleProfile": {
     "minDelayMs": 3500,
