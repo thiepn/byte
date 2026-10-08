@@ -81,6 +81,19 @@ describe("validateCharacterManifest", () => {
     expect(() => validateCharacterManifest(value)).toThrow(/outside the atlas/);
   });
 
+  it("rejects a looping transition that would never reach its destination", () => {
+    const value = fixture() as any;
+    value.behaviors.needs_attention = "idle";
+    value.transitions["idle>needs_attention"] = "idle";
+    expect(() => validateCharacterManifest(value)).toThrow(/cannot use looping clip/);
+  });
+
+  it("rejects non-finite animation frame durations", () => {
+    const value = fixture() as any;
+    value.clips.idle.frames[0].durationMs = Number.POSITIVE_INFINITY;
+    expect(() => validateCharacterManifest(value)).toThrow(/invalid frame duration/);
+  });
+
   it("rejects palettes that do not cover every slot", () => {
     const value = fixture() as any;
     delete value.palettes[0].colors.accent;

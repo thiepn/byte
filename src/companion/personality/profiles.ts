@@ -104,6 +104,49 @@ const PROFILES: Record<Personality, PersonalityProfile> = {
   },
 };
 
+/**
+ * Species-specific gestures on top of the user's CHILL / CURIOUS / ENERGETIC
+ * setting. Every gesture uses an existing semantic behavior and the same
+ * priority/scheduler pipeline; this table never observes extra user input.
+ */
+interface CharacterMannerisms {
+  pointer: Record<Personality, BehaviorId[]>;
+  typingDone: Record<Personality, BehaviorId[]>;
+  rapidDrag: BehaviorId;
+  relaxedDrag: BehaviorId;
+  signatureIdle: BehaviorId;
+}
+const CHARACTER_MANNERISMS: Record<string, CharacterMannerisms> = {
+  byte: {
+    pointer: { CHILL: ["blink", "look_right"], CURIOUS: ["curious", "look_right", "blink"], ENERGETIC: ["happy", "curious", "surprised"] },
+    typingDone: { CHILL: ["blink", "look_left"], CURIOUS: ["curious", "blink"], ENERGETIC: ["happy", "curious"] },
+    rapidDrag: "surprised",
+    relaxedDrag: "curious",
+    signatureIdle: "rare_b",
+  },
+  mochi: {
+    pointer: { CHILL: ["blink", "look_left"], CURIOUS: ["look_left", "curious", "blink"], ENERGETIC: ["happy", "blink", "curious"] },
+    typingDone: { CHILL: ["blink", "look_right"], CURIOUS: ["blink", "curious"], ENERGETIC: ["happy", "blink"] },
+    rapidDrag: "surprised",
+    relaxedDrag: "blink",
+    signatureIdle: "rare_a",
+  },
+  pip: {
+    pointer: { CHILL: ["blink", "curious"], CURIOUS: ["surprised", "curious", "look_right"], ENERGETIC: ["happy", "surprised", "happy"] },
+    typingDone: { CHILL: ["blink", "look_left"], CURIOUS: ["surprised", "curious"], ENERGETIC: ["happy", "surprised"] },
+    rapidDrag: "surprised",
+    relaxedDrag: "happy",
+    signatureIdle: "rare_b",
+  },
+  kiwi: {
+    pointer: { CHILL: ["look_left", "blink"], CURIOUS: ["look_right", "look_left", "curious"], ENERGETIC: ["surprised", "happy", "look_right"] },
+    typingDone: { CHILL: ["blink", "look_right"], CURIOUS: ["look_right", "curious"], ENERGETIC: ["happy", "look_left"] },
+    rapidDrag: "surprised",
+    relaxedDrag: "curious",
+    signatureIdle: "look_right",
+  },
+};
+
 const INTERACTION_TUNING: Record<
   InteractionLevel,
   { idleDelayScale: number; ambientScale: number; sleepDelayScale: number }
@@ -151,6 +194,8 @@ export function idleProfileForPersonality(
   for (const bonus of profile.bonusChoices) {
     add(bonus.behavior, bonus.weight);
   }
+  const signature = CHARACTER_MANNERISMS[manifest.id]?.signatureIdle;
+  if (signature) add(signature, 0.65);
 
   const delayScale = profile.idleDelayScale * tuning.idleDelayScale;
 
@@ -228,6 +273,7 @@ export class PersonalityDirector {
   constructor(
     private readonly personality: Personality,
     private readonly interactionLevel: InteractionLevel,
+    private readonly characterId: string | null = null,
   ) {}
 
   idleProfile(manifest: CharacterManifest): IdleProfile {
@@ -315,7 +361,8 @@ export class PersonalityDirector {
   ): void {
     if (timestampEpochMs - this.lastPointerReactionAt < 3_000) return;
 
-    const choices = PROFILES[this.personality].pointerBehaviors;
+    const mannerisms = this.characterId ? CHARACTER_MANNERISMS[this.characterId] : null;
+    const choices = mannerisms?.pointer[this.personality] ?? PROFILES[this.personality].pointerBehaviors;
     const behavior = choices[this.pointerCursor % choices.length];
     this.pointerCursor += 1;
     this.lastPointerReactionAt = timestampEpochMs;
@@ -333,12 +380,16 @@ export class PersonalityDirector {
     if (timestampEpochMs - this.lastDragReactionAt < 1_200) return;
 
     const profile = PROFILES[this.personality];
+    const mannerisms = this.characterId ? CHARACTER_MANNERISMS[this.characterId] : null;
     this.lastDragReactionAt = timestampEpochMs;
+    // Quiet/Chill always retains its low-intensity reaction; species accents
+    // are available for the other profiles without weakening alert priority.
+    const speciesDrag = mannerisms && this.personality !== "CHILL" ? mannerisms : null;
     animator.requestBehavior({
       behavior:
         durationMs < 800
-          ? profile.rapidDragBehavior
-          : profile.normalDragBehavior,
+          ? speciesDrag?.rapidDrag ?? profile.rapidDragBehavior
+          : speciesDrag?.relaxedDrag ?? profile.normalDragBehavior,
       source: "interaction",
     });
   }
@@ -349,7 +400,8 @@ export class PersonalityDirector {
   ): void {
     if (timestampEpochMs - this.lastTypingDoneAt < 2_200) return;
 
-    const choices = PROFILES[this.personality].typingDoneBehaviors;
+    const mannerisms = this.characterId ? CHARACTER_MANNERISMS[this.characterId] : null;
+    const choices = mannerisms?.typingDone[this.personality] ?? PROFILES[this.personality].typingDoneBehaviors;
     const behavior = choices[this.typingCursor % choices.length];
     this.typingCursor += 1;
     this.lastTypingDoneAt = timestampEpochMs;
