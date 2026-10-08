@@ -1,0 +1,419 @@
+{
+  "schemaVersion": 1,
+  "phase": "P2",
+  "product": "Byte 2.0",
+  "identityName": "Cozy Pixel Life",
+  "status": "design-direction-locked",
+  "scope": "art and interaction design reference; not yet production sprites or a UI migration",
+  "guidingPrinciples": [
+    "Character-first: a lovable living mascot is the default focal point; PC health is secondary until actionable.",
+    "Cute through silhouette, eyes, anticipation and personality, not constant particles or movement.",
+    "Pixel-perfect sprites and selectively illustrated habitats; never blur or flatten pixel edges.",
+    "Cozy but modern Windows UI; no generic SaaS hero, gradient cards, metric-card wall, or giant headline.",
+    "Comfort-first desktop presence with quiet modes, reduced motion, high contrast and no forced engagement.",
+    "Keep all monitoring local, preserve battery/CPU budget and existing state-machine priorities."
+  ],
+  "compatibility": {
+    "nativeArtMaxPx": 48,
+    "animationCanvasPx": 64,
+    "atlasCellPx": 64,
+    "atlasGrid": {
+      "columns": 8,
+      "rows": 4
+    },
+    "habitatCanvasPx": 256,
+    "targetCadenceFps": 12,
+    "colorSlotNames": [
+      "dark",
+      "shadow",
+      "primary",
+      "highlight",
+      "accent",
+      "eye",
+      "blush"
+    ],
+    "cosmeticAnchors": [
+      "head",
+      "face",
+      "body",
+      "back",
+      "left_hand",
+      "right_hand",
+      "ground"
+    ],
+    "manifestSchemaVersion": 1,
+    "doNotModifyExistingAssetsDuringP2": true
+  },
+  "artGrammar": {
+    "silhouette": "Rounded but strongly distinct profiles; intentional asymmetry; no identical generic chibi template",
+    "outline": "1–2 authored source pixels with selective dark outline and occasional color breaks; no vector-smooth stroke on sprite",
+    "palette": "Approximately 8–14 deliberate colors per default mascot excluding cosmetic attachments",
+    "lighting": "Soft warm upper-left key light, cool restrained ambient shadows, single grounded contact shadow",
+    "grid": "Whole pixel placements, nearest-neighbor scaling, no antialiasing, no subpixel sprite position",
+    "facialReadability": "At least two discrete eye configurations and three visibly distinct mouth/brow shapes in routine animation, verified at native size",
+    "expressionPriority": "Eyes and shape before decorative icons; no random emoji, hearts or speech bubbles for every action",
+    "shading": "Two or three tonal masses plus selective highlight, avoid gradient fills inside sprites",
+    "negativeSpace": "Maintain internal silhouette openings around hands, beaks, ears and wings at reduced sizes"
+  },
+  "ui": {
+    "hierarchy": [
+      "living-companion-stage",
+      "one-sentence-readable-state",
+      "one primary contextual action",
+      "secondary tools and system diagnostics"
+    ],
+    "typography": {
+      "family": "Segoe UI Variable, Segoe UI, system-ui, sans-serif",
+      "bodyMinPx": 12,
+      "supportingTextMinPx": 12,
+      "headingsMaxPx": 24,
+      "tabularReadouts": true
+    },
+    "density": "compact, legible native-desktop density; meaningful white space, not oversized cards",
+    "radiiPx": {
+      "controls": 7,
+      "panels": 11,
+      "artworkStages": 13
+    },
+    "shell": "warm mineral/graphite chrome, gentle borders, restrained shadow, flat color blocks; no large gradients",
+    "navigation": "actual persistent sections, not pop-up tabs; Home, Health, Activity, Studio, Settings",
+    "windows": {
+      "quickPanel": "tiny animated mascot + meaningful PC health summary + one next action; native utility controls remain discoverable",
+      "mainWindow": "live companion scene primary; no text hero or dashboard-grid landing; Health separate",
+      "studio": "dressing room stage stays visible while swapping character, outfit, environment and mode",
+      "onboarding": "show the character alive on first step; preserve explicit privacy and system-monitoring choices"
+    },
+    "themeTokens": {
+      "light": {
+        "shell": "#F2F0EB",
+        "panel": "#FFFCF5",
+        "inset": "#ECE8DF",
+        "text": "#273146",
+        "secondaryText": "#536073",
+        "border": "#C8C9C5",
+        "accent": "#3F7698",
+        "accentSoft": "#DBEDF2",
+        "warm": "#EBC48C",
+        "blush": "#E7A3A8",
+        "sceneBackdrop": "#F7EAD8"
+      },
+      "dark": {
+        "shell": "#1F2835",
+        "panel": "#2A3442",
+        "inset": "#19212C",
+        "text": "#F8F5ED",
+        "secondaryText": "#CDD5DF",
+        "border": "#586577",
+        "accent": "#A5D7E8",
+        "accentSoft": "#374F60",
+        "warm": "#EBC48C",
+        "blush": "#EAB0B4",
+        "sceneBackdrop": "#313746"
+      }
+    }
+  },
+  "characters": [
+    {
+      "id": "byte",
+      "personality": [
+        "curious",
+        "gentle",
+        "helpful"
+      ],
+      "coreShape": "rounded pebble robot with oversized visor and squat soft feet",
+      "proportions": {
+        "headToTotalHeight": 0.65,
+        "widthToHeight": 0.9
+      },
+      "identifiers": [
+        "warm amber antenna tips",
+        "large navy visor",
+        "tiny articulated hands",
+        "short planted feet"
+      ],
+      "face": "big luminous eye blocks with distinct half-lidded, wide-open and softened smiling configurations",
+      "colorIdentity": {
+        "dark": "#26313B",
+        "primary": "#70BFDA",
+        "highlight": "#D1F2F9",
+        "accent": "#F4BD6A",
+        "blush": "#E8A0A4"
+      },
+      "signatureMotion": [
+        "antenna anticipates body movement",
+        "head/visor leans before stepping",
+        "tiny mechanical settle on landing",
+        "reassuring eye smile on healthy status"
+      ],
+      "frameIntent": {
+        "idle_a": "open calm eyes and stable rounded body",
+        "idle_b": "gentle alternate body breath with moving antenna",
+        "happy": "squint smile and slightly lifted hands",
+        "sleep_a": "closed visor and relaxed squat",
+        "sleep_b": "subtle distinct sleep pulse",
+        "surprised": "wide eyes, retracted hands",
+        "busy_a": "intent forward gaze",
+        "busy_b": "brief active typing/console indicator"
+      },
+      "antiPatterns": [
+        "square static box",
+        "identical idle and busy pixels",
+        "constant flashy antenna sparks",
+        "tiny unreadable smile"
+      ]
+    },
+    {
+      "id": "mochi",
+      "personality": [
+        "affectionate",
+        "sleepy",
+        "playful"
+      ],
+      "coreShape": "soft marshmallow kitten with large ears, cheek tufts, oversized front paws and lively tail",
+      "proportions": {
+        "headToTotalHeight": 0.68,
+        "widthToHeight": 1
+      },
+      "identifiers": [
+        "triangular peach-tipped ears",
+        "plump cheek silhouette",
+        "oversized tapping paws",
+        "curling expressive tail"
+      ],
+      "face": "generous 2+ pixel pupils, blush separated from outlines, readable closed sleepy eyes",
+      "colorIdentity": {
+        "dark": "#493A3B",
+        "primary": "#F3D9C5",
+        "highlight": "#FFF5E6",
+        "accent": "#ECA98B",
+        "blush": "#E9A0A6"
+      },
+      "signatureMotion": [
+        "asynchronous paw taps",
+        "tail curls before a happy reaction",
+        "slow sleepy stretch",
+        "ear flick after being petted"
+      ],
+      "frameIntent": {
+        "idle_a": "visible open neutral eyes",
+        "idle_b": "cheek/paw breath and tail position visibly changed",
+        "happy": "paws up and smiling eyes",
+        "sleep_a": "loaf with folded paws",
+        "sleep_b": "settled loaf with different ear/tail angle",
+        "surprised": "high ears and round pupils",
+        "busy_a": "focused left paw",
+        "busy_b": "focused alternate right paw"
+      },
+      "antiPatterns": [
+        "featureless round cat",
+        "ears hidden by giant hats",
+        "duplicate typing paws",
+        "heart overlays substituting for actual facial expression"
+      ]
+    },
+    {
+      "id": "pip",
+      "personality": [
+        "bouncy",
+        "gentle",
+        "oddly brave"
+      ],
+      "coreShape": "asymmetric teardrop jelly with a droopy side cheek and tiny fins/arms",
+      "proportions": {
+        "headToTotalHeight": 0.82,
+        "widthToHeight": 1.05
+      },
+      "identifiers": [
+        "left-right asymmetric jelly outline",
+        "tiny floating fins/arms",
+        "high readable eyes",
+        "squashy lower edge"
+      ],
+      "face": "larger high-contrast eyes and flexible smile, visible worried and surprised shape changes",
+      "colorIdentity": {
+        "dark": "#30425E",
+        "primary": "#9CCBFB",
+        "highlight": "#E1F5FF",
+        "accent": "#C5BAF4",
+        "blush": "#E5A5C7"
+      },
+      "signatureMotion": [
+        "squash then stretch before bounce",
+        "wobble with delayed side response",
+        "tiny ripple when clicked",
+        "sleep melts into wider low silhouette"
+      ],
+      "frameIntent": {
+        "idle_a": "asymmetric calm jelly",
+        "idle_b": "slightly displaced wobble",
+        "happy": "stretched tall celebratory body",
+        "sleep_a": "flattened sleepy body",
+        "sleep_b": "gentle pillow spread",
+        "surprised": "wide round eyes and stretched upper contour",
+        "busy_a": "tilted effort pose",
+        "busy_b": "opposite side ripple"
+      },
+      "antiPatterns": [
+        "plain featureless circle",
+        "physically rigid jelly",
+        "same silhouette for every mood",
+        "excessive transparent blur"
+      ]
+    },
+    {
+      "id": "kiwi",
+      "personality": [
+        "energetic",
+        "curious",
+        "clumsy"
+      ],
+      "coreShape": "pear-shaped pocket bird with oversized face, tiny winglets and short orange feet",
+      "proportions": {
+        "headToTotalHeight": 0.75,
+        "widthToHeight": 0.82
+      },
+      "identifiers": [
+        "heart/pear body",
+        "prominent little beak",
+        "independent wings",
+        "two visible toes/feet",
+        "optional small crown feather"
+      ],
+      "face": "open cheerful eyes, drooped sleepy pupils, clear beak movement for pecks",
+      "colorIdentity": {
+        "dark": "#364336",
+        "primary": "#A8CB72",
+        "highlight": "#E1EEB5",
+        "accent": "#F5C376",
+        "blush": "#E9A39C"
+      },
+      "signatureMotion": [
+        "tiny double hop then settle",
+        "independent wing flaps",
+        "quick curious head tilt",
+        "rhythmic peck when typing"
+      ],
+      "frameIntent": {
+        "idle_a": "forward attentive pose",
+        "idle_b": "head angle and feather shift",
+        "happy": "raised wings and beak smile",
+        "sleep_a": "tucked wings and drooped eyes",
+        "sleep_b": "one wing relaxes further",
+        "surprised": "upright contour and wide pupils",
+        "busy_a": "left peck down",
+        "busy_b": "right peck up"
+      },
+      "antiPatterns": [
+        "reused generic bird blob",
+        "hidden feet",
+        "same click and surprised sprite",
+        "wings mirrored without body anticipation"
+      ]
+    }
+  ],
+  "habitats": [
+    {
+      "id": "meadow",
+      "narrative": "morning clearing and wildflowers",
+      "heroDetail": "sunlit grass tuft",
+      "ambientMotion": "very few drifting petals",
+      "depth": "blur-free far tree shapes, mid flowers, foreground grass"
+    },
+    {
+      "id": "desk",
+      "narrative": "small lived-in desk",
+      "heroDetail": "warm lamp and little mug",
+      "ambientMotion": "subtle monitor gleam",
+      "depth": "wall shelf, desk objects, stage surface"
+    },
+    {
+      "id": "bedroom",
+      "narrative": "soft peaceful corner",
+      "heroDetail": "blanket and square window",
+      "ambientMotion": "tiny curtain sway",
+      "depth": "window backdrop, soft furniture, front blanket"
+    },
+    {
+      "id": "space",
+      "narrative": "cozy stargazing nook",
+      "heroDetail": "planet through a porthole",
+      "ambientMotion": "few drifting star motes",
+      "depth": "porthole night sky, cabin, foreground cushion"
+    },
+    {
+      "id": "aquarium",
+      "narrative": "underwater coral room",
+      "heroDetail": "colored corals and bubbles",
+      "ambientMotion": "sparse slow bubbles",
+      "depth": "far rays, sea plants, front coral"
+    },
+    {
+      "id": "rooftop",
+      "narrative": "sunset rooftop hideout",
+      "heroDetail": "city skyline, flowerpots and railing",
+      "ambientMotion": "tiny light/wind cues",
+      "depth": "skyline, railing, foreground planter"
+    }
+  ],
+  "qualityGates": {
+    "characterArt": {
+      "minimumDistinctBitmapRatio": 0.9,
+      "requiredClearlyDifferentPairs": [
+        [
+          "idle_a",
+          "idle_b"
+        ],
+        [
+          "sleep_a",
+          "sleep_b"
+        ],
+        [
+          "busy_a",
+          "busy_b"
+        ],
+        [
+          "happy",
+          "surprised"
+        ],
+        [
+          "click",
+          "idle_a"
+        ]
+      ],
+      "mustInspectPx": [
+        24,
+        32,
+        48,
+        96
+      ],
+      "perCharacterMinimumArtPanel": [
+        "front idle",
+        "three expressions",
+        "sleep",
+        "typing left/right",
+        "happy",
+        "surprised",
+        "two motion transitions"
+      ],
+      "cosmeticAnchorCoverage": 7,
+      "fallbackReducedMotion": true
+    },
+    "accessibility": {
+      "bodyTextWCAGAA": 4.5,
+      "nonTextContrastTarget": 3,
+      "keyboardFocusVisible": true,
+      "highContrastOverride": true,
+      "reducedMotion": true
+    },
+    "performance": {
+      "additionalRafLoops": 0,
+      "atlasReloadOnEveryTick": false,
+      "keepTarget12Fps": true,
+      "smallParticleBudgets": true
+    },
+    "release": {
+      "productionVisualApprovalRequired": true,
+      "physicalWindowsQARequired": true
+    }
+  }
+}
