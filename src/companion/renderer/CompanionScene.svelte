@@ -10,6 +10,7 @@
     DirectInteractionController,
     gestureBehavior,
     hitTestCharacterCanvas,
+    insideCharacterCanvasBounds,
     type DirectGesture,
   } from "../interaction/direct-interaction";
   import type { CharacterManifest, RenderFrame } from "../animation/types";
@@ -215,7 +216,7 @@
     const gesture = directInteraction.move({
       pointerId: event.pointerId, x: event.clientX, y: event.clientY,
       at: performance.now(),
-    }, hitTestCharacterCanvas(characterCanvas, event.clientX, event.clientY));
+    }, insideCharacterCanvasBounds(characterCanvas, event.clientX, event.clientY));
     if (gesture) showDirectGesture(gesture);
   }
 
