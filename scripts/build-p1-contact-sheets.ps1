@@ -18,6 +18,7 @@ $ink = [Drawing.SolidBrush]::new([Drawing.Color]::FromArgb(40, 44, 56))
 $paper = [Drawing.SolidBrush]::new([Drawing.Color]::FromArgb(246, 247, 250))
 $checkerA = [Drawing.SolidBrush]::new([Drawing.Color]::FromArgb(232, 234, 239))
 $checkerB = [Drawing.SolidBrush]::new([Drawing.Color]::White)
+$diversity = @()
 
 try {
   foreach ($id in @("byte", "mochi", "pip", "kiwi")) {
@@ -26,6 +27,7 @@ try {
     $atlas = [Drawing.Bitmap]::new((Join-Path $base "atlas.png"))
     $sheet = [Drawing.Bitmap]::new(8 * 160, 4 * 169 + 42)
     $graphics = [Drawing.Graphics]::FromImage($sheet)
+    $fingerprints = @()
     try {
       $graphics.InterpolationMode = [Drawing.Drawing2D.InterpolationMode]::NearestNeighbor
       $graphics.PixelOffsetMode = [Drawing.Drawing2D.PixelOffsetMode]::Half
@@ -50,6 +52,16 @@ try {
           [math]::Floor($index / [int]$manifest.atlas.columns) * [int]$manifest.atlas.frameHeight,
           [int]$manifest.atlas.frameWidth, [int]$manifest.atlas.frameHeight
         )
+        $crop = $atlas.Clone($source, $atlas.PixelFormat)
+        $stream = [IO.MemoryStream]::new()
+        try {
+          $crop.Save($stream, [Drawing.Imaging.ImageFormat]::Png)
+          $sha = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($stream.ToArray()))
+          $fingerprints += [pscustomobject]@{ index=$index; pose=[string]$frame.Name; hash=$sha }
+        } finally {
+          $stream.Dispose()
+          $crop.Dispose()
+        }
         $target = [Drawing.Rectangle]::new($x, $y, 128, 128)
         $graphics.DrawImage($atlas, $target, $source, [Drawing.GraphicsUnit]::Pixel)
         $graphics.DrawString(("{0:D2} {1}" -f $index, [string]$frame.Name), $font, $ink, $x, ($y + 132))
@@ -57,12 +69,31 @@ try {
       $file = Join-Path $destination ("p1-character-" + $id + ".png")
       $sheet.Save($file, [Drawing.Imaging.ImageFormat]::Png)
       Write-Host "Created $file"
+      $groups = @($fingerprints | Group-Object hash | Where-Object { $_.Count -gt 1 })
+      $duplicatePairs = 0
+      $duplicateSets = @()
+      foreach ($group in $groups) {
+        $duplicatePairs += [int](($group.Count * ($group.Count - 1)) / 2)
+        $duplicateSets += [pscustomobject]@{
+          poses = @($group.Group | Sort-Object index | ForEach-Object { $_.pose })
+          indices = @($group.Group | Sort-Object index | ForEach-Object { $_.index })
+        }
+      }
+      $diversity += [pscustomobject]@{
+        character = $id
+        poses = $fingerprints.Count
+        distinctBitmapPoses = $fingerprints.Count - (($groups | Measure-Object { $_.Count - 1 } -Sum).Sum)
+        duplicatePairs = $duplicatePairs
+        exactDuplicateSets = @($duplicateSets)
+      }
+      Write-Host ("$id : $duplicatePairs exact duplicate pose pairs")
     } finally {
       $graphics.Dispose()
       $sheet.Dispose()
       $atlas.Dispose()
     }
   }
+  $diversity | ConvertTo-Json -Depth 8 | Set-Content -Path (Join-Path (Split-Path $destination -Parent) "frame-diversity.json") -Encoding utf8
 } finally {
   foreach ($resource in @($font, $heading, $ink, $paper, $checkerA, $checkerB)) {
     $resource.Dispose()
