@@ -201,10 +201,13 @@
     if (!accepted) return;
     suppressSceneClickFromGesture = true;
     event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
   }
 
   function handleScenePointerMove(event: PointerEvent): void {
+    // No image read on passive mousemove: only active local gestures use
+    // sprite alpha sampling. This matters for a lightweight always-on-top app.
+    if (!directInteraction.isTracking(event.pointerId)) return;
     if (!canInteract()) {
       directInteraction.cancel();
       return;
@@ -221,8 +224,9 @@
       pointerId: event.pointerId, x: event.clientX, y: event.clientY,
       at: performance.now(),
     });
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
+    const target = event.currentTarget as HTMLElement;
+    if (target.hasPointerCapture(event.pointerId)) {
+      target.releasePointerCapture(event.pointerId);
     }
     if (gesture) showDirectGesture(gesture);
   }
