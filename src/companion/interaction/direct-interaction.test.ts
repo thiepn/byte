@@ -1,4 +1,7 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { validateCharacterManifest } from "../animation/manifest";
 import {
   DirectInteractionController,
   gestureBehavior,
@@ -78,6 +81,14 @@ describe("P6 direct character interaction gestures", () => {
         gesture => gestureBehavior(id, gesture as "tap" | "wave" | "pet" | "hold"),
       );
       expect(signature.every(Boolean)).toBe(true);
+      const manifest = validateCharacterManifest(JSON.parse(
+        readFileSync(join(process.cwd(), "public", "assets", "characters", id, "manifest.json"), "utf8"),
+      ));
+      for (const behavior of signature) {
+        const clipId = manifest.behaviors[behavior];
+        expect(clipId, id + " missing behavior " + behavior).toBeTruthy();
+        expect(manifest.clips[clipId].loop, id + " must finish direct gesture " + behavior).toBe(false);
+      }
       unique.add(signature.join("|"));
     }
     expect(unique.size).toBe(4);
