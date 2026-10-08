@@ -214,11 +214,7 @@ pub fn update_companion_preferences(
             .unwrap_or_else(|poisoned| poisoned.into_inner())
             .update_companion(previous.clone());
         if rollback.is_ok() {
-            let _ = windowing::apply_companion_layout_with_visibility(
-                &app,
-                &previous,
-                was_visible,
-            );
+            let _ = windowing::apply_companion_layout_with_visibility(&app, &previous, was_visible);
         }
         return Err(error);
     }
