@@ -1500,6 +1500,14 @@
           "width": 3,
           "height": 12,
           "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 62,
+          "y": 59,
+          "width": 4,
+          "height": 8,
+          "color": "light"
         }
       ],
       "time": [
@@ -1529,6 +1537,14 @@
           "width": 10,
           "height": 3,
           "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 62,
+          "y": 77,
+          "width": 5,
+          "height": 7,
+          "color": "light"
         }
       ],
       "time": [
@@ -1558,6 +1574,14 @@
           "width": 5,
           "height": 8,
           "color": "accent"
+        },
+        {
+          "kind": "RECT",
+          "x": 213,
+          "y": 60,
+          "width": 6,
+          "height": 4,
+          "color": "warm"
         }
       ],
       "time": [
