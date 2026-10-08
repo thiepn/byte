@@ -27,6 +27,7 @@
     statusTone,
     thermalLabel,
   } from "./model";
+  import { executeAndClose } from "./action-lifecycle";
 
   const DISPLAY_MODES: Array<{ id: DisplayMode; label: string }> = [
     { id: "HABITAT", label: "Habitat" },
@@ -44,6 +45,7 @@
   let busyAction = "";
   let panelOpen = false;
   let refreshTimer: number | null = null;
+  let refreshGeneration = 0;
   let panelElement: HTMLDivElement;
 
   function isTauri(): boolean {
@@ -61,18 +63,23 @@
   }
 
   async function refresh(): Promise<void> {
+    if (busyAction) return;
+    const generation = ++refreshGeneration;
     try {
       const [nextSnapshot, nextPreferences, nextShell] = await Promise.all([
         getSnapshot(),
         getPreferences(),
         getWindowShellState(),
       ]);
+      if (generation !== refreshGeneration || !panelOpen || busyAction) return;
       snapshot = nextSnapshot;
       preferences = nextPreferences;
       shell = nextShell;
       errorMessage = "";
     } catch {
-      errorMessage = "Byte could not read its current local state.";
+      if (generation === refreshGeneration && panelOpen && !busyAction) {
+        errorMessage = "Byte could not read its current local state.";
+      }
     }
   }
 
@@ -86,6 +93,7 @@
 
   function stopRefreshing(): void {
     panelOpen = false;
+    ++refreshGeneration;
     if (refreshTimer != null) {
       window.clearInterval(refreshTimer);
       refreshTimer = null;
@@ -119,10 +127,15 @@
     actionError = "";
 
     try {
-      await executeRecommendedAction(action);
-      stopRefreshing();
-    } catch {
-      actionError = "Windows could not open that destination.";
+      const result = await executeAndClose(
+        () => executeRecommendedAction(action),
+        closePanel,
+      );
+      if (result === "open-failed") {
+        actionError = "Windows could not open that destination.";
+      } else if (result === "close-failed") {
+        actionError = "Windows opened that destination, but Byte could not close the Quick Panel.";
+      }
     } finally {
       busyAction = "";
     }
@@ -213,7 +226,6 @@
     }
 
     if (document.hasFocus()) startRefreshing();
-    else void refresh();
 
     window.addEventListener("focus", startRefreshing);
     window.addEventListener("blur", handleBlur);
