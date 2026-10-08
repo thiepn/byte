@@ -30,18 +30,26 @@
   onMount(() => {
     let unlisten: UnlistenFn | null = null;
     let disposed = false;
+    let receivedPreferenceEvent = false;
 
     // Preferences are local IPC state. If the bridge is temporarily
     // unavailable, keep the CSS/OS defaults rather than failing the surface.
     void getPreferences()
-      .then((config) => applyAccessibility(config.app))
+      .then((config) => {
+        // The native preference event may have delivered newer settings while
+        // the initial IPC request was still pending.
+        if (!disposed && !receivedPreferenceEvent) applyAccessibility(config.app);
+      })
       .catch(() => {
+        if (disposed || receivedPreferenceEvent) return;
         document.documentElement.dataset.surface = surface;
         document.body.style.zoom = "1";
       });
 
     if ("__TAURI_INTERNALS__" in window) {
       void listen<AppPreferences>("byte://app-preferences-changed", (event) => {
+        if (disposed) return;
+        receivedPreferenceEvent = true;
         applyAccessibility(event.payload);
       })
         .then((cleanup) => {
