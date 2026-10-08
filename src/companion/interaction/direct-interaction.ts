@@ -164,3 +164,15 @@ export function hitTestCharacterCanvas(
     return false;
   }
 }
+
+/** A stroke can drift across small transparent gaps within the sprite cell. */
+export function insideCharacterCanvasBounds(
+  canvas: HTMLCanvasElement,
+  clientX: number,
+  clientY: number,
+): boolean {
+  const bounds = canvas.getBoundingClientRect();
+  return bounds.width > 0 && bounds.height > 0 &&
+    clientX >= bounds.left && clientX < bounds.right &&
+    clientY >= bounds.top && clientY < bounds.bottom;
+}
