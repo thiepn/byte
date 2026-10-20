@@ -10,6 +10,7 @@ on:
       - "src/features/quick-panel/**"
       - "scripts/audit-visual-assets.mjs"
       - "scripts/build-p1-contact-sheets.ps1"
+      - "scripts/build-p7-habitat-gallery.mjs"
       - ".github/workflows/p1-visual-evidence.yml"
   workflow_dispatch:
 
@@ -39,6 +40,12 @@ jobs:
       - name: Generate original-frame contact sheets
         shell: pwsh
         run: ./scripts/build-p1-contact-sheets.ps1 -OutputDir visual-evidence/p1/contact-sheets
+
+      - name: Generate six-world P7 production habitat gallery
+        shell: pwsh
+        run: |
+          node --check scripts/build-p7-habitat-gallery.mjs
+          node scripts/build-p7-habitat-gallery.mjs --output visual-evidence/p1/byte2-p7-habitat-gallery.html
 
       - name: Upload source art evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

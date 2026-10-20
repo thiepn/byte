@@ -960,6 +960,1661 @@
           "color": "accent2"
         }
       ]
+    },
+    {
+      "id": "p7_city_facade_windows",
+      "plane": "BACK",
+      "order": 11,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 4,
+          "y": 86,
+          "width": 18,
+          "height": 98,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 6,
+          "y": 80,
+          "width": 14,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 8,
+          "y": 77,
+          "width": 6,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 8,
+          "y": 98,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 16,
+          "y": 98,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 8,
+          "y": 113,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 16,
+          "y": 113,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 8,
+          "y": 128,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 16,
+          "y": 128,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 8,
+          "y": 143,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 16,
+          "y": 143,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 27,
+          "y": 115,
+          "width": 22,
+          "height": 98,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 29,
+          "y": 109,
+          "width": 18,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 31,
+          "y": 106,
+          "width": 6,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 31,
+          "y": 127,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 39,
+          "y": 127,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 31,
+          "y": 142,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 39,
+          "y": 142,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 31,
+          "y": 157,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 39,
+          "y": 157,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 31,
+          "y": 172,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 39,
+          "y": 172,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 50,
+          "y": 90,
+          "width": 26,
+          "height": 98,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 52,
+          "y": 84,
+          "width": 22,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 81,
+          "width": 6,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 102,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 62,
+          "y": 102,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 117,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 62,
+          "y": 117,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 132,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 62,
+          "y": 132,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 147,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 62,
+          "y": 147,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 73,
+          "y": 119,
+          "width": 18,
+          "height": 98,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 75,
+          "y": 113,
+          "width": 14,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 77,
+          "y": 110,
+          "width": 6,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 77,
+          "y": 131,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 85,
+          "y": 131,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 77,
+          "y": 146,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 85,
+          "y": 146,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 77,
+          "y": 161,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 85,
+          "y": 161,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 77,
+          "y": 176,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 85,
+          "y": 176,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 96,
+          "y": 94,
+          "width": 22,
+          "height": 98,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 98,
+          "y": 88,
+          "width": 18,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 100,
+          "y": 85,
+          "width": 6,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 100,
+          "y": 106,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 108,
+          "y": 106,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 100,
+          "y": 121,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 108,
+          "y": 121,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 100,
+          "y": 136,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 108,
+          "y": 136,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 100,
+          "y": 151,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 108,
+          "y": 151,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 119,
+          "y": 123,
+          "width": 26,
+          "height": 98,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 121,
+          "y": 117,
+          "width": 22,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 123,
+          "y": 114,
+          "width": 6,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 123,
+          "y": 135,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 131,
+          "y": 135,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 123,
+          "y": 150,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 131,
+          "y": 150,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 123,
+          "y": 165,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 131,
+          "y": 165,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 123,
+          "y": 180,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 131,
+          "y": 180,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 142,
+          "y": 98,
+          "width": 18,
+          "height": 98,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 144,
+          "y": 92,
+          "width": 14,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 146,
+          "y": 89,
+          "width": 6,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 146,
+          "y": 110,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 154,
+          "y": 110,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 146,
+          "y": 125,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 154,
+          "y": 125,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 146,
+          "y": 140,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 154,
+          "y": 140,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 146,
+          "y": 155,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 154,
+          "y": 155,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 165,
+          "y": 127,
+          "width": 22,
+          "height": 98,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 167,
+          "y": 121,
+          "width": 18,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 169,
+          "y": 118,
+          "width": 6,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 169,
+          "y": 139,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 177,
+          "y": 139,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 169,
+          "y": 154,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 177,
+          "y": 154,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 169,
+          "y": 169,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 177,
+          "y": 169,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 169,
+          "y": 184,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 177,
+          "y": 184,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 188,
+          "y": 102,
+          "width": 26,
+          "height": 98,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 190,
+          "y": 96,
+          "width": 22,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 192,
+          "y": 93,
+          "width": 6,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 192,
+          "y": 114,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 200,
+          "y": 114,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 192,
+          "y": 129,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 200,
+          "y": 129,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 192,
+          "y": 144,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 200,
+          "y": 144,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 192,
+          "y": 159,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 200,
+          "y": 159,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 211,
+          "y": 131,
+          "width": 18,
+          "height": 98,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 213,
+          "y": 125,
+          "width": 14,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 215,
+          "y": 122,
+          "width": 6,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 215,
+          "y": 143,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 223,
+          "y": 143,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 215,
+          "y": 158,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 223,
+          "y": 158,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 215,
+          "y": 173,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 223,
+          "y": 173,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 215,
+          "y": 188,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 223,
+          "y": 188,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 234,
+          "y": 106,
+          "width": 22,
+          "height": 98,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 236,
+          "y": 100,
+          "width": 18,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 238,
+          "y": 97,
+          "width": 6,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 238,
+          "y": 118,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 246,
+          "y": 118,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 238,
+          "y": 133,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 246,
+          "y": 133,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 238,
+          "y": 148,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 246,
+          "y": 148,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 238,
+          "y": 163,
+          "width": 4,
+          "height": 6,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 246,
+          "y": 163,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        }
+      ]
+    },
+    {
+      "id": "p7_rooftop_planter_boxes",
+      "plane": "BACK",
+      "order": 26,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 14,
+          "y": 197,
+          "width": 26,
+          "height": 14,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 18,
+          "y": 211,
+          "width": 18,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 21,
+          "y": 172,
+          "width": 5,
+          "height": 26,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 15,
+          "y": 169,
+          "width": 17,
+          "height": 9,
+          "color": "accent2"
+        },
+        {
+          "kind": "RECT",
+          "x": 19,
+          "y": 161,
+          "width": 15,
+          "height": 10,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 22,
+          "y": 156,
+          "width": 7,
+          "height": 7,
+          "color": "ground"
+        },
+        {
+          "kind": "RECT",
+          "x": 215,
+          "y": 196,
+          "width": 26,
+          "height": 14,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 219,
+          "y": 210,
+          "width": 18,
+          "height": 3,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 222,
+          "y": 171,
+          "width": 5,
+          "height": 26,
+          "color": "detail"
+        },
+        {
+          "kind": "RECT",
+          "x": 216,
+          "y": 168,
+          "width": 17,
+          "height": 9,
+          "color": "accent2"
+        },
+        {
+          "kind": "RECT",
+          "x": 220,
+          "y": 160,
+          "width": 15,
+          "height": 10,
+          "color": "far"
+        },
+        {
+          "kind": "RECT",
+          "x": 223,
+          "y": 155,
+          "width": 7,
+          "height": 7,
+          "color": "ground"
+        }
+      ]
+    },
+    {
+      "id": "p7_rail_reflections",
+      "plane": "BACK",
+      "order": 29,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 8,
+          "y": 214,
+          "width": 15,
+          "height": 4,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 10,
+          "y": 217,
+          "width": 2,
+          "height": 13,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 30,
+          "y": 214,
+          "width": 15,
+          "height": 4,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 32,
+          "y": 217,
+          "width": 2,
+          "height": 13,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 52,
+          "y": 214,
+          "width": 15,
+          "height": 4,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 54,
+          "y": 217,
+          "width": 2,
+          "height": 13,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 74,
+          "y": 214,
+          "width": 15,
+          "height": 4,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 76,
+          "y": 217,
+          "width": 2,
+          "height": 13,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 96,
+          "y": 214,
+          "width": 15,
+          "height": 4,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 98,
+          "y": 217,
+          "width": 2,
+          "height": 13,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 118,
+          "y": 214,
+          "width": 15,
+          "height": 4,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 120,
+          "y": 217,
+          "width": 2,
+          "height": 13,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 140,
+          "y": 214,
+          "width": 15,
+          "height": 4,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 142,
+          "y": 217,
+          "width": 2,
+          "height": 13,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 162,
+          "y": 214,
+          "width": 15,
+          "height": 4,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 164,
+          "y": 217,
+          "width": 2,
+          "height": 13,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 184,
+          "y": 214,
+          "width": 15,
+          "height": 4,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 186,
+          "y": 217,
+          "width": 2,
+          "height": 13,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 206,
+          "y": 214,
+          "width": 15,
+          "height": 4,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 208,
+          "y": 217,
+          "width": 2,
+          "height": 13,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 228,
+          "y": 214,
+          "width": 15,
+          "height": 4,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 230,
+          "y": 217,
+          "width": 2,
+          "height": 13,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 250,
+          "y": 214,
+          "width": 15,
+          "height": 4,
+          "color": "far2"
+        },
+        {
+          "kind": "RECT",
+          "x": 252,
+          "y": 217,
+          "width": 2,
+          "height": 13,
+          "color": "shadow"
+        }
+      ]
+    },
+    {
+      "id": "p7_morning_horizon_glints",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 34,
+          "y": 62,
+          "width": 2,
+          "height": 8,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 31,
+          "y": 65,
+          "width": 8,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 219,
+          "y": 56,
+          "width": 2,
+          "height": 8,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 216,
+          "y": 59,
+          "width": 8,
+          "height": 2,
+          "color": "light"
+        }
+      ],
+      "time": [
+        "MORNING"
+      ]
+    },
+    {
+      "id": "p7_day_city_highlights",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 39,
+          "y": 85,
+          "width": 13,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 42,
+          "y": 91,
+          "width": 4,
+          "height": 4,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 196,
+          "y": 85,
+          "width": 13,
+          "height": 3,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 199,
+          "y": 91,
+          "width": 4,
+          "height": 4,
+          "color": "warm"
+        }
+      ],
+      "time": [
+        "DAY"
+      ]
+    },
+    {
+      "id": "p7_evening_windows_illuminated",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 22,
+          "y": 128,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 29,
+          "y": 132,
+          "width": 4,
+          "height": 5,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 207,
+          "y": 112,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 214,
+          "y": 116,
+          "width": 4,
+          "height": 5,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 182,
+          "y": 104,
+          "width": 4,
+          "height": 6,
+          "color": "warm"
+        },
+        {
+          "kind": "RECT",
+          "x": 189,
+          "y": 108,
+          "width": 4,
+          "height": 5,
+          "color": "warm"
+        }
+      ],
+      "time": [
+        "EVENING"
+      ]
+    },
+    {
+      "id": "p7_night_twinkling_windows",
+      "plane": "BACK",
+      "order": 34,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 31,
+          "y": 28,
+          "width": 2,
+          "height": 8,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 28,
+          "y": 31,
+          "width": 8,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 100,
+          "y": 22,
+          "width": 2,
+          "height": 8,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 97,
+          "y": 25,
+          "width": 8,
+          "height": 2,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 211,
+          "y": 40,
+          "width": 2,
+          "height": 8,
+          "color": "light"
+        },
+        {
+          "kind": "RECT",
+          "x": 208,
+          "y": 43,
+          "width": 8,
+          "height": 2,
+          "color": "light"
+        }
+      ],
+      "time": [
+        "NIGHT"
+      ]
+    },
+    {
+      "id": "p7_brick_borders",
+      "plane": "FRONT",
+      "order": 77,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "RECT",
+          "x": 8,
+          "y": 240,
+          "width": 28,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 12,
+          "y": 247,
+          "width": 18,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 40,
+          "y": 240,
+          "width": 28,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 44,
+          "y": 247,
+          "width": 18,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 72,
+          "y": 240,
+          "width": 28,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 76,
+          "y": 247,
+          "width": 18,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 104,
+          "y": 240,
+          "width": 28,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 108,
+          "y": 247,
+          "width": 18,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 136,
+          "y": 240,
+          "width": 28,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 140,
+          "y": 247,
+          "width": 18,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 168,
+          "y": 240,
+          "width": 28,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 172,
+          "y": 247,
+          "width": 18,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 200,
+          "y": 240,
+          "width": 28,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 204,
+          "y": 247,
+          "width": 18,
+          "height": 2,
+          "color": "shadow"
+        },
+        {
+          "kind": "RECT",
+          "x": 232,
+          "y": 240,
+          "width": 28,
+          "height": 4,
+          "color": "ground2"
+        },
+        {
+          "kind": "RECT",
+          "x": 236,
+          "y": 247,
+          "width": 18,
+          "height": 2,
+          "color": "shadow"
+        }
+      ]
+    },
+    {
+      "id": "p7_companion_contact_shadow",
+      "plane": "BACK",
+      "order": 33,
+      "modes": [
+        "HABITAT"
+      ],
+      "primitives": [
+        {
+          "kind": "ELLIPSE",
+          "x": 128,
+          "y": 219,
+          "radiusX": 29,
+          "radiusY": 6,
+          "color": "shadow"
+        }
+      ],
+      "opacity": 0.32
     }
   ],
   "decorationSlots": [
