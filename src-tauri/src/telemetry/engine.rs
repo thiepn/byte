@@ -163,7 +163,8 @@ mod tests {
         assert_eq!(snapshot.overall_status, SystemStatus::Calm);
         assert!((snapshot.cpu.value - 18.0).abs() < 0.001);
         assert!((snapshot.memory.value - 50.0).abs() < 0.001);
-        assert_eq!(snapshot.storage.available, Some(287.0));
+        let storage_available = snapshot.storage.available.expect("storage available");
+        assert!((storage_available - 287.0).abs() < 0.001);
         assert_eq!(snapshot.storage.available_unit.as_deref(), Some("GiB"));
         assert_eq!(snapshot.memory.available, Some(8.0));
         assert_eq!(snapshot.memory.available_unit.as_deref(), Some("GiB"));
