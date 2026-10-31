@@ -50,7 +50,7 @@ impl<S: TelemetrySource> TelemetryEngine<S> {
                 unit: "%".into(),
                 state: ResourceState::Normal,
                 available: Some(storage.available_bytes as f32 / BYTES_PER_GIB),
-                available_unit: Some("GB".into()),
+                available_unit: Some("GiB".into()),
             },
             _ => unavailable_resource("%"),
         };
@@ -101,7 +101,7 @@ impl<S: TelemetrySource> TelemetryEngine<S> {
                 available_unit: if raw.memory_total_bytes == 0 {
                     None
                 } else {
-                    Some("GB".into())
+                    Some("GiB".into())
                 },
             },
             storage,
@@ -163,7 +163,10 @@ mod tests {
         assert_eq!(snapshot.overall_status, SystemStatus::Calm);
         assert!((snapshot.cpu.value - 18.0).abs() < 0.001);
         assert!((snapshot.memory.value - 50.0).abs() < 0.001);
-        assert!(snapshot.storage.available.is_some());
+        assert_eq!(snapshot.storage.available, Some(287.0));
+        assert_eq!(snapshot.storage.available_unit.as_deref(), Some("GiB"));
+        assert_eq!(snapshot.memory.available, Some(8.0));
+        assert_eq!(snapshot.memory.available_unit.as_deref(), Some("GiB"));
         assert!(snapshot.battery.is_some());
         assert!(snapshot.thermal.is_some());
         assert!(snapshot.primary_issue.is_none());

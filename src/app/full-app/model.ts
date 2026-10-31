@@ -146,10 +146,10 @@ export function confidenceLabel(confidence: Confidence | null): string {
 export function formatMemoryMb(memoryMb: number): string {
   if (!Number.isFinite(memoryMb) || memoryMb < 0) return "—";
   if (memoryMb >= 1024) {
-    const gb = memoryMb / 1024;
-    return `${gb >= 10 ? Math.round(gb) : gb.toFixed(1)} GB`;
+    const gib = memoryMb / 1024;
+    return `${gib >= 10 ? Math.round(gib) : gib.toFixed(1)} GiB`;
   }
-  return `${Math.round(memoryMb)} MB`;
+  return `${Math.round(memoryMb)} MiB`;
 }
 
 export function formatShare(share: number): string {
