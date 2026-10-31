@@ -370,7 +370,7 @@ fn storage_issue(active: ActiveCondition, snapshot: &SystemSnapshot) -> SystemIs
         },
         explanation: format!(
             "About {} remains available on the monitored drive.",
-            format_gb(available)
+            format_gib(available)
         ),
         culprit: None,
         confidence: Confidence::High,
@@ -489,11 +489,11 @@ fn issue_priority(issue: &SystemIssue) -> (u8, u8) {
     (severity, category)
 }
 
-fn format_gb(value: f32) -> String {
+fn format_gib(value: f32) -> String {
     if value < 10.0 {
-        format!("{value:.1} GB")
+        format!("{value:.1} GiB")
     } else {
-        format!("{value:.0} GB")
+        format!("{value:.0} GiB")
     }
 }
 
@@ -502,6 +502,12 @@ mod tests {
     use super::*;
     use crate::models::{BatterySummary, NetworkSummary};
     use processes::Attribution;
+
+    #[test]
+    fn storage_explanations_use_binary_units() {
+        assert_eq!(format_gib(1.5), "1.5 GiB");
+        assert_eq!(format_gib(20.0), "20 GiB");
+    }
 
     struct MockCulprits {
         cpu: Option<Attribution>,
@@ -554,7 +560,7 @@ mod tests {
             unit: "%".into(),
             state: ResourceState::Normal,
             available,
-            available_unit: available.map(|_| "GB".into()),
+            available_unit: available.map(|_| "GiB".into()),
         }
     }
 

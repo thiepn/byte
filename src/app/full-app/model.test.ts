@@ -94,7 +94,8 @@ describe("full application presentation model", () => {
     };
 
     expect(appSignalLabel(app)).toBe("CPU + memory");
-    expect(formatMemoryMb(app.memory_mb)).toBe("1.5 GB");
+    expect(formatMemoryMb(app.memory_mb)).toBe("1.5 GiB");
+    expect(formatMemoryMb(512)).toBe("512 MiB");
     expect(formatShare(app.memory_share)).toBe("40%");
   });
 

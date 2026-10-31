@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   security-audit:
-    name: Weekly security audit
+    name: Weekly frontend security audit
     runs-on: windows-latest
     timeout-minutes: 35
     steps:
@@ -39,6 +39,18 @@ jobs:
 
       - name: Frontend dependency audit
         run: npm audit --audit-level=high
+
+  # Keep the Rust audit independent: a failing npm audit must not skip it.
+  rust-security-audit:
+    name: Weekly Rust dependency audit
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Rust
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
 
       - name: Install cargo-audit
         run: cargo install cargo-audit --locked --version 0.22.2

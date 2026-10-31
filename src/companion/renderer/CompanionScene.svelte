@@ -26,7 +26,7 @@
   } from "../../lib/types/domain";
   import { hashSeed } from "../animation/random";
   import { HabitatParticleEngine } from "../habitats/particles";
-  import { currentTimeOfDay } from "../habitats/time";
+  import { currentTimeOfDay, withCurrentTimeOfDay } from "../habitats/time";
   import { habitatReactionsForSnapshot } from "../habitats/reactions";
   import type {
     HabitatManifest,
@@ -92,6 +92,7 @@
   let forceReducedMotion = false;
   let lifecycleSuspended = false;
   let companionVisible = true;
+  let lastDaypartCheckAt = Number.NEGATIVE_INFINITY;
   let interactionLevel: InteractionLevel = "NORMAL";
   const directInteraction = new DirectInteractionController();
   let suppressSceneClickFromGesture = false;
@@ -280,6 +281,13 @@
   function renderFrame(deltaMs: number): void {
     if (lifecycleSuspended || !animator || !characterRenderer) return;
 
+    // Reuse the running animation scheduler: no separate clock or hardware poll.
+    const now = performance.now();
+    if (now - lastDaypartCheckAt >= 60_000 || now < lastDaypartCheckAt) {
+      lastDaypartCheckAt = now;
+      habitatState = withCurrentTimeOfDay(habitatState);
+    }
+
     if (habitatState.interactionIntensity > 0) {
       habitatState.interactionIntensity = Math.max(
         0,
@@ -359,6 +367,7 @@
         !companionVisible ||
         unsubscribeAnimation
       ) return;
+      lastDaypartCheckAt = Number.NEGATIVE_INFINITY;
       unsubscribeAnimation = animationScheduler.subscribe(({ deltaMs }) => {
         renderFrame(deltaMs);
       });
