@@ -4,6 +4,8 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-31
+
 ### Added
 
 - Added P7 Release Completion & Post-Publish Certification: fresh public-release re-downloads, signed artifact/checksum verification, public portable and installer lifecycle execution, GitHub provenance checks, release-page/channel/tag validation, the seventh `public-release-certification.json` release asset, and final `release-completion-vX.Y.Z.json` closure receipts.
@@ -53,9 +55,16 @@ Byte follows a human-readable changelog for user-visible and release-engineering
 
 ### Fixed
 
+- Fixed visible companion habitat dayparts not refreshing at local-time boundaries when telemetry was unchanged; the existing animation scheduler checks wall time and refreshes on visibility resume.
+- Corrected binary memory and storage size labels to GiB/MiB instead of decimal GB/MB, without changing the underlying measurement values.
+- Stabilized a Rust telemetry fixture's floating-point comparison without changing production calculations.
+
 - Restored vertical scrolling in the main application and onboarding at constrained window heights and large interface scales by bounding the app shell to the WebView viewport and making the intended content regions explicit scroll containers.
 
 ### Security
+
+- Updated Vite to 8.3.4 with its required Rolldown/PostCSS lockfile updates and Vitest to the patched 4.1.12 family, resolving the previously reported moderate-severity Vitest mocker advisories. The dependency audit retains two low-severity deepmerge/Svelte build-tool findings.
+- Added an independent weekly Rust dependency audit; twelve previously documented allowed Cargo warnings remain under maintenance review.
 
 - Portable `Byte.exe` is explicitly signed after Tauri bundling, preventing the restored standalone binary from bypassing the public signing policy.
 - Public release publication now requires the same Authenticode signer on installer and portable executable, timestamps on both, and a successful re-download verification after GitHub Release upload.
