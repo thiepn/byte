@@ -1,6 +1,6 @@
 [package]
 name = "byte-desktop"
-version = "0.1.0"
+version = "0.1.1"
 description = "Privacy-first Windows desktop companion for understandable system health"
 authors = ["thiepn"]
 homepage = "https://github.com/thiepn/byte"
