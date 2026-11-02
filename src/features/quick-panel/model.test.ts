@@ -3,6 +3,7 @@ import type { SystemSnapshot } from "../../lib/types/domain";
 import {
   actionLabel,
   networkLabel,
+  panelPrimaryAction,
   quickMetrics,
   relativeFreshness,
   statusTone,
@@ -85,6 +86,22 @@ describe("Quick Panel presentation model", () => {
     expect(actionLabel("OPEN_STORAGE_SETTINGS")).toBe("Open Storage Settings");
     expect(actionLabel("OPEN_BATTERY_SETTINGS")).toBe("Open Battery Settings");
     expect(actionLabel("VIEW_DETAILS")).toBe("View details");
+  });
+
+  it("shows exactly one safe primary action and does not invent remediation", () => {
+    const calm = snapshot();
+    expect(panelPrimaryAction(calm)).toBe("VIEW_DETAILS");
+    const issue = {
+      id: "memory-pressure", category: "MEMORY" as const, severity: "HIGH" as const,
+      headline: "Memory pressure", explanation: "Sustained memory use",
+      culprit: null, confidence: "HIGH" as const, culprit_confidence: null,
+      recommended_action: { kind: "OPEN_TASK_MANAGER" as const, label: "Open Task Manager" },
+      started_at_epoch_ms: 0,
+    };
+    expect(panelPrimaryAction({ ...calm, primary_issue: issue })).toBe("OPEN_TASK_MANAGER");
+    expect(panelPrimaryAction({
+      ...calm, primary_issue: { ...issue, recommended_action: null },
+    })).toBe("VIEW_DETAILS");
   });
 
   it("communicates cached snapshot age", () => {

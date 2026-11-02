@@ -21,6 +21,7 @@
   import { statusPresentation } from "../../lib/domain/presentation";
   import {
     actionLabel,
+    panelPrimaryAction,
     networkLabel,
     quickMetrics,
     relativeFreshness,
@@ -28,6 +29,7 @@
     thermalLabel,
   } from "./model";
   import { executeAndClose } from "./action-lifecycle";
+  import QuickMascot from "./QuickMascot.svelte";
 
   const DISPLAY_MODES: Array<{ id: DisplayMode; label: string }> = [
     { id: "HABITAT", label: "Habitat" },
@@ -254,45 +256,35 @@
 >
   <header>
     <div class="brand">
-      <span class="brand-mark" aria-hidden="true">B</span>
-      <div>
-        <strong>Byte</strong>
-        <span>{snapshot ? relativeFreshness(snapshot.timestamp_epoch_ms) : "Local system status"}</span>
-      </div>
+      <strong>Byte</strong>
+      <span>{snapshot ? relativeFreshness(snapshot.timestamp_epoch_ms) : "Local companion"}</span>
     </div>
-    <button
-      class="icon-button"
-      aria-label="Close Byte panel"
-      onclick={() => void requestClose()}
-    >×</button>
+    <button class="icon-button" aria-label="Close Byte panel" onclick={() => void requestClose()}>×</button>
   </header>
+
+  {#if panelOpen && preferences}
+    <section class="companion-hero" class:warning={snapshot && statusTone(snapshot.overall_status) === "warning"} class:critical={snapshot && statusTone(snapshot.overall_status) === "critical"} aria-label="Companion and system status">
+      <QuickMascot preferences={preferences.companion} snapshot={snapshot && snapshotReady(snapshot) ? snapshot : null} forceReducedMotion={preferences.app.reduce_motion} />
+      <div class="hero-copy">
+        <span class="hero-character">{preferences.companion.character.toLowerCase()} · {preferences.companion.habitat.toLowerCase()}</span>
+        {#if snapshot && snapshotReady(snapshot)}
+          <strong>{snapshot.primary_issue?.headline ?? statusPresentation(snapshot.overall_status).title}</strong>
+          <p>{snapshot.primary_issue?.explanation ?? statusPresentation(snapshot.overall_status).description}</p>
+        {:else}
+          <strong>Your companion is here</strong>
+          <p>{unavailableMessage()}</p>
+        {/if}
+      </div>
+    </section>
+  {/if}
 
   {#if errorMessage}
     <div class="message error" role="alert">{errorMessage}</div>
   {:else if snapshot && snapshotReady(snapshot)}
-    <section
-      class="status-card"
-      class:normal={statusTone(snapshot.overall_status) === "normal"}
-      class:info={statusTone(snapshot.overall_status) === "info"}
-      class:warning={statusTone(snapshot.overall_status) === "warning"}
-      class:critical={statusTone(snapshot.overall_status) === "critical"}
-    >
-      <span class="status-dot" aria-hidden="true"></span>
-      <div>
-        <strong>{statusPresentation(snapshot.overall_status).title}</strong>
-        <p>{statusPresentation(snapshot.overall_status).description}</p>
-      </div>
-    </section>
-
-    {#if snapshot.primary_issue}
-      <section class="issue-card">
-        <div class="issue-topline">
-          <strong>{snapshot.primary_issue.headline}</strong>
-          <span>{snapshot.primary_issue.severity.toLowerCase()}</span>
-        </div>
-        <p>{snapshot.primary_issue.explanation}</p>
-
-        {#if snapshot.primary_issue.culprit}
+    {#if snapshot.primary_issue?.culprit || snapshot.secondary_issue_count > 0}
+      <details class="issue-context">
+        <summary>Issue context</summary>
+        {#if snapshot.primary_issue?.culprit}
           <div class="culprit">
             <span>Likely contributor</span>
             <strong>{snapshot.primary_issue.culprit.name}</strong>
@@ -301,99 +293,57 @@
             {/if}
           </div>
         {/if}
-
         {#if snapshot.secondary_issue_count > 0}
-          <small class="secondary-count">
-            +{snapshot.secondary_issue_count} additional {snapshot.secondary_issue_count === 1 ? "issue" : "issues"}
-          </small>
+          <p>{snapshot.secondary_issue_count} additional {snapshot.secondary_issue_count === 1 ? "issue" : "issues"} in Byte</p>
         {/if}
-
-        {#if snapshot.primary_issue.recommended_action}
-          <button
-            class="issue-action"
-            disabled={Boolean(busyAction)}
-            onclick={() =>
-              void runRecommendedAction(
-                snapshot!.primary_issue!.recommended_action!.kind,
-              )}
-          >
-            {busyAction === snapshot.primary_issue.recommended_action.kind
-              ? "Opening…"
-              : actionLabel(snapshot.primary_issue.recommended_action.kind)}
-          </button>
-        {/if}
-      </section>
+      </details>
     {/if}
 
-    <section class="metrics" aria-label="Current system resources">
-      {#each quickMetrics(snapshot) as metric}
-        <article class="metric">
-          <div class="metric-heading">
-            <span>{metric.label}</span>
-            <strong>{metric.value}</strong>
-          </div>
-          <div
-            class="meter"
-            class:elevated={metric.state === "ELEVATED"}
-            class:high={metric.state === "HIGH"}
-            class:critical={metric.state === "CRITICAL"}
-            aria-hidden="true"
-          >
-            <span style:width={metric.percent + "%"}></span>
-          </div>
-          <small>{metric.detail}</small>
-        </article>
-      {/each}
-    </section>
+    <button class="primary-action" disabled={Boolean(busyAction)} onclick={() => void runRecommendedAction(panelPrimaryAction(snapshot))}>
+      {busyAction === panelPrimaryAction(snapshot) ? "Opening…" : actionLabel(panelPrimaryAction(snapshot))}
+    </button>
 
-    <div class="context-row">
-      <span><strong>Network</strong> {networkLabel(snapshot)}</span>
-      {#if thermalLabel(snapshot)}
-        <span><strong>Temperature</strong> {thermalLabel(snapshot)}</span>
-      {/if}
-    </div>
-
-    <section class="controls">
-      <div class="section-label">
-        <strong>Companion</strong>
-        <button
-          class="text-button"
-          disabled={Boolean(busyAction)}
-          onclick={() => void runRecommendedAction("VIEW_DETAILS")}
-        >Open Byte</button>
-      </div>
-
-      <div class="mode-row" aria-label="Display mode">
-        {#each DISPLAY_MODES as mode}
-          <button
-            class:selected={preferences?.companion.display_mode === mode.id}
-            aria-pressed={preferences?.companion.display_mode === mode.id}
-            disabled={Boolean(busyAction)}
-            onclick={() => void changeMode(mode.id)}
-          >{mode.label}</button>
+    <details class="system-details">
+      <summary>System details</summary>
+      <section class="metrics" aria-label="Current system resources">
+        {#each quickMetrics(snapshot) as metric}
+          <article class="metric">
+            <div class="metric-heading"><span>{metric.label}</span><strong>{metric.value}</strong></div>
+            <div class="meter" class:elevated={metric.state === "ELEVATED"} class:high={metric.state === "HIGH"} class:critical={metric.state === "CRITICAL"} aria-hidden="true">
+              <span style:width={metric.percent + "%"}></span>
+            </div>
+            <small>{metric.detail}</small>
+          </article>
         {/each}
+      </section>
+      <div class="context-row">
+        <span><strong>Network</strong> {networkLabel(snapshot)}</span>
+        {#if thermalLabel(snapshot)}
+          <span><strong>Temperature</strong> {thermalLabel(snapshot)}</span>
+        {/if}
       </div>
-
-      <div class="utility-row">
-        <button disabled={Boolean(busyAction)} onclick={() => void moveByte()}>
-          Move Byte
-        </button>
-        <button
-          class:active={shell?.click_through}
-          aria-pressed={Boolean(shell?.click_through)}
-          disabled={Boolean(busyAction)}
-          onclick={() => void toggleClickThrough()}
-        >
-          {shell?.click_through ? "Click-through on" : "Click-through off"}
-        </button>
-      </div>
-    </section>
-
-    {#if actionError}
-      <div class="inline-error" role="alert">{actionError}</div>
-    {/if}
-  {:else}
+    </details>
+  {:else if !preferences}
     <div class="message" role="status">{unavailableMessage()}</div>
+  {/if}
+
+  <section class="controls" aria-label="Companion controls">
+    <strong>Companion controls</strong>
+    <div class="mode-row" aria-label="Display mode">
+      {#each DISPLAY_MODES as mode}
+        <button class:selected={preferences?.companion.display_mode === mode.id} aria-pressed={preferences?.companion.display_mode === mode.id} disabled={Boolean(busyAction) || !preferences} onclick={() => void changeMode(mode.id)}>{mode.label}</button>
+      {/each}
+    </div>
+    <div class="utility-row">
+      <button disabled={Boolean(busyAction)} onclick={() => void moveByte()}>Move Byte</button>
+      <button class:active={shell?.click_through} aria-pressed={Boolean(shell?.click_through)} disabled={Boolean(busyAction) || !shell} onclick={() => void toggleClickThrough()}>
+        {shell?.click_through ? "Click-through on" : "Click-through off"}
+      </button>
+    </div>
+  </section>
+
+  {#if actionError}
+    <div class="inline-error" role="alert">{actionError}</div>
   {/if}
 </div>
 
@@ -748,6 +698,27 @@
     text-align: center;
     font-size: 10px;
   }
+
+  .brand { display: grid; gap: 1px; }
+  .brand strong { font-size: 15px; }
+  .brand > span { color: var(--text-muted); font-size: 12px; }
+  .companion-hero { display: flex; align-items: center; gap: 11px; padding: 11px 9px; border: 1px solid var(--border-default); border-radius: var(--radius-card); background: var(--surface-raised); }
+  .companion-hero.warning { border-color: var(--status-warning); }
+  .companion-hero.critical { border-color: var(--status-critical); }
+  .hero-copy { min-width: 0; display: grid; gap: 5px; }
+  .hero-character { text-transform: capitalize; font-size: 12px; color: var(--text-muted); }
+  .hero-copy strong { font-size: 14px; line-height: 1.25; }
+  .hero-copy p { margin: 0; font-size: 12px; line-height: 1.35; color: var(--text-secondary); overflow-wrap: anywhere; }
+  .primary-action { display: block; width: 100%; margin-top: 10px; padding: 10px 12px; border: 0; border-radius: 9px; background: var(--accent-primary); color: var(--accent-contrast); font-weight: 700; cursor: pointer; }
+  .system-details, .issue-context { margin-top: 9px; padding: 8px 10px; border: 1px solid var(--border-default); border-radius: 9px; background: var(--surface-base); }
+  .system-details summary, .issue-context summary { font-size: 12px; font-weight: 650; cursor: pointer; }
+  .system-details summary:focus-visible, .issue-context summary:focus-visible, button:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+  .issue-context p { font-size: 12px; margin: 6px 0 0; color: var(--text-secondary); }
+  .issue-context .culprit { margin-top: 8px; }
+  .controls > strong { display: block; margin-bottom: 8px; font-size: 12px; }
+  .mode-row button, .utility-row button { font-size: 12px; }
+  .metric-heading, .metric small, .context-row { font-size: 12px; }
+  @media (forced-colors: active) { .companion-hero, .system-details, .issue-context, .primary-action { border: 1px solid CanvasText; } }
 
   @media (prefers-reduced-motion: reduce) {
     .meter span {
