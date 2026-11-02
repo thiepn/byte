@@ -84,6 +84,11 @@ export function thermalLabel(snapshot: SystemSnapshot): string | null {
   return `${Math.round(snapshot.thermal.value)}${snapshot.thermal.unit}`;
 }
 
+/** One actionable path: an issue's safe recommended action, otherwise full details. */
+export function panelPrimaryAction(snapshot: SystemSnapshot | null): RecommendedActionKind {
+  return snapshot?.primary_issue?.recommended_action?.kind ?? "VIEW_DETAILS";
+}
+
 export function actionLabel(action: RecommendedActionKind): string {
   switch (action) {
     case "OPEN_TASK_MANAGER":

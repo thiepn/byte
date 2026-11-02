@@ -21,6 +21,7 @@
   import { statusPresentation } from "../../lib/domain/presentation";
   import {
     actionLabel,
+    panelPrimaryAction,
     networkLabel,
     quickMetrics,
     relativeFreshness,
@@ -28,6 +29,7 @@
     thermalLabel,
   } from "./model";
   import { executeAndClose } from "./action-lifecycle";
+  import QuickMascot from "./QuickMascot.svelte";
 
   const DISPLAY_MODES: Array<{ id: DisplayMode; label: string }> = [
     { id: "HABITAT", label: "Habitat" },
@@ -254,45 +256,35 @@
 >
   <header>
     <div class="brand">
-      <span class="brand-mark" aria-hidden="true">B</span>
-      <div>
-        <strong>Byte</strong>
-        <span>{snapshot ? relativeFreshness(snapshot.timestamp_epoch_ms) : "Local system status"}</span>
-      </div>
+      <strong>Byte</strong>
+      <span>{snapshot ? relativeFreshness(snapshot.timestamp_epoch_ms) : "Local companion"}</span>
     </div>
-    <button
-      class="icon-button"
-      aria-label="Close Byte panel"
-      onclick={() => void requestClose()}
-    >×</button>
+    <button class="icon-button" aria-label="Close Byte panel" onclick={() => void requestClose()}>×</button>
   </header>
+
+  {#if panelOpen && preferences}
+    <section class="companion-hero" class:warning={snapshot && statusTone(snapshot.overall_status) === "warning"} class:critical={snapshot && statusTone(snapshot.overall_status) === "critical"} aria-label="Companion and system status">
+      <QuickMascot preferences={preferences.companion} snapshot={snapshot && snapshotReady(snapshot) ? snapshot : null} forceReducedMotion={preferences.app.reduce_motion} />
+      <div class="hero-copy">
+        <span class="hero-character">{preferences.companion.character.toLowerCase()} · {preferences.companion.habitat.toLowerCase()}</span>
+        {#if snapshot && snapshotReady(snapshot)}
+          <strong>{snapshot.primary_issue?.headline ?? statusPresentation(snapshot.overall_status).title}</strong>
+          <p>{snapshot.primary_issue?.explanation ?? statusPresentation(snapshot.overall_status).description}</p>
+        {:else}
+          <strong>Your companion is here</strong>
+          <p>{unavailableMessage()}</p>
+        {/if}
+      </div>
+    </section>
+  {/if}
 
   {#if errorMessage}
     <div class="message error" role="alert">{errorMessage}</div>
   {:else if snapshot && snapshotReady(snapshot)}
-    <section
-      class="status-card"
-      class:normal={statusTone(snapshot.overall_status) === "normal"}
-      class:info={statusTone(snapshot.overall_status) === "info"}
-      class:warning={statusTone(snapshot.overall_status) === "warning"}
-      class:critical={statusTone(snapshot.overall_status) === "critical"}
-    >
-      <span class="status-dot" aria-hidden="true"></span>
-      <div>
-        <strong>{statusPresentation(snapshot.overall_status).title}</strong>
-        <p>{statusPresentation(snapshot.overall_status).description}</p>
-      </div>
-    </section>
-
-    {#if snapshot.primary_issue}
-      <section class="issue-card">
-        <div class="issue-topline">
-          <strong>{snapshot.primary_issue.headline}</strong>
-          <span>{snapshot.primary_issue.severity.toLowerCase()}</span>
-        </div>
-        <p>{snapshot.primary_issue.explanation}</p>
-
-        {#if snapshot.primary_issue.culprit}
+    {#if snapshot.primary_issue?.culprit || snapshot.secondary_issue_count > 0}
+      <details class="issue-context">
+        <summary>Issue context</summary>
+        {#if snapshot.primary_issue?.culprit}
           <div class="culprit">
             <span>Likely contributor</span>
             <strong>{snapshot.primary_issue.culprit.name}</strong>
@@ -301,105 +293,67 @@
             {/if}
           </div>
         {/if}
-
         {#if snapshot.secondary_issue_count > 0}
-          <small class="secondary-count">
-            +{snapshot.secondary_issue_count} additional {snapshot.secondary_issue_count === 1 ? "issue" : "issues"}
-          </small>
+          <p>{snapshot.secondary_issue_count} additional {snapshot.secondary_issue_count === 1 ? "issue" : "issues"} in Byte</p>
         {/if}
-
-        {#if snapshot.primary_issue.recommended_action}
-          <button
-            class="issue-action"
-            disabled={Boolean(busyAction)}
-            onclick={() =>
-              void runRecommendedAction(
-                snapshot!.primary_issue!.recommended_action!.kind,
-              )}
-          >
-            {busyAction === snapshot.primary_issue.recommended_action.kind
-              ? "Opening…"
-              : actionLabel(snapshot.primary_issue.recommended_action.kind)}
-          </button>
-        {/if}
-      </section>
+      </details>
     {/if}
 
-    <section class="metrics" aria-label="Current system resources">
-      {#each quickMetrics(snapshot) as metric}
-        <article class="metric">
-          <div class="metric-heading">
-            <span>{metric.label}</span>
-            <strong>{metric.value}</strong>
-          </div>
-          <div
-            class="meter"
-            class:elevated={metric.state === "ELEVATED"}
-            class:high={metric.state === "HIGH"}
-            class:critical={metric.state === "CRITICAL"}
-            aria-hidden="true"
-          >
-            <span style:width={metric.percent + "%"}></span>
-          </div>
-          <small>{metric.detail}</small>
-        </article>
-      {/each}
-    </section>
-
-    <div class="context-row">
-      <span><strong>Network</strong> {networkLabel(snapshot)}</span>
-      {#if thermalLabel(snapshot)}
-        <span><strong>Temperature</strong> {thermalLabel(snapshot)}</span>
-      {/if}
-    </div>
-
-    <section class="controls">
-      <div class="section-label">
-        <strong>Companion</strong>
-        <button
-          class="text-button"
-          disabled={Boolean(busyAction)}
-          onclick={() => void runRecommendedAction("VIEW_DETAILS")}
-        >Open Byte</button>
-      </div>
-
-      <div class="mode-row" aria-label="Display mode">
-        {#each DISPLAY_MODES as mode}
-          <button
-            class:selected={preferences?.companion.display_mode === mode.id}
-            aria-pressed={preferences?.companion.display_mode === mode.id}
-            disabled={Boolean(busyAction)}
-            onclick={() => void changeMode(mode.id)}
-          >{mode.label}</button>
+    <details class="system-details">
+      <summary>System details</summary>
+      <section class="metrics" aria-label="Current system resources">
+        {#each quickMetrics(snapshot) as metric}
+          <article class="metric">
+            <div class="metric-heading"><span>{metric.label}</span><strong>{metric.value}</strong></div>
+            <div class="meter" class:elevated={metric.state === "ELEVATED"} class:high={metric.state === "HIGH"} class:critical={metric.state === "CRITICAL"} aria-hidden="true">
+              <span style:width={metric.percent + "%"}></span>
+            </div>
+            <small>{metric.detail}</small>
+          </article>
         {/each}
+      </section>
+      <div class="context-row">
+        <span><strong>Network</strong> {networkLabel(snapshot)}</span>
+        {#if thermalLabel(snapshot)}
+          <span><strong>Temperature</strong> {thermalLabel(snapshot)}</span>
+        {/if}
       </div>
-
-      <div class="utility-row">
-        <button disabled={Boolean(busyAction)} onclick={() => void moveByte()}>
-          Move Byte
-        </button>
-        <button
-          class:active={shell?.click_through}
-          aria-pressed={Boolean(shell?.click_through)}
-          disabled={Boolean(busyAction)}
-          onclick={() => void toggleClickThrough()}
-        >
-          {shell?.click_through ? "Click-through on" : "Click-through off"}
-        </button>
-      </div>
-    </section>
-
-    {#if actionError}
-      <div class="inline-error" role="alert">{actionError}</div>
-    {/if}
-  {:else}
+    </details>
+  {:else if !preferences}
     <div class="message" role="status">{unavailableMessage()}</div>
+  {/if}
+
+  <button class="primary-action" disabled={Boolean(busyAction)} onclick={() => void runRecommendedAction(panelPrimaryAction(snapshot && snapshotReady(snapshot) ? snapshot : null))}>
+    {busyAction === panelPrimaryAction(snapshot && snapshotReady(snapshot) ? snapshot : null)
+      ? "Opening…"
+      : actionLabel(panelPrimaryAction(snapshot && snapshotReady(snapshot) ? snapshot : null))}
+  </button>
+
+  <section class="controls" aria-label="Companion controls">
+    <strong>Companion controls</strong>
+    <div class="mode-row" aria-label="Display mode">
+      {#each DISPLAY_MODES as mode}
+        <button class:selected={preferences?.companion.display_mode === mode.id} aria-pressed={preferences?.companion.display_mode === mode.id} disabled={Boolean(busyAction) || !preferences} onclick={() => void changeMode(mode.id)}>{mode.label}</button>
+      {/each}
+    </div>
+    <div class="utility-row">
+      <button disabled={Boolean(busyAction)} onclick={() => void moveByte()}>Move Byte</button>
+      <button class:active={shell?.click_through} aria-pressed={Boolean(shell?.click_through)} disabled={Boolean(busyAction) || !shell} onclick={() => void toggleClickThrough()}>
+        {shell?.click_through ? "Click-through on" : "Click-through off"}
+      </button>
+    </div>
+  </section>
+
+  {#if actionError}
+    <div class="inline-error" role="alert">{actionError}</div>
   {/if}
 </div>
 
 <style>
   .panel {
-    height: 100vh;
+    /* Body zoom enlarges the WebView content but native window height is fixed.
+       Keep the inner scroller within the actual window at 100–200% scale. */
+    height: calc(100vh / var(--byte-text-scale, 1));
     overflow: auto;
     padding: 14px;
     background: var(--surface-overlay);
@@ -414,10 +368,7 @@
   }
 
   header,
-  .brand,
   .metric-heading,
-  .issue-topline,
-  .section-label,
   .utility-row {
     display: flex;
     align-items: center;
@@ -427,36 +378,6 @@
     justify-content: space-between;
     gap: var(--space-12);
     margin-bottom: 10px;
-  }
-
-  .brand {
-    gap: 9px;
-  }
-
-  .brand > div {
-    display: grid;
-    gap: 1px;
-  }
-
-  .brand strong {
-    font-size: 13px;
-  }
-
-  .brand span:last-child {
-    color: var(--text-muted);
-    font-size: 10px;
-  }
-
-  .brand-mark {
-    width: 27px;
-    height: 27px;
-    display: grid;
-    place-items: center;
-    border-radius: 8px;
-    background: var(--accent-primary);
-    color: var(--accent-contrast);
-    font-size: 12px;
-    font-weight: 800;
   }
 
   button {
@@ -474,73 +395,8 @@
     cursor: pointer;
   }
 
-  .icon-button:hover,
-  .text-button:hover {
+  .icon-button:hover {
     background: var(--surface-selected);
-  }
-
-  .status-card {
-    display: flex;
-    gap: 10px;
-    padding: 12px;
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-card);
-    background: var(--surface-raised);
-  }
-
-  .status-card p {
-    margin: 3px 0 0;
-    color: var(--text-secondary);
-    font-size: 11px;
-    line-height: 1.4;
-  }
-
-  .status-dot {
-    width: 9px;
-    height: 9px;
-    flex: 0 0 auto;
-    margin-top: 3px;
-    border-radius: 50%;
-    background: var(--status-normal);
-  }
-
-  .status-card.info .status-dot {
-    background: var(--status-info);
-  }
-
-  .status-card.warning .status-dot {
-    background: var(--status-warning);
-  }
-
-  .status-card.critical .status-dot {
-    background: var(--status-critical);
-  }
-
-  .issue-card {
-    margin-top: 8px;
-    padding: 11px;
-    border: 1px solid color-mix(in srgb, var(--status-warning) 55%, var(--border-default));
-    border-radius: var(--radius-card);
-    background: color-mix(in srgb, var(--status-warning) 7%, var(--surface-raised));
-  }
-
-  .issue-topline {
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .issue-topline > span {
-    color: var(--text-muted);
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  .issue-card p {
-    margin: 5px 0 8px;
-    color: var(--text-secondary);
-    font-size: 11px;
-    line-height: 1.42;
   }
 
   .culprit {
@@ -554,31 +410,12 @@
   }
 
   .culprit span,
-  .culprit small,
-  .secondary-count {
+  .culprit small {
     color: var(--text-muted);
   }
 
   .culprit small {
     grid-column: 1 / -1;
-  }
-
-  .secondary-count {
-    display: block;
-    margin-top: 6px;
-    font-size: 10px;
-  }
-
-  .issue-action {
-    width: 100%;
-    margin-top: 8px;
-    border: 0;
-    padding: 8px 10px;
-    border-radius: 9px;
-    background: var(--accent-primary);
-    color: var(--accent-contrast);
-    font-weight: 700;
-    cursor: pointer;
   }
 
   .metrics {
@@ -667,23 +504,6 @@
     border-top: 1px solid var(--border-default);
   }
 
-  .section-label {
-    justify-content: space-between;
-    margin-bottom: 6px;
-    font-size: 10px;
-  }
-
-  .text-button {
-    border: 0;
-    padding: 4px 6px;
-    border-radius: 6px;
-    background: transparent;
-    color: var(--accent-primary);
-    font-size: 10px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
   .mode-row {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -748,6 +568,50 @@
     text-align: center;
     font-size: 10px;
   }
+
+  .brand { display: grid; gap: 1px; }
+  .brand strong { font-size: 15px; }
+  .brand > span { color: var(--text-muted); font-size: 12px; }
+  .companion-hero { display: flex; align-items: center; gap: 11px; padding: 11px 9px; border: 1px solid var(--border-default); border-radius: var(--radius-card); background: var(--surface-raised); }
+  .companion-hero.warning { border-color: var(--status-warning); }
+  .companion-hero.critical { border-color: var(--status-critical); }
+  .hero-copy { min-width: 0; display: grid; gap: 5px; }
+  .hero-character { text-transform: capitalize; font-size: 12px; color: var(--text-muted); }
+  .hero-copy strong { font-size: 14px; line-height: 1.25; }
+  .hero-copy p { margin: 0; font-size: 12px; line-height: 1.35; color: var(--text-secondary); overflow-wrap: anywhere; }
+  .primary-action { display: block; width: 100%; margin-top: 10px; padding: 10px 12px; border: 0; border-radius: 9px; background: var(--accent-primary); color: var(--accent-contrast); font-weight: 700; cursor: pointer; }
+  .system-details, .issue-context { margin-top: 9px; padding: 8px 10px; border: 1px solid var(--border-default); border-radius: 9px; background: var(--surface-base); }
+  .system-details summary, .issue-context summary { font-size: 12px; font-weight: 650; cursor: pointer; }
+  .system-details summary:focus-visible, .issue-context summary:focus-visible, button:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+  .issue-context p { font-size: 12px; margin: 6px 0 0; color: var(--text-secondary); }
+  .issue-context .culprit { margin-top: 8px; }
+  .controls > strong { display: block; margin-bottom: 8px; font-size: 12px; }
+  .mode-row button, .utility-row button { font-size: 12px; }
+  .metric-heading, .metric small, .context-row { font-size: 12px; }
+  /* At 150–200% application zoom the fixed 340px WebView's effective
+     layout width is too narrow for the 100px mascot beside status copy.
+     Use a single-column hero and readable two-column mode controls. */
+  :global(html[data-surface="quick-panel"][data-interface-scale="large"]) .companion-hero,
+  :global(html[data-surface="quick-panel"][data-interface-scale="extra-large"]) .companion-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  :global(html[data-surface="quick-panel"][data-interface-scale="large"]) .mode-row,
+  :global(html[data-surface="quick-panel"][data-interface-scale="extra-large"]) .mode-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :global(html[data-surface="quick-panel"][data-interface-scale="large"]) .utility-row,
+  :global(html[data-surface="quick-panel"][data-interface-scale="extra-large"]) .utility-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  :global(html[data-surface="quick-panel"][data-interface-scale="large"]) .utility-row button,
+  :global(html[data-surface="quick-panel"][data-interface-scale="extra-large"]) .utility-row button {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  @media (forced-colors: active) { .companion-hero, .system-details, .issue-context, .primary-action { border: 1px solid CanvasText; } }
 
   @media (prefers-reduced-motion: reduce) {
     .meter span {
