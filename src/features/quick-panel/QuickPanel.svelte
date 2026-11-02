@@ -586,6 +586,29 @@
   .controls > strong { display: block; margin-bottom: 8px; font-size: 12px; }
   .mode-row button, .utility-row button { font-size: 12px; }
   .metric-heading, .metric small, .context-row { font-size: 12px; }
+  /* At 150–200% application zoom the fixed 340px WebView's effective
+     layout width is too narrow for the 100px mascot beside status copy.
+     Use a single-column hero and readable two-column mode controls. */
+  :global(html[data-surface="quick-panel"][data-interface-scale="large"]) .companion-hero,
+  :global(html[data-surface="quick-panel"][data-interface-scale="extra-large"]) .companion-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  :global(html[data-surface="quick-panel"][data-interface-scale="large"]) .mode-row,
+  :global(html[data-surface="quick-panel"][data-interface-scale="extra-large"]) .mode-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :global(html[data-surface="quick-panel"][data-interface-scale="large"]) .utility-row,
+  :global(html[data-surface="quick-panel"][data-interface-scale="extra-large"]) .utility-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  :global(html[data-surface="quick-panel"][data-interface-scale="large"]) .utility-row button,
+  :global(html[data-surface="quick-panel"][data-interface-scale="extra-large"]) .utility-row button {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
   @media (forced-colors: active) { .companion-hero, .system-details, .issue-context, .primary-action { border: 1px solid CanvasText; } }
 
   @media (prefers-reduced-motion: reduce) {
