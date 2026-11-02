@@ -351,7 +351,9 @@
 
 <style>
   .panel {
-    height: 100vh;
+    /* Body zoom enlarges the WebView content but native window height is fixed.
+       Keep the inner scroller within the actual window at 100–200% scale. */
+    height: calc(100vh / var(--byte-text-scale, 1));
     overflow: auto;
     padding: 14px;
     background: var(--surface-overlay);
