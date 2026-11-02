@@ -43,10 +43,11 @@ footer{font-size:12px;color:#58636a;padding:0 24px 25px}
 <body>
 <header>
 <h1>Byte 2.0 · P7 Habitat Source-Art Gallery</h1>
-<p>Actual committed 256 × 256 habitat manifest shapes, all four local-time palettes, and production mascot previews. No mockups, gradients, or network requests.</p>
+<p>Actual committed 256 × 256 habitat manifest shapes, four local-time palettes, and production mascot previews. Static scene layers only; animated particles are not displayed.</p>
 <label>Companion <select id="mascot"><option value="byte">Byte</option><option value="mochi">Mochi</option><option value="pip">Pip</option><option value="kiwi">Kiwi</option></select></label>
-<label>PC state <select id="reaction"><option value="NONE">Normal</option><option value="BUSY">Busy</option><option value="MEMORY_PRESSURE">Memory pressure</option><option value="STORAGE">Storage</option><option value="THERMAL">Thermal</option><option value="LOW_BATTERY">Low battery</option><option value="CHARGING">Charging</option><option value="NETWORK">Network</option></select></label>
+<label>PC state <select id="reaction"><option value="NONE">Normal</option><option value="BUSY">Busy</option><option value="MEMORY_PRESSURE">Memory pressure</option><option value="STORAGE">Storage</option><option value="THERMAL">Thermal</option><option value="LOW_BATTERY">Low battery</option><option value="CHARGING">Charging</option><option value="NETWORK">Network (particle-only)</option></select></label>
 <label><input id="pet" type="checkbox" checked> Show companion</label>
+<p id="reaction-note" role="status" aria-live="polite">Animated particle effects are not shown in this source-art gallery.</p>
 </header><main id="gallery"></main>
 <footer>CI evidence is manifest-derived, not a Windows device signoff or a guarantee of subjective art quality.</footer>
 <script id="production-data" type="application/json">__P7_DATA__</script>
@@ -105,6 +106,9 @@ footer{font-size:12px;color:#58636a;padding:0 24px 25px}
     const gallery=document.getElementById("gallery");gallery.replaceChildren();
     const mascot=document.getElementById("mascot").value;
     const reaction=document.getElementById("reaction").value;
+    document.getElementById("reaction-note").textContent = reaction === "NETWORK"
+      ? "Network uses animated habitat particles rather than static reaction layers. This source-art gallery cannot preview that effect; verify it in the running app."
+      : "This source-art gallery previews static scene layers only; animated particles are not displayed.";
     const show=document.getElementById("pet").checked;
     for(const id of order){
       const world=DATA.habitats[id];
