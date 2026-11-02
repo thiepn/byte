@@ -299,7 +299,7 @@
       </details>
     {/if}
 
-    <button class="primary-action" disabled={Boolean(busyAction)} onclick={() => void runRecommendedAction(panelPrimaryAction(snapshot))}>
+    <button class="primary-action" disabled={Boolean(busyAction)} onclick={() => void runRecommendedAction(panelPrimaryAction(snapshot!))}>
       {busyAction === panelPrimaryAction(snapshot) ? "Opening…" : actionLabel(panelPrimaryAction(snapshot))}
     </button>
 
@@ -364,10 +364,7 @@
   }
 
   header,
-  .brand,
   .metric-heading,
-  .issue-topline,
-  .section-label,
   .utility-row {
     display: flex;
     align-items: center;
@@ -377,36 +374,6 @@
     justify-content: space-between;
     gap: var(--space-12);
     margin-bottom: 10px;
-  }
-
-  .brand {
-    gap: 9px;
-  }
-
-  .brand > div {
-    display: grid;
-    gap: 1px;
-  }
-
-  .brand strong {
-    font-size: 13px;
-  }
-
-  .brand span:last-child {
-    color: var(--text-muted);
-    font-size: 10px;
-  }
-
-  .brand-mark {
-    width: 27px;
-    height: 27px;
-    display: grid;
-    place-items: center;
-    border-radius: 8px;
-    background: var(--accent-primary);
-    color: var(--accent-contrast);
-    font-size: 12px;
-    font-weight: 800;
   }
 
   button {
@@ -424,73 +391,8 @@
     cursor: pointer;
   }
 
-  .icon-button:hover,
-  .text-button:hover {
+  .icon-button:hover {
     background: var(--surface-selected);
-  }
-
-  .status-card {
-    display: flex;
-    gap: 10px;
-    padding: 12px;
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-card);
-    background: var(--surface-raised);
-  }
-
-  .status-card p {
-    margin: 3px 0 0;
-    color: var(--text-secondary);
-    font-size: 11px;
-    line-height: 1.4;
-  }
-
-  .status-dot {
-    width: 9px;
-    height: 9px;
-    flex: 0 0 auto;
-    margin-top: 3px;
-    border-radius: 50%;
-    background: var(--status-normal);
-  }
-
-  .status-card.info .status-dot {
-    background: var(--status-info);
-  }
-
-  .status-card.warning .status-dot {
-    background: var(--status-warning);
-  }
-
-  .status-card.critical .status-dot {
-    background: var(--status-critical);
-  }
-
-  .issue-card {
-    margin-top: 8px;
-    padding: 11px;
-    border: 1px solid color-mix(in srgb, var(--status-warning) 55%, var(--border-default));
-    border-radius: var(--radius-card);
-    background: color-mix(in srgb, var(--status-warning) 7%, var(--surface-raised));
-  }
-
-  .issue-topline {
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .issue-topline > span {
-    color: var(--text-muted);
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  .issue-card p {
-    margin: 5px 0 8px;
-    color: var(--text-secondary);
-    font-size: 11px;
-    line-height: 1.42;
   }
 
   .culprit {
@@ -504,31 +406,12 @@
   }
 
   .culprit span,
-  .culprit small,
-  .secondary-count {
+  .culprit small {
     color: var(--text-muted);
   }
 
   .culprit small {
     grid-column: 1 / -1;
-  }
-
-  .secondary-count {
-    display: block;
-    margin-top: 6px;
-    font-size: 10px;
-  }
-
-  .issue-action {
-    width: 100%;
-    margin-top: 8px;
-    border: 0;
-    padding: 8px 10px;
-    border-radius: 9px;
-    background: var(--accent-primary);
-    color: var(--accent-contrast);
-    font-weight: 700;
-    cursor: pointer;
   }
 
   .metrics {
@@ -615,23 +498,6 @@
     margin-top: 8px;
     padding-top: 8px;
     border-top: 1px solid var(--border-default);
-  }
-
-  .section-label {
-    justify-content: space-between;
-    margin-bottom: 6px;
-    font-size: 10px;
-  }
-
-  .text-button {
-    border: 0;
-    padding: 4px 6px;
-    border-radius: 6px;
-    background: transparent;
-    color: var(--accent-primary);
-    font-size: 10px;
-    font-weight: 700;
-    cursor: pointer;
   }
 
   .mode-row {
