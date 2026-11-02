@@ -299,10 +299,6 @@
       </details>
     {/if}
 
-    <button class="primary-action" disabled={Boolean(busyAction)} onclick={() => void runRecommendedAction(panelPrimaryAction(snapshot!))}>
-      {busyAction === panelPrimaryAction(snapshot) ? "Opening…" : actionLabel(panelPrimaryAction(snapshot))}
-    </button>
-
     <details class="system-details">
       <summary>System details</summary>
       <section class="metrics" aria-label="Current system resources">
@@ -326,6 +322,12 @@
   {:else if !preferences}
     <div class="message" role="status">{unavailableMessage()}</div>
   {/if}
+
+  <button class="primary-action" disabled={Boolean(busyAction)} onclick={() => void runRecommendedAction(panelPrimaryAction(snapshot && snapshotReady(snapshot) ? snapshot : null))}>
+    {busyAction === panelPrimaryAction(snapshot && snapshotReady(snapshot) ? snapshot : null)
+      ? "Opening…"
+      : actionLabel(panelPrimaryAction(snapshot && snapshotReady(snapshot) ? snapshot : null))}
+  </button>
 
   <section class="controls" aria-label="Companion controls">
     <strong>Companion controls</strong>

@@ -91,6 +91,7 @@ describe("Quick Panel presentation model", () => {
   it("shows exactly one safe primary action and does not invent remediation", () => {
     const calm = snapshot();
     expect(panelPrimaryAction(calm)).toBe("VIEW_DETAILS");
+    expect(panelPrimaryAction(null)).toBe("VIEW_DETAILS");
     const issue = {
       id: "memory-pressure", category: "MEMORY" as const, severity: "HIGH" as const,
       headline: "Memory pressure", explanation: "Sustained memory use",
