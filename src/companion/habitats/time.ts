@@ -1,4 +1,4 @@
-import type { TimeOfDay } from "./types";
+import type { HabitatRenderState, TimeOfDay } from "./types";
 
 export function timeOfDayForHour(hour: number): TimeOfDay {
   const normalized = ((Math.floor(hour) % 24) + 24) % 24;
@@ -10,4 +10,13 @@ export function timeOfDayForHour(hour: number): TimeOfDay {
 
 export function currentTimeOfDay(date = new Date()): TimeOfDay {
   return timeOfDayForHour(date.getHours());
+}
+
+// Use the wall clock independently of telemetry; retain state identity when unchanged.
+export function withCurrentTimeOfDay(
+  state: HabitatRenderState,
+  date = new Date(),
+): HabitatRenderState {
+  const timeOfDay = currentTimeOfDay(date);
+  return timeOfDay === state.timeOfDay ? state : { ...state, timeOfDay };
 }
